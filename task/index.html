@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Geonames API Testing Application</title>
+    <meta name="description" content="An application for testing and demonstrating the Geonames API, including city, timezone, and weather data retrieval.">
+    <meta name="author" content="Yurii Petrovskyi">
+    <link rel="stylesheet" href="libs/css/style.css">
+		<link rel="icon" type="image/png" href="favicon.png">
+</head>
+
+<body>
+
+		<div id="preloader"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>API name</th>
+                <th>API description</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+            <tr>
+                <td>Capital City</td>
+                <td>
+                    <p>Search for information about a capital city, including country, population, and coordinates.</p>
+                    <input type="text" id="cityParam" placeholder="Enter capital city name">
+									</td>
+                <td>
+                    <button id="submitCitySearch">Submit</button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Timezone</td>
+                <td>
+									<p>Get timezone information based on geographic coordinates, including local time, sunrise, and sunset.</p>
+                    <input type="text" id="latParam" placeholder="Enter latitude">
+                    <input type="text" id="lngParam" placeholder="Enter longitude">
+                </td>
+                <td>
+                    <button id="submitTimezoneSearch">Submit</button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Weather</td>
+                <td>
+										<p>Retrieve the most recent weather information for the nearest weather station to the provided coordinates.</p>
+                    <input type="text" id="weatherLat" placeholder="Enter latitude">
+                    <input type="text" id="weatherLng" placeholder="Enter longitude">
+                </td>
+                <td>
+                    <button id="submitWeatherSearch">Submit</button>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="3">
+                    <h2>Capital City Search Results</h2>
+										<p id="cityErrorMsg" class="error-message"></p>
+                    <table id="cityResultTable">
+                        <tr>
+                            <td>City:</td>
+                            <td id="txtCityName">None</td>
+                        </tr>
+                        <tr>
+                            <td>Country:</td>
+                            <td id="txtCountryName">None</td>
+                        </tr>
+                        <tr>
+                            <td>Population:</td>
+                            <td id="txtPopulation">None</td>
+                        </tr>
+                        <tr>
+                            <td>Latitude:</td>
+                            <td id="txtLatitude">None</td>
+                        </tr>
+                        <tr>
+                            <td>Longitude:</td>
+                            <td id="txtLongitude">None</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="3">
+                    <h2>Timezone Search Results</h2>
+                    <p id="timezoneErrorMsg" class="error-message"></p>
+                    <table id="timezoneResultTable">
+                        <tr>
+                            <td>Timezone:</td>
+                            <td id="txtTimezoneId">None</td>
+                        </tr>
+                        <tr>
+                            <td>Country:</td>
+                            <td id="txtTimezoneCountry">None</td>
+                        </tr>
+                        <tr>
+                            <td>Local Time:</td>
+                            <td id="txtLocalTime">None</td>
+                        </tr>
+                        <tr>
+                            <td>Sunrise:</td>
+                            <td id="txtSunrise">None</td>
+                        </tr>
+                        <tr>
+                            <td>Sunset:</td>
+                            <td id="txtSunset">None</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="3">
+                    <h2>Weather Search Results</h2>
+										<p id="weatherErrorMsg" class="error-message"></p>
+                    <table id="weatherResultTable">
+                        <tr>
+                            <td>Station:</td>
+                            <td id="txtStationName">None</td>
+                        </tr>
+                        <tr>
+                            <td>Temperature:</td>
+                            <td id="txtTemperature">None</td>
+                        </tr>
+                        <tr>
+                            <td>Humidity:</td>
+                            <td id="txtHumidity">None</td>
+                        </tr>
+                        <tr>
+                            <td>Wind Speed:</td>
+                            <td id="txtWindSpeed">None</td>
+                        </tr>
+                        <tr>
+                            <td>Clouds:</td>
+                            <td id="txtClouds">None</td>
+                        </tr>
+                    </table>                    
+                </td>
+            </tr>
+						
+        </tbody>
+    </table>
+
+    <script src="libs/js/jquery-3.7.1.min.js"></script>
+    <script src="libs/js/script.js"></script>
+
+</body>
+</html>
