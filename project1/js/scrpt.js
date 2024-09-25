@@ -12,6 +12,8 @@ import { getCountryDetails } from './getCountryDetails.js';
 import { getdAllCountryBorders } from './getAllCountryBorders.js'; // Імпорт нової функції
 import { getCountryCities } from './getCountryCities.js';
 import { setCountryByCoordinates } from './setCountryByCoordinates.js';
+
+import { getWeatherData } from './getWeatherData.js';
 // Ініціалізація Leaflet карти
 // var map = L.map('map').setView([50, 30], 6);  // Центр на світі, масштаб 2
 var map = L.map('map').fitWorld();  // Автоматично масштабувати карту на весь світ
@@ -53,6 +55,15 @@ var baseMaps = {
 
 // Додавання контролю шарів на карту
 L.control.layers(baseMaps).addTo(map);
+
+// **************************************************** Робота з DOM **************************************
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Викликаємо функцію для заповнення випадаючого списку країн
+    console.log("before loadCountryList()");
+    getCountryList();
+    
+});
 
 // **************************************************** Функції для навігаційної панелі **************************************
 
@@ -136,22 +147,6 @@ L.easyButton('fa-info fa-xl', function() {
     countryModal.show();
 }, 'info-btn').addTo(map);
 
-// **************************************************** кнопка Кордони всіх країн **************************************
-
-L.easyButton('fa-globe', function() {
-    getdAllCountryBorders(map);  // Викликаємо функцію для завантаження/приховування кордонів
-}, 'border-btn').addTo(map);
-
-
-// **************************************************** Робота з DOM **************************************
-
-document.addEventListener("DOMContentLoaded", function() {
-    // Викликаємо функцію для заповнення випадаючого списку країн
-    console.log("before loadCountryList()");
-    getCountryList();
-    
-});
-
 // Викликаємо функцію при натисканні на кнопку  Info
 document.querySelector('[title="info-btn"]').addEventListener('click', function() {
     const countryName = document.getElementById('currentCountry').textContent;
@@ -159,93 +154,35 @@ document.querySelector('[title="info-btn"]').addEventListener('click', function(
     getCountryDetails(countryName);
 });
 
+// **************************************************** кнопка Кордони всіх країн **************************************
 
-// // **************************************************** погода **************************************
+L.easyButton('fa-globe', function() {
+    getdAllCountryBorders(map, countryBorderLayerRef);  // Викликаємо функцію для завантаження/приховування кордонів
+}, 'border-btn').addTo(map);
 
-// // Кластерна група для маркерів погоди
-// var weatherMarkers = L.markerClusterGroup();
-// // Масив для збереження маркерів погоди
-// // let weatherMarkers = [];
-// // Додаємо кнопку для показу погоди на карту
-// L.easyButton('fa-cloud', function () {
-//     const isoCode = document.getElementById('countrySelect').value; // Отримуємо ISO-код країни
-//     console.log('isoCode: ', isoCode);
 
-//     // Очищуємо старі маркери погоди
-//     // clearWeatherMarkers();
+// **************************************************** погода **************************************
 
-//     // Очищуємо кластерну групу перед додаванням нових маркерів
-//     weatherMarkers.clearLayers();
+// Кластерна група для маркерів погоди
+var weatherMarkers = L.markerClusterGroup();
+// Додаємо кнопку для показу погоди на карту
+L.easyButton('fa-cloud', function () {
+    // const isoCode = document.getElementById('countrySelect').value; // Отримуємо ISO-код країни
+    const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
+    console.log('isoCode: ', isoCode);
+
+    // Очищуємо кластерну групу перед додаванням нових маркерів
+    weatherMarkers.clearLayers();
     
-//     getCountryCities(isoCode); // Отримуємо найбільші міста та показуємо погоду
-// }).addTo(map);
-
-// // Функція для очищення старих маркерів погоди з карти
-// // function clearWeatherMarkers() {
-// //     weatherMarkers.forEach(marker => map.removeLayer(marker));  // Видаляємо всі старі маркери
-// //     weatherMarkers = [];  // Очищуємо масив після видалення маркерів
-// // }
-
-// // Функція для запиту до GeoNames API для отримання найбільших міст країни
-// function getCountryCities(isoCode) {
-//     fetch(`php/getCountryCities.php?iso=${isoCode}`)
-//         .then(response => response.json())
-//         .then(data => {
-//             console.log("Cities: ", data);
-//             data.forEach(city => {
-//                 // Отримуємо погоду для кожного міста
-//                 getWeatherData(city.lat, city.lng, city.name);
-//             });
-//         })
-//         .catch(error => {
-//             console.error('Error fetching cities:', error);
-//         });
-// }
-
-// // Функція для запиту до OpenWeather API через getWeather.php
-// function getWeatherData(lat, lon, locationName) {
-//     fetch(`php/getWeather.php?lat=${lat}&lon=${lon}`)
-//         .then(response => response.json())
-//         .then(data => {
-//             console.log('weather data: ', data);
-//             const temp = data.main.temp;
-//             const weatherDescription = data.weather[0].description;
-//             const iconCode = data.weather[0].icon;
-
-//             // URL для іконки погоди
-//             const iconUrl = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
-
-//             // Створюємо кастомну іконку з використанням класів Bootstrap
-//             const weatherIcon = L.divIcon({
-//                 className: '',  // Не потрібно окремого класу
-//                 html: `
-//                     <div class="text-center p-1  rounded shadow-sm">
-//                         <img src="${iconUrl}" class="img-fluid" alt="Weather icon" style="width: 50px; height: 50px;" />
-//                         <div class="fw-bold text-primary">${temp}°C</div>
-//                     </div>
-//                 `,
-//                 iconSize: [60, 60], // Загальний розмір іконки
-//                 iconAnchor: [30, 30] // Точка, де іконка "кріпиться" на карті
-//             });
-
-//             // Додаємо маркер з кастомною іконкою
-//             const marker = L.marker([lat, lon], { icon: weatherIcon }).addTo(map);
-
-//             marker.bindPopup(`<b>${locationName}</b><br>Temperature: ${temp}°C<br>Weather: ${weatherDescription}`);
-            
-//             // Додаємо маркер до масиву для подальшого очищення
-//             weatherMarkers.addLayer(marker);
-//         })
-//         .catch(error => {
-//             console.error('Error fetching weather data:', error);
-//         });
-// }
-
-// // Додаємо кластерну групу до карти
-// map.addLayer(weatherMarkers);
-
-
-
+    getCountryCities(isoCode).then(cities => {
+        cities.forEach(city => {            
+            getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);
+        })
+    }) // Отримуємо найбільші міста та показуємо погоду
+    
+}).addTo(map);
+// Додаємо кластерну групу до карти
+map.addLayer(weatherMarkers);
 
 // **************************************************** Функції **************************************
 
@@ -261,4 +198,21 @@ document.querySelector('[title="info-btn"]').addEventListener('click', function(
 //         countryBorderLayerRef.current = null;
 //     }
 //     map.setView([20, 0], 2);
+// }
+
+
+// // Функція для запиту до GeoNames API для отримання найбільших міст країни
+// function getCountryCities(isoCode) {
+//     fetch(`php/getCountryCities.php?iso=${isoCode}`)
+//         .then(response => response.json())
+//         .then(data => {
+//             console.log("Cities: ", data);
+//             data.forEach(city => {
+//                 // Отримуємо погоду для кожного міста
+//                 getWeatherData(city.lat, city.lng, city.name);
+//             });
+//         })
+//         .catch(error => {
+//             console.error('Error fetching cities:', error);
+//         });
 // }
