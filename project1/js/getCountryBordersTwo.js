@@ -1,6 +1,6 @@
 // countryBordersTwo.js
 
-export function getCountryBordersTwo(isoCode, map, countryBorderLayerRef) {
+export function getCountrySpecificBorders(isoCode, map, countryBorderLayerRef) {
     fetch('php/getCountryBordersTwo.php?iso=' + isoCode)
         .then(response => response.json())
         .then(data => {

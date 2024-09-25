@@ -5,7 +5,8 @@ import { getCountryBorders } from '../additionaly/getCountryBorders.js';
 
 import { toggleCountrySearch } from '../features/toggleCountrySearch.js';
 import { filterCountryNames } from '../features/filterCountryNames.js';
-import { getCountryBordersTwo } from './getCountryBordersTwo.js';
+
+import { getCountrySpecificBorders } from './getCountryBordersTwo.js';
 import { getCountryList } from './getCountryList.js';
 import { getCountryDetails } from './getCountryDetails.js';
 import { getdAllCountryBorders } from './getAllCountryBorders.js'; // Імпорт нової функції
@@ -83,7 +84,7 @@ document.getElementById('countrySelect').addEventListener('change', function() {
     currentCountryElement.textContent = countryName; // Відображаємо назву країни
     currentCountryElement.setAttribute('data-country-iso', isoCode); // Зберігаємо ISO-код
     
-    getCountryBordersTwo(isoCode, map, countryBorderLayerRef);
+    getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
 
 });
 
