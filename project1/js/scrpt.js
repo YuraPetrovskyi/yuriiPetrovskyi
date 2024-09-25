@@ -1,13 +1,14 @@
 // script.js
 
-import { fetchCountryData } from './countryData.js';
-import { getCountryBorders } from './getCountryBorders.js';
+import { fetchCountryData } from '../additionaly/countryData.js';
+import { getCountryBorders } from '../additionaly/getCountryBorders.js';
+
+import { toggleCountrySearch } from '../features/toggleCountrySearch.js';
+import { filterCountryNames } from '../features/filterCountryNames.js';
 import { getCountryBordersTwo } from './getCountryBordersTwo.js';
-
-import { loadCountryList } from './loadCountries.js';
-
+import { getCountryList } from './getCountryList.js';
 import { getCountryDetails } from './getCountryDetails.js';
-import { loadAllCountryBorders } from './loadAllCountryBorders.js'; // Імпорт нової функції
+import { getdAllCountryBorders } from './getAllCountryBorders.js'; // Імпорт нової функції
 import { getCountryCities } from './getCountryCities.js';
 
 // Ініціалізація Leaflet карти
@@ -53,20 +54,7 @@ var baseMaps = {
 L.control.layers(baseMaps).addTo(map);
 
 // **************************************************** Функції для навігаційної панелі **************************************
-function toggleCountrySearch() {
-    const button = document.getElementById('selectCountryButton');
-    const countrySelectContainer = document.getElementById('countrySelectContainer');
-    
-    if (button.classList.contains('d-none')) {
-      // Повертаємо кнопку "Select Country" і приховуємо список країн
-        button.classList.remove('d-none');
-        countrySelectContainer.classList.add('d-none');
-    } else {
-      // Приховуємо кнопку і показуємо список країн
-        button.classList.add('d-none');
-        countrySelectContainer.classList.remove('d-none');
-    }
-}
+
 // Додаємо обробники подій для кнопки вибору і кнопки закриття
 document.getElementById('selectCountryButton').addEventListener('click', toggleCountrySearch);
 document.getElementById('closeCountrySelect').addEventListener('click', toggleCountrySearch);
@@ -80,16 +68,9 @@ document.getElementById('countrySelect').addEventListener('change', function() {
 
 // Пошук по введеному значенню у списку країн
 document.getElementById('countrySearchInput').addEventListener('input', function() {
-    const filter = this.value.toLowerCase();
+    const name = this.value.toLowerCase();
     const options = document.querySelectorAll('#countrySelect option');
-
-    options.forEach(option => {
-        if (option.textContent.toLowerCase().includes(filter)) {
-            option.style.display = '';
-        } else {
-            option.style.display = 'none';
-        }
-    });
+    filterCountryNames(name, options);
 });
 
 // Оновлюємо відображення країни і зберігаємо ISO-код у атрибуті data-country-iso
@@ -102,9 +83,6 @@ document.getElementById('countrySelect').addEventListener('change', function() {
     currentCountryElement.textContent = countryName; // Відображаємо назву країни
     currentCountryElement.setAttribute('data-country-iso', isoCode); // Зберігаємо ISO-код
     
-    // Тепер можна робити запити для відображення даних і кордонів вибраної країни
-    // fetchCountryData(countryName, isoCode, map, markerRef);
-    // getCountryBorders(isoCode, map, countryBorderLayerRef);
     getCountryBordersTwo(isoCode, map, countryBorderLayerRef);
 
 });
@@ -159,14 +137,6 @@ map.on('locationerror', function(e) {
     // alert(e.message);
 });
 
-// **************************************************** Робота з DOM **************************************
-
-document.addEventListener("DOMContentLoaded", function() {
-    // Викликаємо функцію для заповнення випадаючого списку країн
-    console.log("before loadCountryList()");
-    loadCountryList();
-    
-});
 
 // **************************************************** дадавання модалки Info  **************************************
 
@@ -177,58 +147,29 @@ L.easyButton('fa-info fa-xl', function() {
     countryModal.show();
 }).addTo(map);
 
-// Викликаємо функцію при натисканні на кнопку
+// **************************************************** відображення кордонів країн **************************************
+
+L.easyButton('fa-globe', function() {
+    getdAllCountryBorders(map);  // Викликаємо функцію для завантаження/приховування кордонів
+}).addTo(map);
+
+
+// **************************************************** Робота з DOM **************************************
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Викликаємо функцію для заповнення випадаючого списку країн
+    console.log("before loadCountryList()");
+    getCountryList();
+    
+});
+
+// Викликаємо функцію при натисканні на кнопку  Info
 document.querySelector('.easy-button-button').addEventListener('click', function() {
     // const countryName = document.getElementById('currentCountry').options[document.getElementById('countrySelect').selectedIndex].text;
     const countryName = document.getElementById('currentCountry').textContent;
     console.log('you choose country: ', countryName);    
     getCountryDetails(countryName);
 });
-
-// **************************************************** відображення кордонів країн **************************************
-// var countryBordersLayer = null;
-// // Функція для завантаження і відображення кордонів
-// function loadAllCountryBorders() {
-//     if (countryBordersLayer) {
-//         // Якщо шар уже є на карті, видаляємо його (приховуємо кордони)
-//         map.removeLayer(countryBordersLayer);
-//         countryBordersLayer = null;
-//     } else {
-//         // Якщо шар відсутній, завантажуємо GeoJSON з кордонами
-//         fetch('data/countries.geojson')  // Шлях до вашого файлу countries.geojson
-//         .then(response => response.json())
-//         .then(data => {
-//             console.log("loadAllCountryBorders data: ", data);
-//             // Додаємо країни як шар на карту
-//             countryBordersLayer = L.geoJSON(data, {
-//                 style: {
-//                     color: '#ff0000',  // Колір кордонів
-//                     weight: 2,         // Товщина лінії
-//                     dashArray: '5, 5',  // Пунктирна лінія
-//                     fillOpacity: 0     // Без заливки
-//                 },
-//                 onEachFeature: function (feature, layer) {
-//                     // Додаємо попап з назвою країни при натисканні
-//                     layer.bindPopup(`<b>${feature.properties.ADMIN}</b>`);
-//                 }
-//             }).addTo(map)
-//             // Після додавання кордонів маштабуємо карту
-//             map.setZoom(6); 
-//             // на весь світ
-//             // var bounds = countryBordersLayer.getBounds();  // Отримуємо межі (bounds) шару кордонів
-//             // map.fitBounds(bounds);  // Маштабуємо карту на межі кордонів 
-            
-//         })
-//         .catch(error => {
-//             console.error('Error loading country borders:', error);
-//         });
-//     }
-// }
-
-L.easyButton('fa-globe', function() {
-    loadAllCountryBorders(map);  // Викликаємо функцію для завантаження/приховування кордонів
-}).addTo(map);
-
 
 
 // // **************************************************** погода **************************************

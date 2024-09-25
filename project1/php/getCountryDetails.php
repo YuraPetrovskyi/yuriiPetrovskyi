@@ -18,7 +18,7 @@ $ch = curl_init();
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_URL, $apiUrl);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'User-Agent: MyCustomApp/1.0 (your-email@example.com)' // Замініть на свій додаток та email
+    'User-Agent: Gazetter/1.0 (yurakarpaty@gmail.com)' // Замініть на свій додаток та email
 ]);
 $response = curl_exec($ch);
 curl_close($ch);
