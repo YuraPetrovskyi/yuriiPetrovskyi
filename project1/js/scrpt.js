@@ -21,7 +21,9 @@ var map = L.map('map').fitWorld();  // Автоматично масштабув
 // Приклад: додавання маркеру для вибраної країни
 var markerRef = { current: null };
 var countryBorderLayerRef = { current: null }; // Для відстеження шару кордонів 
-
+var myLocationMarcker = { current: null }; // Для відстеження користувача
+// Кластерна група для маркерів погоди
+var weatherMarkers = L.markerClusterGroup();
 
 // **************************************************** слої карт **************************************
 
@@ -87,14 +89,15 @@ document.getElementById('countrySearchInput').addEventListener('input', function
 
 // Оновлюємо відображення країни і зберігаємо ISO-код у атрибуті data-country-iso
 document.getElementById('countrySelect').addEventListener('change', function() {
+    // Очищуємо кластерну групу погоди
+    weatherMarkers.clearLayers();
+
     const countryName = this.options[this.selectedIndex].text;
     const isoCode = this.value;
     console.log(countryName, '---', isoCode);
-
     const currentCountryElement = document.getElementById('currentCountry');
     currentCountryElement.textContent = countryName; // Відображаємо назву країни
-    currentCountryElement.setAttribute('data-country-iso', isoCode); // Зберігаємо ISO-код
-    
+    currentCountryElement.setAttribute('data-country-iso', isoCode); // Зберігаємо ISO-код    
     getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
 
 });
@@ -124,9 +127,12 @@ map.on('locationfound', function(e) {
     // Використаємо Reverse Geocoding для отримання країни користувача
     // `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}
     setCountryByCoordinates(lat, lon)
-
+    
+    if (myLocationMarcker.current) {
+        myLocationMarcker.current = null;
+    }
     // Додаємо маркер на мапу для місцезнаходження
-    L.marker(e.latlng).addTo(map)
+    myLocationMarcker.current = L.marker(e.latlng).addTo(map)
         .bindPopup("You are here")
         .openPopup();
     // Плавно переміщуємо мапу до місця
@@ -150,8 +156,14 @@ L.easyButton('fa-info fa-xl', function() {
 // Викликаємо функцію при натисканні на кнопку  Info
 document.querySelector('[title="info-btn"]').addEventListener('click', function() {
     const countryName = document.getElementById('currentCountry').textContent;
-    console.log('you choose country: ', countryName);    
-    getCountryDetails(countryName);
+    const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
+
+    console.log('you choose country: ', countryName);
+    console.log('you choose country: ', isoCode);    
+
+    // getCountryDetails(countryName);
+    getCountryDetails(isoCode);
+
 });
 
 // **************************************************** кнопка Кордони всіх країн **************************************
@@ -161,17 +173,15 @@ L.easyButton('fa-globe', function() {
 }, 'border-btn').addTo(map);
 
 
-// **************************************************** погода **************************************
+// **************************************************** кнопка Погода **************************************
 
-// Кластерна група для маркерів погоди
-var weatherMarkers = L.markerClusterGroup();
 // Додаємо кнопку для показу погоди на карту
 L.easyButton('fa-cloud', function () {
     // const isoCode = document.getElementById('countrySelect').value; // Отримуємо ISO-код країни
     const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
     console.log('isoCode: ', isoCode);
 
-    // Очищуємо кластерну групу перед додаванням нових маркерів
+    // Очищуємо кластерну групу погоди перед додаванням нових маркерів
     weatherMarkers.clearLayers();
     
     getCountryCities(isoCode).then(cities => {

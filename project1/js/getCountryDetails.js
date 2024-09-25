@@ -5,7 +5,7 @@ export function getCountryDetails(countryName) {
   fetch('php/getCountryDetails.php?countryName=' + countryName)
     .then(response => response.json())
     .then(data => {
-        console.log('info: ', data);
+        console.log('getCountryDetails: ', data);
         const country = data[0];  // Отримуємо першу країну з результату
         document.getElementById('countryName').textContent = country.name.common;
         document.getElementById('officialName').textContent = country.name.official;

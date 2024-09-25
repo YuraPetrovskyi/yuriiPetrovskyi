@@ -29,6 +29,8 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
 
           marker.bindPopup(`<b>${locationName}</b><br>Temperature: ${temp}°C<br>Weather: ${weatherDescription}`);
           
+          // Додаємо маркер до кластерної групи
+          weatherMarkers.addLayer(marker);
           // Додаємо маркер до масиву для подальшого очищення
           console.log('weatherMarkers', weatherMarkers);
       })

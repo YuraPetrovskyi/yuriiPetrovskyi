@@ -11,7 +11,9 @@ if (!$countryName) {
 }
 
 // URL для запиту до Rest Countries API
-$apiUrl = "https://restcountries.com/v3.1/name/{$countryName}";
+// $apiUrl = "https://restcountries.com/v3.1/name/{$countryName}";
+$apiUrl = "https://restcountries.com/v3.1/alpha/{$countryName}";
+
 
 // Виконуємо запит до API
 $ch = curl_init();
