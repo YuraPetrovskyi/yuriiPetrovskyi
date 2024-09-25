@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gazetteer Project</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    
+    <!-- Leaflet CSS for the map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>  
+    
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
+    <!-- Leaflet EasyButton CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2.4.0/src/easy-button.css">
+
+    <!-- підключення Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="css/style.css">
+
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg bg-warning">
+      <div class="container-fluid justify-content-center">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <!-- Кнопка для вибору країни -->
+            <button id="selectCountryButton" class="btn btn-outline-success">
+              Select Country
+            </button>
+    
+            <!-- Контейнер для поля пошуку і списку країн -->
+            <div id="countrySelectContainer" class="d-none position-absolute bg-light p-3 shadow" style="z-index: 1000; width: 240px; top: 60px;">
+              <!-- Поле пошуку країни -->
+              <input id="countrySearchInput" class="form-control mb-2" type="text" placeholder="Search for a country">
+              <!-- Список країн -->
+              <select id="countrySelect" class="form-select" size="10" style="max-height: 300px; overflow-y: auto;">
+                <!-- Опції країн завантажуватимуться динамічно -->
+              </select>
+              <!-- Кнопка для закриття списку країн -->
+              <button id="closeCountrySelect" class="btn btn-outline-danger mt-2 w-100">Close</button>
+            </div>
+          </li>          
+        </ul>
+        <!-- Поле для відображення поточної країни, збереження ISO-коду -->
+        <span id="currentCountry" class="navbar-text fs-3 ms-3 text-success fw-bold text-uppercase p-0" data-country-iso=""></span>
+      </div>
+    </nav>
+
+    <!-- Map container -->
+    <div id="map"></div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="countryModalLabel">Country Information</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-striped">
+              <tr>
+                <td><i class="fas fa-flag"></i> Country Name:</td>
+                <td id="countryName"></td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-building"></i> Official Name:</td>
+                <td id="officialName"></td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-city"></i> Capital:</td>
+                <td id="capital"></td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-users"></i> Population:</td>
+                <td id="population"></td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-coins"></i> Currency:</td>
+                <td id="currency"></td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-flag"></i> Flag:</td>
+                <td id="flag"></td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-globe"></i> Region:</td>
+                <td id="region"></td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-language"></i> Languages:</td>
+                <td id="languages"></td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-chart-area"></i> Area:</td>
+                <td id="area"></td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-clock"></i> Timezones:</td>
+                <td id="timezones"></td>
+              </tr>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+
+    <!-- Leaflet EasyButton JS -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2.4.0/src/easy-button.js"></script>    
+    
+    <!-- Leaflet MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+  
+    <!-- Custom JS -->
+    <script type="module" src="js/scrpt.js"></script>
+  </body>
+
+</html>
+
+
+
+
+
+
+

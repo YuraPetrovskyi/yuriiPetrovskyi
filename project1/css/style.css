@@ -1,0 +1,17 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+
+
+nav {
+  height: 50px; /* Висота вашої навігаційної панелі */
+}
+
+#map {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  height: calc(100vh - 50px);  
+}
