@@ -93,10 +93,15 @@ const countryISO = document.getElementById('currentCountry').getAttribute('data-
 console.log('ISO код вибраної країни:', countryISO);
 
 // **************************************************** геолокація користувача **************************************
+
+L.easyButton('fa-location-arrow fa-lg', function(btn, map) {
+    map.locate({setView: true}); // Знаходимо місцезнаходження і переміщуємо на нього карту
+}).addTo(map);
+
 // Функція для роботи з геолокацією користувача
 map.locate({
     setView: true,
-    maxZoom: 16,
+    maxZoom: 6,
     watch: false, // Уникаємо оновлення координат постійно
     enableHighAccuracy: true
 });
@@ -107,13 +112,14 @@ map.on('locationfound', function(e) {
     var lon = e.latlng.lng;
     // Використаємо Reverse Geocoding для отримання країни користувача
     // `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}
-    
     setCountryByCoordinates(lat, lon)
 
     // Додаємо маркер на мапу для місцезнаходження
     L.marker(e.latlng).addTo(map)
         .bindPopup("You are here")
         .openPopup();
+    // Плавно переміщуємо мапу до місця
+    map.flyTo(e.latlng, 16);
 });
 
 map.on('locationerror', function(e) {
@@ -121,7 +127,7 @@ map.on('locationerror', function(e) {
 });
 
 
-// **************************************************** дадавання модалки Info  **************************************
+// **************************************************** кнопка для модалки Info  **************************************
 
 // Додаємо кнопку на карту для виклику модального вікна
 L.easyButton('fa-info fa-xl', function() {
@@ -130,7 +136,7 @@ L.easyButton('fa-info fa-xl', function() {
     countryModal.show();
 }).addTo(map);
 
-// **************************************************** відображення кордонів країн **************************************
+// **************************************************** кнопка Кордони всіх країн **************************************
 
 L.easyButton('fa-globe', function() {
     getdAllCountryBorders(map);  // Викликаємо функцію для завантаження/приховування кордонів
