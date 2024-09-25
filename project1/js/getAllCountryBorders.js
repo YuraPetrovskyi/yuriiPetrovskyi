@@ -1,12 +1,12 @@
 // loadAllCountryBorders.js
 
-let countryBordersLayer = null;
+// let countryBordersLayer = null;
 
-export function getdAllCountryBorders(map) {
-    if (countryBordersLayer) {
+export function getdAllCountryBorders(map, countryBorderLayerRef) {
+    if (countryBorderLayerRef.current) {
         // Якщо шар уже є на карті, видаляємо його (приховуємо кордони)
-        map.removeLayer(countryBordersLayer);
-        countryBordersLayer = null;
+        map.removeLayer(countryBorderLayerRef.current);
+        countryBorderLayerRef.current = null;
     } else {
         // Використовуємо PHP-файл для отримання GeoJSON даних кордонів
         fetch('php/getAllCountryBorders.php')
@@ -14,7 +14,7 @@ export function getdAllCountryBorders(map) {
             .then(data => {
                 console.log("Borders data: ", data);
                 // Додаємо країни як шар на карту
-                countryBordersLayer = L.geoJSON(data, {
+                countryBorderLayerRef.current = L.geoJSON(data, {
                     style: {
                         color: '#ff0000',  // Колір кордонів
                         weight: 2,         // Товщина лінії
