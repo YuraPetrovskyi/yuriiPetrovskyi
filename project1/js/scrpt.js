@@ -96,7 +96,7 @@ console.log('ISO код вибраної країни:', countryISO);
 
 L.easyButton('fa-location-arrow fa-lg', function(btn, map) {
     map.locate({setView: true}); // Знаходимо місцезнаходження і переміщуємо на нього карту
-}).addTo(map);
+}, 'locate-btn').addTo(map);
 
 // Функція для роботи з геолокацією користувача
 map.locate({
@@ -134,13 +134,13 @@ L.easyButton('fa-info fa-xl', function() {
     // Викликаємо функцію Bootstrap для відкриття модального вікна
     const countryModal = new bootstrap.Modal(document.getElementById('countryModal'));
     countryModal.show();
-}).addTo(map);
+}, 'info-btn').addTo(map);
 
 // **************************************************** кнопка Кордони всіх країн **************************************
 
 L.easyButton('fa-globe', function() {
     getdAllCountryBorders(map);  // Викликаємо функцію для завантаження/приховування кордонів
-}).addTo(map);
+}, 'border-btn').addTo(map);
 
 
 // **************************************************** Робота з DOM **************************************
@@ -153,8 +153,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // Викликаємо функцію при натисканні на кнопку  Info
-document.querySelector('.easy-button-button').addEventListener('click', function() {
-    // const countryName = document.getElementById('currentCountry').options[document.getElementById('countrySelect').selectedIndex].text;
+document.querySelector('[title="info-btn"]').addEventListener('click', function() {
     const countryName = document.getElementById('currentCountry').textContent;
     console.log('you choose country: ', countryName);    
     getCountryDetails(countryName);
