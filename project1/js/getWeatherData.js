@@ -25,12 +25,12 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
           });
 
           // Додаємо маркер з кастомною іконкою
-          const marker = L.marker([lat, lon], { icon: weatherIcon }).addTo(map);
+          const marker = L.marker([lat, lon], { icon: weatherIcon });
 
           marker.bindPopup(`<b>${locationName}</b><br>Temperature: ${temp}°C<br>Weather: ${weatherDescription}`);
           
           // Додаємо маркер до масиву для подальшого очищення
-          weatherMarkers.addLayer(marker);
+          console.log('weatherMarkers', weatherMarkers);
       })
       .catch(error => {
           console.error('Error fetching weather data:', error);
