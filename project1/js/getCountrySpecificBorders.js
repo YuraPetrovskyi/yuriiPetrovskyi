@@ -27,5 +27,3 @@ export function getCountrySpecificBorders(isoCode, map, countryBorderLayerRef) {
             alert('An error occurred while fetching country borders.');
         });
 }
-
-// commit test

@@ -6,12 +6,12 @@ import { getCountryBorders } from '../additionaly/getCountryBorders.js';
 import { toggleCountrySearch } from '../features/toggleCountrySearch.js';
 import { filterCountryNames } from '../features/filterCountryNames.js';
 
-import { getCountrySpecificBorders } from './getCountryBordersTwo.js';
+import { getCountrySpecificBorders } from './getCountrySpecificBorders.js';
 import { getCountryList } from './getCountryList.js';
 import { getCountryDetails } from './getCountryDetails.js';
 import { getdAllCountryBorders } from './getAllCountryBorders.js'; // Імпорт нової функції
 import { getCountryCities } from './getCountryCities.js';
-
+import { setCountryByCoordinates } from './setCountryByCoordinates.js';
 // Ініціалізація Leaflet карти
 // var map = L.map('map').setView([50, 30], 6);  // Центр на світі, масштаб 2
 var map = L.map('map').fitWorld();  // Автоматично масштабувати карту на весь світ
@@ -105,28 +105,10 @@ map.on('locationfound', function(e) {
     console.log("Location found: ", e.latlng);
     var lat = e.latlng.lat;
     var lon = e.latlng.lng;
-    console.log('start getCountryByCoordinates.php:');
-
     // Використаємо Reverse Geocoding для отримання країни користувача
     // `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}
-    fetch(`php/getCountryByCoordinates.php?lat=${lat}&lon=${lon}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Country data from getCountryByCoordinates.php:', data);
-            const userCountry = data.address.country;
-            const userCountryISO = data.address.country_code.toUpperCase();
-            console.log(`Ваша країна: ${userCountry} (${userCountryISO})`);
-
-            // Відображаємо країну користувача в новому контейнері навігаційної панелі
-            document.getElementById('currentCountry').textContent = `${userCountry}`;
-            document.getElementById('currentCountry').setAttribute('data-country-iso', userCountryISO); // Зберігаємо ISO-код
-            // Виконуємо запити для відображення даних і кордонів країни
-            // fetchCountryData(userCountry, userCountryISO, map, countryBorderLayerRef);
-            // getCountryBorders(userCountryISO, map, countryBorderLayerRef);
-        })
-        .catch(error => {
-            console.error('Error fetching country by coordinates:', error);
-        });
+    
+    setCountryByCoordinates(lat, lon)
 
     // Додаємо маркер на мапу для місцезнаходження
     L.marker(e.latlng).addTo(map)
