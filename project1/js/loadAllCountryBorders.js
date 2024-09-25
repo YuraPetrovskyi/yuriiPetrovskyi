@@ -24,6 +24,16 @@ export function loadAllCountryBorders(map) {
                     onEachFeature: function (feature, layer) {
                         // Додаємо попап з назвою країни при натисканні
                         layer.bindPopup(`<b>${feature.properties.ADMIN}</b>`);
+                        // Додаємо обробник події на клік для оновлення назви країни в <span>
+                        layer.on('click', function () {
+                            const countryName = feature.properties.ADMIN;
+                            const isoCode = feature.properties.ISO_A2;  // ISO код країни
+
+                            // Оновлюємо елемент <span> з поточною країною
+                            const currentCountryElement = document.getElementById('currentCountry');
+                            currentCountryElement.textContent = countryName;
+                            currentCountryElement.setAttribute('data-country-iso', isoCode);
+                        });
                     }
                 }).addTo(map);
 

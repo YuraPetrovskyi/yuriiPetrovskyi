@@ -103,7 +103,7 @@ document.getElementById('countrySelect').addEventListener('change', function() {
     currentCountryElement.setAttribute('data-country-iso', isoCode); // Зберігаємо ISO-код
     
     // Тепер можна робити запити для відображення даних і кордонів вибраної країни
-    fetchCountryData(countryName, isoCode, map, markerRef);
+    // fetchCountryData(countryName, isoCode, map, markerRef);
     // getCountryBorders(isoCode, map, countryBorderLayerRef);
     getCountryBordersTwo(isoCode, map, countryBorderLayerRef);
 
