@@ -176,25 +176,60 @@ L.easyButton('fa-globe', function() {
 
 
 // **************************************************** кнопка Погода **************************************
-
-// Додаємо кнопку для показу погоди на карту
+// Додаємо кнопку для показу погоди на карту (в межах поточної області)
 L.easyButton('fa-cloud', function () {
-    // const isoCode = document.getElementById('countrySelect').value; // Отримуємо ISO-код країни
-    const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
-    console.log('isoCode: ', isoCode);
-
     // Очищуємо кластерну групу погоди перед додаванням нових маркерів
     weatherMarkers.clearLayers();
-    
-    getCountryCities(isoCode).then(cities => {
-        cities.forEach(city => {            
-            getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);
+
+    // Отримуємо межі поточної видимої частини карти
+    const bounds = map.getBounds();
+    const ne = bounds.getNorthEast();  // Північно-східна точка
+    const sw = bounds.getSouthWest();  // Південно-західна точка
+
+    // Формуємо bbox (межі області)
+    const bbox = `${sw.lng},${sw.lat},${ne.lng},${ne.lat},10`;  // bbox формат: ліво, низ, право, верх
+    console.log('bbox', bbox);
+    // Робимо запит на отримання погоди для міст у цій області через PHP
+    fetch(`php/getWeatherByBbox.php?bbox=${bbox}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Weather data in bbox: ", data);
+            // Для кожного міста додаємо погоду на мапу
+            data.list.forEach(city => {
+                const lat = city.coord.Lat;
+                const lon = city.coord.Lon;
+                const name = city.name;
+                console.log('lat', lat);
+                console.log('lon', lon);
+                console.log('name', name);
+                // Отримуємо погоду для кожного міста і додаємо маркер на мапу
+                getWeatherData(lat, lon, name, map, weatherMarkers);
+            });
         })
-    }) // Отримуємо найбільші міста та показуємо погоду
-    
+        .catch(error => {
+            console.error('Error fetching weather data in bbox:', error);
+        });
 }).addTo(map);
-// Додаємо кластерну групу до карти
 map.addLayer(weatherMarkers);
+
+// Додаємо кнопку для показу погоди на карту
+// L.easyButton('fa-cloud', function () {
+//     // const isoCode = document.getElementById('countrySelect').value; // Отримуємо ISO-код країни
+//     const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
+//     console.log('isoCode: ', isoCode);
+
+//     // Очищуємо кластерну групу погоди перед додаванням нових маркерів
+//     weatherMarkers.clearLayers();
+    
+//     getCountryCities(isoCode).then(cities => {
+//         cities.forEach(city => {            
+//             getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);
+//         })
+//     }) // Отримуємо найбільші міста та показуємо погоду
+    
+// }).addTo(map);
+// // Додаємо кластерну групу до карти
+// map.addLayer(weatherMarkers);
 
 // **************************************************** Функції **************************************
 

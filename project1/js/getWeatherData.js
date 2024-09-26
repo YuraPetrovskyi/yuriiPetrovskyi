@@ -12,6 +12,7 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
             const windDirection = data.wind.deg;
             const country = data.sys.country;
             const iconCode = data.weather[0].icon;
+            const weatherDescription = data.weather[0].description;
 
             // URL для іконки погоди
             const iconUrl = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
@@ -29,6 +30,7 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
                         <tr><td class="city-param-name">Pressure</td><td class="city-param">${pressure} hPa</td></tr>
                         <tr><td class="city-param-name">Wind Speed</td><td class="city-param">${windSpeed} m/s</td></tr>
                         <tr><td class="city-param-name">Wind Direction</td><td class="city-param">${windDirection}°</td></tr>
+                        <tr><td class="city-param-name">Wather</td><td class="city-param">${weatherDescription}</td></tr>
                     </tbody>
                     </table>
                 </div>
