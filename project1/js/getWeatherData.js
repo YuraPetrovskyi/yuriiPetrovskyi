@@ -14,6 +14,10 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
             const iconCode = data.weather[0].icon;
             const weatherDescription = data.weather[0].description;
 
+            if (locationName === 'none') {
+                locationName = data.name;
+            }
+
             // URL для іконки погоди
             const iconUrl = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
 
@@ -57,7 +61,7 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
             // Додаємо маркер до кластерної групи
             weatherMarkers.addLayer(marker);
             // Додаємо маркер до масиву для подальшого очищення
-            console.log('weatherMarkers', weatherMarkers);
+            // console.log('weatherMarkers', weatherMarkers);
         })
         .catch(error => {
             console.error('Error fetching weather data:', error);

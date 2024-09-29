@@ -1,4 +1,6 @@
 <?php
+// getWeather.php
+
 // Увімкнення відображення помилок для діагностики
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -27,7 +29,7 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
     $apiKey = $_ENV['OPENWEATHER_API_KEY'];
 
     $url = "https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric";
-    
+
     // Використання cURL
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);

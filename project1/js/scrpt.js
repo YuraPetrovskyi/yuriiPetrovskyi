@@ -14,6 +14,7 @@ import { getCountryCities } from './getCountryCities.js';
 import { setCountryByCoordinates } from './setCountryByCoordinates.js';
 
 import { getWeatherData } from './getWeatherData.js';
+import { getCityByBounds } from './getCityByBounds.js';
 // Ініціалізація Leaflet карти
 // var map = L.map('map').setView([50, 30], 6);  // Центр на світі, масштаб 2
 var map = L.map('map').fitWorld();  // Автоматично масштабувати карту на весь світ
@@ -107,7 +108,8 @@ const countryISO = document.getElementById('currentCountry').getAttribute('data-
 console.log('ISO код вибраної країни:', countryISO);
 
 // **************************************************** геолокація користувача **************************************
-
+var myLon;
+var myLat;
 L.easyButton('fa-location-arrow fa-lg', function(btn, map) {
     map.locate({setView: true}); // Знаходимо місцезнаходження і переміщуємо на нього карту
 }, 'locate-btn').addTo(map);
@@ -124,6 +126,8 @@ map.on('locationfound', function(e) {
     console.log("Location found: ", e.latlng);
     var lat = e.latlng.lat;
     var lon = e.latlng.lng;
+    myLat = e.latlng.lat;
+    myLon = e.latlng.lng;
     // Використаємо Reverse Geocoding для отримання країни користувача
     // `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}
     setCountryByCoordinates(lat, lon)
@@ -138,7 +142,7 @@ map.on('locationfound', function(e) {
         .bindPopup("You are here")
         .openPopup();
     // Плавно переміщуємо мапу до місця
-    map.flyTo(e.latlng, 16);
+    map.flyTo(e.latlng, 14);
 });
 
 map.on('locationerror', function(e) {
@@ -176,60 +180,183 @@ L.easyButton('fa-globe', function() {
 
 
 // **************************************************** кнопка Погода **************************************
+L.easyButton('fa-cloud', function () {
+    weatherMarkers.clearLayers();
+
+    const bounds = map.getBounds(); // Отримуємо межі карти (bounding box)
+    const north = bounds.getNorth();
+    const south = bounds.getSouth();
+    const east = bounds.getEast();
+    const west = bounds.getWest();
+
+    const zoomLevel = map.getZoom(); // Отримуємо поточний рівень масштабу
+    console.log("zoomLevel:", zoomLevel);
+    if (zoomLevel > 14) {
+        // map.setZoom(zoomLevel - 3);
+        const center = bounds.getCenter(); // Центр карти
+        console.log(center)
+        getWeatherData(center.lat, center.lng, 'none', map, weatherMarkers);
+
+        // function createGrid(bounds) {
+            //     const center = bounds.getCenter(); // Центр карти
+            //     const radiusLat = (bounds.getNorthEast().lat - bounds.getSouthWest().lat) / 2; // Половина висоти карти
+            //     const radiusLng = (bounds.getNorthEast().lng - bounds.getSouthWest().lng) / 2; // Половина ширини карти
+                
+            //     // Формуємо набір точок: центр та 4 точки по піврадіусу навколо центру
+            //     const points = [
+            //         { lat: center.lat, lng: center.lng }, // Центр карти
+            //         { lat: center.lat, lng: center.lng - radiusLng }, // Зліва від центру
+            //         { lat: center.lat, lng: center.lng + radiusLng }, // Справа від центру
+            //         { lat: center.lat + radiusLat, lng: center.lng }, // Зверху від центру
+            //         { lat: center.lat - radiusLat, lng: center.lng }, // Знизу від центру
+            //     ];
+    }
+
+    // if (zoomLevel > 14 ) {
+    //     getWeatherData(myLat, myLon, 'Somewhere', map, weatherMarkers);        
+    // }
+    if (zoomLevel <= 14 && zoomLevel > 10) {
+        console.log("zoomLevel:", zoomLevel);
+
+        getCityByBounds(north, south, east, west).then(cities => {
+            console.log("cities ", cities)
+            cities.geonames.forEach(city => {
+                getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);        
+            });
+        })
+    }
+    if (zoomLevel <= 10 && zoomLevel > 6) {
+        getCityByBounds(north, south, east, west).then(cities => {
+            console.log("cities ", cities)            
+            cities.geonames.forEach(city => {
+                // if (city.population > 10000) {
+                //     getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);        
+                // }
+                if (city.fcode === "PPLA2") {
+                    getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);        
+                }
+            });
+        })
+    }
+
+}).addTo(map);
+
 // Додаємо кнопку для показу погоди на карту (в межах поточної області)
 L.easyButton('fa-cloud', function () {
     // Очищуємо кластерну групу погоди перед додаванням нових маркерів
     weatherMarkers.clearLayers();
+    getWeatherData(myLat, myLon, 'Yura', map, weatherMarkers);
 
-    // Отримуємо межі поточної видимої частини карти
-    const bounds = map.getBounds();
-    const ne = bounds.getNorthEast();  // Північно-східна точка
-    const sw = bounds.getSouthWest();  // Південно-західна точка
+    // const zoomLevel = map.getZoom(); // Отримуємо поточний рівень масштабу
+    // console.log("zoomLevel:", zoomLevel);
+    // const bounds = map.getBounds();  // Отримуємо межі видимої області карти    
+    // const ne = bounds.getNorthEast();  // Північно-східна точка
+    // const sw = bounds.getSouthWest();  // Південно-західна точка
+
+    //  // Визначаємо кількість метеостанцій в залежності від масштабу
+    // //  let weatherCount = zoomLevel > 10 ? 10 : 5;  // Наприклад, більше станцій при збільшеному масштабі
+    // let weatherCount = 10;  // Наприклад, більше станцій при збільшеному масштабі
+
+    // console.log("weatherCount:", weatherCount);
+
+    // const bbox = `${bounds.getSouthWest().lng},${bounds.getSouthWest().lat},${bounds.getNorthEast().lng},${bounds.getNorthEast().lat},${weatherCount}`;
+    // console.log("Current bbox:", bbox);
+    
+    // // const gridPoints = createGrid(bounds, 0.1);
+    // const gridPoints = createGrid(bounds); // Отримуємо точки сітки
+    // console.log("gridPoints", gridPoints)
+
+    // gridPoints.forEach(point => {
+    //     fetch(`php/getWeather.php?lat=${point.lat}&lon=${point.lon}`)
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             console.log("data: ", data)
+    //             getWeatherData(point.lat, point.lon, data.name, map, weatherMarkers);
+    //         })
+    //         .catch(error => {
+    //             console.error('Error fetching weather:', error);
+    //         });
+    // });
+
+
+    // fetch(`php/getWeatherByBbox.php?bbox=${bbox}&count=${weatherCount}`)
+    // fetch(`php/getWeatherByBbox.php?bbox=${bbox}`)
+    // .then(response => response.json())
+    // .then(data => {
+    //     console.log("Weather data in bbox: ", data);
+    //     console.log("Weather data in length: ", data.length);
+    //     if (data) {
+    //         console.log('data is presenting!!')
+    //         if (data.length === 0) {
+    //             map.setZoom(zoomLevel - 2);
+    //             alert("No weather stations found. Zooming out to get broader results.");
+    //         } else if (data.list.length > 0) {
+    //             data.list.forEach(city => {
+    //                 const lat = city.coord.Lat;
+    //                 const lon = city.coord.Lon;
+    //                 const name = city.name;
+    //                 console.log('lat', lat);
+    //                 console.log('lon', lon);
+    //                 console.log('name', name);
+    //                 // Додаємо погоду на карту
+    //                 getWeatherData(lat, lon, name, map, weatherMarkers);
+    //             });
+    //         }
+    //     }
+    // })
+    // .catch(error => {
+    //     console.error('Error fetching weather data:', error);
+    // });
+
+
+
 
     // Формуємо bbox (межі області)
-    const bbox = `${sw.lng},${sw.lat},${ne.lng},${ne.lat},10`;  // bbox формат: ліво, низ, право, верх
-    console.log('bbox', bbox);
+    // const bbox = `${sw.lng},${sw.lat},${ne.lng},${ne.lat},10`;  // bbox формат: ліво, низ, право, верх
+    // console.log("Current bbox:", bbox);
+
     // Робимо запит на отримання погоди для міст у цій області через PHP
-    fetch(`php/getWeatherByBbox.php?bbox=${bbox}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Weather data in bbox: ", data);
-            // Для кожного міста додаємо погоду на мапу
-            data.list.forEach(city => {
-                const lat = city.coord.Lat;
-                const lon = city.coord.Lon;
-                const name = city.name;
-                console.log('lat', lat);
-                console.log('lon', lon);
-                console.log('name', name);
-                // Отримуємо погоду для кожного міста і додаємо маркер на мапу
-                getWeatherData(lat, lon, name, map, weatherMarkers);
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching weather data in bbox:', error);
-        });
+    // fetch(`php/getWeatherByBbox.php?bbox=${bbox}`)
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         console.log("Weather data in bbox: ", data);
+    //         // Для кожного міста додаємо погоду на мапу
+    //         data.list.forEach(city => {
+    //             const lat = city.coord.Lat;
+    //             const lon = city.coord.Lon;
+    //             const name = city.name;
+    //             console.log('lat', lat);
+    //             console.log('lon', lon);
+    //             console.log('name', name);
+    //             // Отримуємо погоду для кожного міста і додаємо маркер на мапу
+    //             getWeatherData(lat, lon, name, map, weatherMarkers);
+    //         });
+    //     })
+    //     .catch(error => {
+    //         console.error('Error fetching weather data in bbox:', error);
+    //     });
+
 }).addTo(map);
 map.addLayer(weatherMarkers);
 
 // Додаємо кнопку для показу погоди на карту
-// L.easyButton('fa-cloud', function () {
-//     // const isoCode = document.getElementById('countrySelect').value; // Отримуємо ISO-код країни
-//     const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
-//     console.log('isoCode: ', isoCode);
+L.easyButton('fa-cloud', function () {
+    // const isoCode = document.getElementById('countrySelect').value; // Отримуємо ISO-код країни
+    const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
+    console.log('isoCode: ', isoCode);
 
-//     // Очищуємо кластерну групу погоди перед додаванням нових маркерів
-//     weatherMarkers.clearLayers();
+    // Очищуємо кластерну групу погоди перед додаванням нових маркерів
+    weatherMarkers.clearLayers();
     
-//     getCountryCities(isoCode).then(cities => {
-//         cities.forEach(city => {            
-//             getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);
-//         })
-//     }) // Отримуємо найбільші міста та показуємо погоду
+    getCountryCities(isoCode).then(cities => {
+        cities.forEach(city => {            
+            getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);
+        })
+    }) // Отримуємо найбільші міста та показуємо погоду
     
-// }).addTo(map);
-// // Додаємо кластерну групу до карти
-// map.addLayer(weatherMarkers);
+}).addTo(map);
+// Додаємо кластерну групу до карти
+map.addLayer(weatherMarkers);
 
 // **************************************************** Функції **************************************
 
@@ -247,3 +374,33 @@ map.addLayer(weatherMarkers);
 //     map.setView([20, 0], 2);
 // }
 
+// function createGrid(bounds, step) {
+//     const sw = bounds.getSouthWest();
+//     const ne = bounds.getNorthEast();
+//     const grid = [];
+    
+//     // Створюємо сітку в межах видимої області карти
+//     for (let lat = sw.lat; lat < ne.lat; lat += step) {
+//         for (let lon = sw.lng; lon < ne.lng; lon += step) {
+//             grid.push({ lat, lon });
+//         }
+//     }
+    
+//     return grid;
+// }
+// function createGrid(bounds) {
+//     const center = bounds.getCenter(); // Центр карти
+//     const radiusLat = (bounds.getNorthEast().lat - bounds.getSouthWest().lat) / 2; // Половина висоти карти
+//     const radiusLng = (bounds.getNorthEast().lng - bounds.getSouthWest().lng) / 2; // Половина ширини карти
+    
+//     // Формуємо набір точок: центр та 4 точки по піврадіусу навколо центру
+//     const points = [
+//         { lat: center.lat, lng: center.lng }, // Центр карти
+//         { lat: center.lat, lng: center.lng - radiusLng }, // Зліва від центру
+//         { lat: center.lat, lng: center.lng + radiusLng }, // Справа від центру
+//         { lat: center.lat + radiusLat, lng: center.lng }, // Зверху від центру
+//         { lat: center.lat - radiusLat, lng: center.lng }, // Знизу від центру
+//     ];
+    
+//     return points;
+// }
