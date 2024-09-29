@@ -3,7 +3,7 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
     fetch(`php/getWeather.php?lat=${lat}&lon=${lon}`)
         .then(response => response.json())
         .then(data => {
-            console.log('weather data: ', data);
+            // console.log('weather data: ', data);
             const temp = data.main.temp;
             const clouds = data.clouds.all;
             const humidity = data.main.humidity;
@@ -44,9 +44,9 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
             const weatherIcon = L.divIcon({
                 className: '',  // Не потрібно окремого класу
                 html: `
-                    <div class="text-center p-1  rounded shadow-sm">
-                        <img src="${iconUrl}" class="img-fluid" alt="Weather icon" style="width: 50px; height: 50px;" />
-                        <div class="fw-bold text-primary">${temp}°C</div>
+                    <div class=" bg-gradient-primarytext-center p-1  rounded shadow-sm">
+                        <img src="${iconUrl}" class="img-fluid" alt="Weather icon" style="width: 70px; height: 70px;" />
+                        <div class="fw-bold text-primary fs-5">${temp}°C</div>
                     </div>
                 `,
                 iconSize: [60, 60], // Загальний розмір іконки

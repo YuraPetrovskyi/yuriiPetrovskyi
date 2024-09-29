@@ -5,7 +5,9 @@
 $isoCode = $_GET['iso'] ?? '';
 $username = 'yuriipetrovskyi';
 // $url = "http://api.geonames.org/searchJSON?country=$isoCode&featureCode=PPL&maxRows=20&orderby=population&username=$username";
-$url = "http://api.geonames.org/searchJSON?country=$isoCode&featureCode=ADM1&maxRows=50&orderby=population&username=$username";
+// $url = "http://api.geonames.org/searchJSON?country=$isoCode&featureCode=ADM1&maxRows=50&orderby=population&username=$username";
+$url = "http://api.geonames.org/searchJSON?country=$isoCode&fcode=RGN&maxRows=100&orderby=population&username=$username";
+
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
