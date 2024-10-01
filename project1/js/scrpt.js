@@ -15,6 +15,8 @@ import { setCountryByCoordinates } from './setCountryByCoordinates.js';
 
 import { getWeatherData } from './getWeatherData.js';
 import { getCityByBounds } from './getCityByBounds.js';
+
+import { showCurrencyModal } from './showCurrencyModal .js';
 // Ініціалізація Leaflet карти
 // var map = L.map('map').setView([50, 30], 6);  // Центр на світі, масштаб 2
 var map = L.map('map').fitWorld();  // Автоматично масштабувати карту на весь світ
@@ -25,6 +27,8 @@ var countryBorderLayerRef = { current: null }; // Для відстеження 
 var myLocationMarcker = { current: null }; // Для відстеження користувача
 // Кластерна група для маркерів погоди
 var weatherMarkers = L.markerClusterGroup();
+
+// var currencyCode = '';
 
 // **************************************************** слої карт **************************************
 
@@ -95,10 +99,12 @@ document.getElementById('countrySelect').addEventListener('change', function() {
 
     const countryName = this.options[this.selectedIndex].text;
     const isoCode = this.value;
+
     console.log(countryName, '---', isoCode);
     const currentCountryElement = document.getElementById('currentCountry');
     currentCountryElement.textContent = countryName; // Відображаємо назву країни
-    currentCountryElement.setAttribute('data-country-iso', isoCode); // Зберігаємо ISO-код    
+    currentCountryElement.setAttribute('data-country-iso', isoCode); // Зберігаємо ISO-код  
+
     getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
 
 });
@@ -130,7 +136,8 @@ map.on('locationfound', function(e) {
     myLon = e.latlng.lng;
     // Використаємо Reverse Geocoding для отримання країни користувача
     // `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}
-    setCountryByCoordinates(lat, lon)
+    setCountryByCoordinates(lat, lon);
+    getCountryDetails(isoCode);
     console.log('myLocationMarcker', myLocationMarcker);
     
     if (myLocationMarcker.current) {
@@ -152,6 +159,14 @@ map.on('locationerror', function(e) {
 
 // **************************************************** кнопка для модалки Info  **************************************
 
+// // Функція для оновлення інформації про країну, коли змінюється `currentCountry`
+// document.getElementById('currentCountry').addEventListener('change', function () {
+//     const isoCode = this.getAttribute('data-country-iso');
+//     if (isoCode) {
+//         getCountryDetails(isoCode);
+//     }
+// });
+
 // Додаємо кнопку на карту для виклику модального вікна
 L.easyButton('fa-info fa-xl', function() {
     // Викликаємо функцію Bootstrap для відкриття модального вікна
@@ -166,9 +181,9 @@ document.querySelector('[title="info-btn"]').addEventListener('click', function(
 
     console.log('you choose country: ', countryName);
     console.log('you choose country: ', isoCode);    
-
     // getCountryDetails(countryName);
     getCountryDetails(isoCode);
+
 
 });
 
@@ -226,6 +241,22 @@ L.easyButton('fa-cloud', function () {
 
 }).addTo(map);
 map.addLayer(weatherMarkers);
+
+// **************************************************** кнопка Валюти **************************************
+
+L.easyButton('fa-money-bill', function() {
+    // Приклад: завантажуємо інформацію для вибраної країни та її валюти
+    const countryName = document.getElementById('currentCountry').textContent;
+    const currencyCode = document.getElementById('currentCountry').getAttribute('data-curency-code');
+
+    // const currencyCode = 'GBP'; // Приклад коду валюти
+    console.log('countryName', countryName)
+    console.log('currencyCode', currencyCode)
+    
+    // document.getElementById('currencyModalLabel').textContent = `${countryName}`;
+
+    showCurrencyModal(currencyCode);
+}, 'currency-btn').addTo(map);
 
 
 // **************************************************** Функції **************************************
