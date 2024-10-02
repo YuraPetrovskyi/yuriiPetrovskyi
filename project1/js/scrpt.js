@@ -120,8 +120,6 @@ const countryISO = document.getElementById('currentCountry').getAttribute('data-
 console.log('ISO код вибраної країни:', countryISO);
 
 // **************************************************** геолокація користувача **************************************
-var myLon;
-var myLat;
 L.easyButton('fa-location-arrow fa-lg', function(btn, map) {
     map.locate({setView: true}); // Знаходимо місцезнаходження і переміщуємо на нього карту
 }, 'locate-btn').addTo(map);
@@ -138,8 +136,6 @@ map.on('locationfound', function(e) {
     console.log("Location found: ", e.latlng);
     var lat = e.latlng.lat;
     var lon = e.latlng.lng;
-    myLat = e.latlng.lat;
-    myLon = e.latlng.lng;
     // Використаємо Reverse Geocoding для отримання країни користувача
     // `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}
     getCountryByCoordinates(lat, lon).then(data => {
@@ -274,17 +270,206 @@ L.easyButton('fa-money-bill', function() {
 
 
 // **************************************************** кнопка Historycal pleaces **************************************
+{/* <a href="https://www.flaticon.com/free-icons/maps-and-location" title="maps and location icons">Maps and location icons created by Ains - Flaticon</a> */}
+{/* <a href="https://www.flaticon.com/free-icons/maps-and-location" title="maps and location icons">Maps and location icons created by Ains - Flaticon</a> */}
+// Створюємо кастомні іконки для різних типів місць
+const castleIcon = L.icon({
+    iconUrl: 'images/castles.png',
+    iconSize: [32, 32], // розміри іконки
+    iconAnchor: [16, 32], // точка, де іконка прикріплена до карти
+    popupAnchor: [0, -30] // точка, де з'являється попап відносно іконки
+});
 
+const monumentIcon = L.icon({
+    iconUrl: 'images/monuments.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const museumIcon = L.icon({
+    iconUrl: 'images/museums.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const cityIcon = L.icon({
+    iconUrl: 'images/city.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const rivertIcon = L.icon({
+    iconUrl: 'images/river.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const waterbodyIcon = L.icon({
+    iconUrl: 'images/waterfall.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const mountainIcon = L.icon({
+    iconUrl: 'images/mountain.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const bridgeIcon = L.icon({
+    iconUrl: 'images/bridge.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const lodgeIcon = L.icon({
+    iconUrl: 'images/lodge.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const chapelIcon = L.icon({
+    iconUrl: 'images/chapel.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const golfIcon = L.icon({
+    iconUrl: 'images/golf.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const trailIcon = L.icon({
+    iconUrl: 'images/trail.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const airportIcon = L.icon({
+    iconUrl: 'images/airport.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const schoolIcon = L.icon({
+    iconUrl: 'images/school.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const roadIcon = L.icon({
+    iconUrl: 'images/road.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+const parkIcon = L.icon({
+    iconUrl: 'images/park.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+});
+
+// Функція для визначення іконки за типом місця
+function getIconByType(feature, title) {
+    // Спочатку перевіряємо feature
+    switch (feature) {
+        case 'city':
+            return cityIcon;
+        case 'river':
+            return rivertIcon;
+        case 'waterbody':
+            return waterbodyIcon;
+        case 'mountain':
+            return mountainIcon;
+        default:
+            break; // Якщо feature не підходить, перевіряємо title
+    }
+
+    // Якщо feature не відповідає, перевіряємо title на ключові слова
+    const lowerTitle = title.toLowerCase(); // Перетворюємо назву на нижній регістр для зручності порівняння
+    // const lowerTitle = title;
+    // console.log('lowerTitle', lowerTitle);
+
+    if (lowerTitle.includes('castle')) {
+        return castleIcon;
+    } else if (lowerTitle.includes('museum')) {
+        return museumIcon;
+    } else if (lowerTitle.includes('city')) {
+        return cityIcon;
+    } else if (lowerTitle.includes('river')) {
+        return rivertIcon;
+    } else if (lowerTitle.includes('trail')) {
+        return trailIcon; 
+    } else if (lowerTitle.includes('school')) {
+        return schoolIcon; 
+    } else if (lowerTitle.includes('airport')) {
+        return airportIcon;
+    } else if (lowerTitle.includes('lodge')) {
+        return lodgeIcon;
+    } else if (lowerTitle.includes('road')) {
+        return roadIcon;
+    } else if (lowerTitle.includes('bridge')) {
+        return bridgeIcon;
+    } else if (lowerTitle.includes('park')) {
+        return parkIcon;
+    } else if (lowerTitle.includes('house')) {
+        return lodgeIcon;} 
+    else if (lowerTitle.includes('golf')) {
+        return golfIcon;
+    } else if (lowerTitle.includes('chapel') || lowerTitle.includes('kirk') || lowerTitle.includes('churches')) {
+        return chapelIcon;
+    } else {
+        // Базова іконка для інших типів
+        return L.icon({
+            iconUrl: 'images/default.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -30]
+        });
+    }
+}
+
+// var historicalMarkers = L.layerGroup();
+var historicalMarkersCluster = L.markerClusterGroup({
+    maxClusterRadius: 20
+});
 L.easyButton('fa-landmark', function() {
+    map.setZoom(11);
+    const zoomLevel = map.getZoom(); // Отримуємо поточний рівень масштабу
+    console.log("zoomLevel:", zoomLevel);
+    historicalMarkersCluster.clearLayers(); // Очистити попередні маркери
+
     const bounds = map.getBounds(); // отримуємо межі карти
     const center = bounds.getCenter(); // центр карти
 
     getHistoricalPlaces(center.lat, center.lng).then(places => {
         places.forEach(place => {
-        const marker = L.marker([place.lat, place.lng])
-            .addTo(map)
-            .bindPopup(`<b>${place.title}</b><br>${place.summary}<br><a href="https://${place.wikipediaUrl}" target="_blank">Read more</a>`);
+            // Визначаємо іконку для кожного місця
+            const icon = getIconByType(place.feature, place.title);
+            const marker = L.marker([place.lat, place.lng], { icon: icon })
+                .bindPopup(`<b>${place.title}</b><br>${place.summary}<br><a href="https://${place.wikipediaUrl}" target="_blank">Read more</a>`);
+            // Додаємо маркер до кластерної групи
+            historicalMarkersCluster.addLayer(marker);
         });
+        // historicalMarkers.addTo(map); // Додаємо групу маркерів на карту
+        map.addLayer(historicalMarkersCluster); // Додаємо групу маркерів на карту
+
     });
 }, 'tourist-btn').addTo(map);
 

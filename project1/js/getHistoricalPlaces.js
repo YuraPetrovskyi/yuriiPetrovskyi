@@ -1,3 +1,5 @@
+// getHistoricalPlaces.js
+
 export function getHistoricalPlaces(lat, lng) {
   return fetch(`php/getHistoricalPlaces.php?lat=${lat}&lng=${lng}`)
       .then(response => response.json())
