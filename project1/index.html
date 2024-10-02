@@ -61,63 +61,77 @@
     <div id="map"></div>
 
     <!-- Modal -->
-    <div class="modal fade" id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel" aria-hidden="true">
+    <div class="modal fade text-success" id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="countryModalLabel">Country Information</h5>
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title text-uppercase fw-bold" id="countryModalLabel">Country Information</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <table class="table table-striped">
-              <tr>
-                <td><i class="fas fa-flag"></i> Country Name:</td>
-                <td id="countryName"></td>
-              </tr>
-              <tr>
-                <td><i class="fas fa-building"></i> Official Name:</td>
-                <td id="officialName"></td>
-              </tr>
-              <tr>
-                <td><i class="fas fa-city"></i> Capital:</td>
-                <td id="capital"></td>
-              </tr>
-              <tr>
-                <td><i class="fas fa-users"></i> Population:</td>
-                <td id="population"></td>
-              </tr>
-              <tr>
-                <td><i class="fas fa-coins"></i> Currency:</td>
-                <td id="currency"></td>
-              </tr>
-              <tr>
-                <td><i class="fas fa-flag"></i> Flag:</td>
-                <td id="flag"></td>
-              </tr>
-              <tr>
-                <td><i class="fas fa-globe"></i> Region:</td>
-                <td id="region"></td>
-              </tr>
-              <tr>
-                <td><i class="fas fa-language"></i> Languages:</td>
-                <td id="languages"></td>
-              </tr>
-              <tr>
-                <td><i class="fas fa-chart-area"></i> Area:</td>
-                <td id="area"></td>
-              </tr>
-              <tr>
-                <td><i class="fas fa-clock"></i> Timezones:</td>
-                <td id="timezones"></td>
-              </tr>
+              
+              <tbody class="align-middle">
+                <tr>
+                  <td class="text-center"><i class="fas fa-flag"></i></td>
+                  <td>Country Name</td>
+                  <td id="countryName"></td>
+                </tr>
+                <tr>
+                  <td class="text-center"><i class="fas fa-building"></i></td>
+                  <td>Official Name</td>
+                  <td id="officialName"></td>
+                </tr>
+                <tr>
+                  <td class="text-center"><i class="fas fa-city"></i></td>
+                  <td>Capital</td>
+                  <td id="capital"></td>
+                </tr>
+                <tr>
+                  <td class="text-center"><i class="fas fa-users"></i></td>
+                  <td>Population</td>
+                  <td id="population"></td>
+                </tr>
+                <tr>
+                  <td class="text-center"><i class="fas fa-coins"></i></td>
+                  <td>Currency</td>
+                  <td id="currency"></td>
+                </tr>
+                <tr>
+                  <td class="text-center"><i class="fas fa-flag"></i></td>
+                  <td>Flag</td>
+                  <td id="flag"></td>
+                </tr>
+                <tr>
+                  <td class="text-center"><i class="fas fa-globe"></i></td>
+                  <td>Region</td>
+                  <td id="region"></td>
+                </tr>
+                <tr>
+                  <td class="text-center"><i class="fas fa-language"></i></td>
+                  <td>Languages</td>
+                  <td id="languages"></td>
+                </tr>
+                <tr>
+                  <td class="text-center"><i class="fas fa-chart-area"></i></td>
+                  <td>Area</td>
+                  <td id="area"></td>
+                </tr>
+                <tr>
+                  <td class="text-center"><i class="fas fa-clock"></i></td>
+                  <td>Timezones</td>
+                  <td id="timezones"></td>
+                </tr>
+              </tbody>
             </table>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <div class="modal-footer bg-warning">
+            <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
+
 
     <!-- Modal Currency -->
     <div class="modal fade text-success" id="currencyModal" tabindex="-1" aria-labelledby="currencyModalLabel" aria-hidden="true">
@@ -151,7 +165,7 @@
                   <th>Rate</th>
                 </tr>
               </thead>
-              <tbody id="currencyRatesTable">
+              <tbody class="align-middle" id="currencyRatesTable">
                 <tr>
                   <td>United States dollar -USD</td>
                   <td class="text-center">$</td>
@@ -163,7 +177,7 @@
                   <th class="text-center w-100">Your Currency</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="align-middle">
                 <tr>
                   <td id="currentCurrencyName"></td>
                   <td class="text-center" id="curenCurrencySymbol"></td>
@@ -177,7 +191,7 @@
                 </tr>
               </thead>
 
-              <tbody id="currencyRatesTable">
+              <tbody class="align-middle" id="currencyRatesTable">
                 <tr>
                   <td>Euro - EUR</td>
                   <td class="text-center">€</td>
@@ -211,8 +225,8 @@
               </tbody>
             </table>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <div class="modal-footer bg-warning">
+            <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>

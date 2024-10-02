@@ -24,13 +24,13 @@ export function setCountryInform(isoCode) {
         document.getElementById('countryName').textContent = country.name.common;
         document.getElementById('officialName').textContent = country.name.official;
         document.getElementById('capital').textContent = country.capital[0];
-        document.getElementById('population').textContent = country.population.toLocaleString();
+        document.getElementById('population').textContent = `${(country.population / 1000000).toLocaleString()} million people`;
         document.getElementById('currency').textContent = `${currencyName}, ${currencySymbol}`;
         document.getElementById('flag').innerHTML = `<img src="${country.flags.svg}" width="50">`;
         document.getElementById('region').textContent = country.region;
-        document.getElementById('languages').textContent = Object.values(country.languages);
-        document.getElementById('area').textContent = country.area;
-        document.getElementById('timezones').textContent = country.timezones;
+        document.getElementById('languages').textContent = Object.values(country.languages).join(', ');
+        document.getElementById('area').textContent = `${country.area.toLocaleString()} km²`;
+        document.getElementById('timezones').textContent = country.timezones.join(', ');
 
         document.getElementById('currentCountry').setAttribute('data-curency-code', currencyCode); // Зберігаємо curency-code    
         document.getElementById('currencyModalLabel').textContent = `${currencyName}(${currencyCode}), ${currencySymbol}, ${country.name.common}`;
