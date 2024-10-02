@@ -10,31 +10,44 @@ export function showCurrencyModal(currencyCode) {
                 return;
             }
             console.log(data);
-            // Оновлюємо інформацію про валюту
             
-            // document.getElementById('currencyName').textContent = currencyCode;
-            // document.getElementById('currencySymbol').textContent = data.symbol;
+            document.getElementById('curenCurrencyCode').textContent = `${data.rates[currencyCode].toFixed(2)}`;
+            document.getElementById('curenCurrencyCodeConverter').textContent = `${currencyCode}`;
 
-            // document.getElementById('currentName').textContent = `${currencyCode}`;
+            document.getElementById('USD').textContent = `${data.rates['USD'].toFixed(2)}`;
+            document.getElementById('EUR').textContent = `${data.rates['EUR'].toFixed(2)}`;
+            document.getElementById('GBP').textContent = `${data.rates['GBP'].toFixed(2)}`;
+            document.getElementById('CNY').textContent = `${data.rates['CNY'].toFixed(2)}`;
+            document.getElementById('JPY').textContent = `${data.rates['JPY'].toFixed(2)}`;
+            document.getElementById('INR').textContent = `${data.rates['INR'].toFixed(2)}`;
+            document.getElementById('CAD').textContent = `${data.rates['CAD'].toFixed(2)}`;
 
-            // document.getElementById('currentCurrencyName').textContent = `${data.rates[currencyCode]}`;
-            document.getElementById('curenCurrencyCode').textContent = `${data.rates[currencyCode]}`;
-            document.getElementById('EUR').textContent = `${data.rates['EUR']}`;
-            document.getElementById('GBP').textContent = `${data.rates['GBP']}`;
-            document.getElementById('CNY').textContent = `${data.rates['CNY']}`;
+            document.getElementById('baseCurrencyAmount').addEventListener('input', function() {
+                document.getElementById('currentCurencyAmount').value = '';
+                const amount = this.value;
+                document.getElementById('curenCurrencyCode').textContent = (data.rates[currencyCode] * amount).toFixed(2);
+                document.getElementById('USD').textContent = (data.rates['USD'] * amount).toFixed(2);
+                document.getElementById('EUR').textContent = (data.rates['EUR'] * amount).toFixed(2);
+                document.getElementById('GBP').textContent = (data.rates['GBP'] * amount).toFixed(2);
+                document.getElementById('CNY').textContent = (data.rates['CNY'] * amount).toFixed(2);
+                document.getElementById('JPY').textContent = (data.rates['JPY'] * amount).toFixed(2);
+                document.getElementById('INR').textContent = (data.rates['INR'] * amount).toFixed(2);
+                document.getElementById('CAD').textContent = (data.rates['CAD'] * amount).toFixed(2);
+            });
+            const k = 1 / data.rates[currencyCode];
 
-            
-            // // Оновлюємо таблицю курсів
-            // const ratesTable = document.getElementById('currencyRatesTable');
-            // // ratesTable.innerHTML = '';  // Очищуємо таблицю перед оновленням
-
-            // const currencies = ['USD', 'EUR', 'GBP', 'CNY', currencyCode];
-            // currencies.forEach(currency => {
-            //     const rate = data.rates[currency] || 'N/A';  // Отримуємо курс для кожної валюти
-            //     const row = document.createElement('tr');
-            //     row.innerHTML = `<td>${currency}</td><td>${rate}</td>`;
-            //     ratesTable.appendChild(row);
-            // });
+            document.getElementById('currentCurencyAmount').addEventListener('input', function() {
+                document.getElementById('baseCurrencyAmount').value = '';
+                const amount = this.value;
+                document.getElementById('curenCurrencyCode').textContent = amount;
+                document.getElementById('USD').textContent = (data.rates['USD'] * amount * k).toFixed(2);
+                document.getElementById('EUR').textContent = (data.rates['EUR'] * amount * k).toFixed(2);
+                document.getElementById('GBP').textContent = (data.rates['GBP'] * amount * k).toFixed(2);
+                document.getElementById('CNY').textContent = (data.rates['CNY'] * amount * k).toFixed(2);
+                document.getElementById('JPY').textContent = (data.rates['JPY'] * amount * k).toFixed(2);
+                document.getElementById('INR').textContent = (data.rates['INR'] * amount * k).toFixed(2);
+                document.getElementById('CAD').textContent = (data.rates['CAD'] * amount * k).toFixed(2);
+            });
 
             // Показуємо модальне вікно
             const currencyModal = new bootstrap.Modal(document.getElementById('currencyModal'));

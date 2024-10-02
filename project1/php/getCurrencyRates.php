@@ -11,7 +11,7 @@ $apiKey = $_ENV['EXCHANGE_RATES_API_KEY']; // Ключ Open Exchange Rates
 $currencyCode = $_GET['currencyCode'] ?? 'USD';
 $baseCurrency = $_GET['baseCurrency'] ?? 'USD';
 
-$url = "https://openexchangerates.org/api/latest.json?app_id=$apiKey&base=$baseCurrency&symbols=EUR,GBP,CNY,$currencyCode";
+$url = "https://openexchangerates.org/api/latest.json?app_id=$apiKey&base=$baseCurrency&symbols=USD,EUR,GBP,CNY,JPY,INR,CAD,$currencyCode";
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

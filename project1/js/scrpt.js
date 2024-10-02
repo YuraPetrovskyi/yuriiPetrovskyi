@@ -8,15 +8,16 @@ import { filterCountryNames } from '../features/filterCountryNames.js';
 
 import { getCountrySpecificBorders } from './getCountrySpecificBorders.js';
 import { getCountryList } from './getCountryList.js';
-import { getCountryDetails } from './getCountryDetails.js';
+import { setCountryInform } from './setCountryInform.js';
 import { getdAllCountryBorders } from './getAllCountryBorders.js'; // Імпорт нової функції
 import { getCountryCities } from './getCountryCities.js';
-import { setCountryByCoordinates } from './setCountryByCoordinates.js';
+import { getCountryByCoordinates } from './getCountryByCoordinates.js';
 
 import { getWeatherData } from './getWeatherData.js';
 import { getCityByBounds } from './getCityByBounds.js';
 
 import { showCurrencyModal } from './showCurrencyModal .js';
+import { setCoutryTitle } from './setCoutryTitle.js';
 // Ініціалізація Leaflet карти
 // var map = L.map('map').setView([50, 30], 6);  // Центр на світі, масштаб 2
 var map = L.map('map').fitWorld();  // Автоматично масштабувати карту на весь світ
@@ -106,9 +107,12 @@ document.getElementById('countrySelect').addEventListener('change', function() {
     currentCountryElement.setAttribute('data-country-iso', isoCode); // Зберігаємо ISO-код  
 
     getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
+    setCountryInform(isoCode);
 
 });
-
+document.getElementById('currentCountry').addEventListener('change', function() {
+    console.log('(**********************************************************)');
+});
 // Доступ до ISO-коду в подальшому
 const countryISO = document.getElementById('currentCountry').getAttribute('data-country-iso');
 console.log('ISO код вибраної країни:', countryISO);
@@ -136,8 +140,11 @@ map.on('locationfound', function(e) {
     myLon = e.latlng.lng;
     // Використаємо Reverse Geocoding для отримання країни користувача
     // `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}
-    setCountryByCoordinates(lat, lon);
-    getCountryDetails(isoCode);
+    getCountryByCoordinates(lat, lon).then(data => {
+        console.log('getCountryByCoordinates data ', data);
+        setCoutryTitle(data.countryname, data.countryiso)
+        setCountryInform(data.countryiso);
+    })
     console.log('myLocationMarcker', myLocationMarcker);
     
     if (myLocationMarcker.current) {
@@ -182,7 +189,7 @@ document.querySelector('[title="info-btn"]').addEventListener('click', function(
     console.log('you choose country: ', countryName);
     console.log('you choose country: ', isoCode);    
     // getCountryDetails(countryName);
-    getCountryDetails(isoCode);
+    // getCountryDetails(isoCode);
 
 
 });
@@ -252,11 +259,17 @@ L.easyButton('fa-money-bill', function() {
     // const currencyCode = 'GBP'; // Приклад коду валюти
     console.log('countryName', countryName)
     console.log('currencyCode', currencyCode)
-    
+    console.log('currentCurencyAmount', document.getElementById('currentCurencyAmount').value)
+    console.log('baseCurrencyAmount', document.getElementById('baseCurrencyAmount').value)
+
+    document.getElementById('currentCurencyAmount').value = '';
+    document.getElementById('baseCurrencyAmount').value = '1';
     // document.getElementById('currencyModalLabel').textContent = `${countryName}`;
 
     showCurrencyModal(currencyCode);
 }, 'currency-btn').addTo(map);
+
+
 
 
 // **************************************************** Функції **************************************

@@ -1,7 +1,7 @@
-// getCountryDetails.js
+// setCountryInform.js
 
 // Функція для отримання інформації про країну
-export function getCountryDetails(isoCode) {
+export function setCountryInform(isoCode) {
   fetch('php/getCountryDetails.php?countryName=' + isoCode)
     .then(response => response.json())
     .then(data => {
@@ -34,7 +34,9 @@ export function getCountryDetails(isoCode) {
 
         document.getElementById('currentCountry').setAttribute('data-curency-code', currencyCode); // Зберігаємо curency-code    
         document.getElementById('currencyModalLabel').textContent = `${currencyName}(${currencyCode}), ${currencySymbol}, ${country.name.common}`;
-        document.getElementById('currentCurrencyName').textContent = `${currencyName} ${currencyCode}`;
+        document.getElementById('currentCurrencyName').textContent = `${currencyName} - ${currencyCode}`;
+        document.getElementById('curenCurrencySymbol').textContent = `${currencySymbol}`;
+
         // document.getElementById('curenCurrencyCode').textContent = `Currency: ${currencyName}(${currencyCode}), ${currencySymbol}, ${country.name.common}`;
 
     })

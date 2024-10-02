@@ -120,66 +120,96 @@
     </div>
 
     <!-- Modal Currency -->
-    <div class="modal fade" id="currencyModal" tabindex="-1" aria-labelledby="currencyModalLabel" aria-hidden="true">
+    <div class="modal fade text-success" id="currencyModal" tabindex="-1" aria-labelledby="currencyModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="currencyModalLabel">
-              <!-- Currency,
-              <span id="currencyName"></span>
-              <span id="currencySymbol"></span>,
-              <span id="currencyCountryName"></span> -->
-            </h5>
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title text-uppercase fw-bold" id="currencyModalLabel"></h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <!-- <h6 id="currencyCountryName"></h6>
-            <div id="currencyInfo">
-              <p>Currency: <span id="currencyName"></span> <span id="currencySymbol"></span></p>
-            </div> -->
+            <table class="table table-striped mt-1">
+              <thead>
+                <tr>
+                  <th class="text-center" id="baseCurrencyCodeConverter">USD</th>
+                  <th class="text-center" id="curenCurrencyCodeConverter"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="number" id="baseCurrencyAmount" class="form-control" value="1" min="1"></td>
+                  <td><input type="number" id="currentCurencyAmount" class="form-control" value="" min="1"></td>
+                </tr>
+              </tbody> 
+            </table>
             <hr>
-            <div class="currency-converter">
-              <table class="table table-striped mt-3">
-                <thead>
-                  <tr>
-                    <th>Your Currency</th>
-                    <th>Rate, $</th>
-                  </tr>
-                </thead>
+            <table class="table table-striped mt-2">
+              <thead>
+                <tr>
+                  <th>Base Currency</th>
+                  <th>Symbol</th>
+                  <th>Rate</th>
+                </tr>
+              </thead>
+              <tbody id="currencyRatesTable">
+                <tr>
+                  <td>United States dollar -USD</td>
+                  <td class="text-center">$</td>
+                  <td id="USD"></td>
+                </tr>
+              </tbody>       
+              <thead>
+                <tr>
+                  <th class="text-center w-100">Your Currency</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td id="currentCurrencyName"></td>
+                  <td class="text-center" id="curenCurrencySymbol"></td>
+                  <td id="curenCurrencyCode"></td>
+                </tr>                 
+              </tbody>
+            
+              <thead>
+                <tr>
+                  <th class="text-center w-100">Popular Currency</th>
+                </tr>
+              </thead>
 
-                <tbody>
-                  <tr>
-                    <td id="currentCurrencyName"></td>
-                    <td id="curenCurrencyCode"></td>
-                  </tr>                 
-                </tbody>
-              
-                <thead>
-                  <tr>
-                    <th>Popular Currency</th>
-                  </tr>
-                </thead>
-
-                <tbody id="currencyRatesTable">
-                  <tr>
-                    <td>United States dollar USD</td>
-                    <td id="USD">1</td>
-                  </tr>                  
-                  <tr>
-                    <td>Euro EUR</td>
-                    <td id="EUR"></td>
-                  </tr>
-                  <tr>
-                    <td>British pound GBP</td>
-                    <td id="GBP"></td>
-                  </tr>
-                  <tr>
-                    <td>Chinese yuan CNY</td>
-                    <td id="CNY"></td>
-                  </tr>                 
-                </tbody>
-              </table>
-            </div>
+              <tbody id="currencyRatesTable">
+                <tr>
+                  <td>Euro - EUR</td>
+                  <td class="text-center">€</td>
+                  <td id="EUR"></td>
+                </tr>
+                <tr>
+                  <td>British Pound - GBP</td>
+                  <td class="text-center">£</td>
+                  <td id="GBP"></td>
+                </tr>
+                <tr>
+                  <td>Chinese Yuan - CNY</td>
+                  <td class="text-center">¥</td>
+                  <td id="CNY"></td>
+                </tr> 
+                <tr>
+                  <td>Japanese Yen - JPY</td>
+                  <td class="text-center">¥</td>
+                  <td id="JPY"></td>
+                </tr> 
+                <tr>
+                  <td>Indian Rupee - INR</td>
+                  <td class="text-center">₹</td>
+                  <td id="INR"></td>
+                </tr> 
+                <tr>
+                  <td>Canadian Dollar - CAD</td>
+                  <td class="text-center">$</td>
+                  <td id="CAD"></td>
+                </tr>                 
+              </tbody>
+            </table>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -1,5 +1,5 @@
 // loadAllCountryBorders.js
-
+import { setCountryInform } from "./setCountryInform.js";
 // let countryBordersLayer = null;
 
 export function getdAllCountryBorders(map, countryBorderLayerRef) {
@@ -33,6 +33,8 @@ export function getdAllCountryBorders(map, countryBorderLayerRef) {
                             const currentCountryElement = document.getElementById('currentCountry');
                             currentCountryElement.textContent = countryName;
                             currentCountryElement.setAttribute('data-country-iso', isoCode);
+                            setCountryInform(isoCode);
+
                         });
                     }
                 }).addTo(map);
