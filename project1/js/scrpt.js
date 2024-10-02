@@ -18,6 +18,8 @@ import { getCityByBounds } from './getCityByBounds.js';
 
 import { showCurrencyModal } from './showCurrencyModal .js';
 import { setCoutryTitle } from './setCoutryTitle.js';
+
+import { getHistoricalPlaces } from './getHistoricalPlaces.js';
 // Ініціалізація Leaflet карти
 // var map = L.map('map').setView([50, 30], 6);  // Центр на світі, масштаб 2
 var map = L.map('map').fitWorld();  // Автоматично масштабувати карту на весь світ
@@ -250,6 +252,7 @@ L.easyButton('fa-cloud', function () {
 map.addLayer(weatherMarkers);
 
 // **************************************************** кнопка Валюти **************************************
+    // <a href="https://www.flaticon.com/free-icons/currency" title="currency icons">Currency icons created by Pixel perfect - Flaticon</a>
 
 L.easyButton('fa-money-bill', function() {
     // Приклад: завантажуємо інформацію для вибраної країни та її валюти
@@ -269,6 +272,21 @@ L.easyButton('fa-money-bill', function() {
     showCurrencyModal(currencyCode);
 }, 'currency-btn').addTo(map);
 
+
+// **************************************************** кнопка Historycal pleaces **************************************
+
+L.easyButton('fa-landmark', function() {
+    const bounds = map.getBounds(); // отримуємо межі карти
+    const center = bounds.getCenter(); // центр карти
+
+    getHistoricalPlaces(center.lat, center.lng).then(places => {
+        places.forEach(place => {
+        const marker = L.marker([place.lat, place.lng])
+            .addTo(map)
+            .bindPopup(`<b>${place.title}</b><br>${place.summary}<br><a href="https://${place.wikipediaUrl}" target="_blank">Read more</a>`);
+        });
+    });
+}, 'tourist-btn').addTo(map);
 
 
 // **************************************************** Функції **************************************
