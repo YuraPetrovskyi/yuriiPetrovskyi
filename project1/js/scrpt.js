@@ -121,7 +121,7 @@ const countryISO = document.getElementById('currentCountry').getAttribute('data-
 console.log('ISO код вибраної країни:', countryISO);
 
 // **************************************************** геолокація користувача **************************************
-L.easyButton('fa-location-arrow fa-lg', function(btn, map) {
+L.easyButton('<img src="images/button/location.png" width="20" height="20">', function(btn, map) {
     map.locate({setView: true}); // Знаходимо місцезнаходження і переміщуємо на нього карту
 }, 'locate-btn').addTo(map);
 
@@ -174,7 +174,7 @@ map.on('locationerror', function(e) {
 // });
 
 // Додаємо кнопку на карту для виклику модального вікна
-L.easyButton('fa-info fa-xl', function() {
+L.easyButton('<img src="images/button/info.png" width="20" height="20">', function() {
     // Викликаємо функцію Bootstrap для відкриття модального вікна
     const countryModal = new bootstrap.Modal(document.getElementById('countryModal'));
     countryModal.show();
@@ -195,14 +195,14 @@ document.querySelector('[title="info-btn"]').addEventListener('click', function(
 
 // **************************************************** кнопка Кордони всіх країн **************************************
 
-L.easyButton('fa-globe', function() {
+L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
     map.setZoom(6);
     getdAllCountryBorders(map, countryBorderLayerRef);  // Викликаємо функцію для завантаження/приховування кордонів
 }, 'border-btn').addTo(map);
 
 
 // **************************************************** кнопка Погода **************************************
-L.easyButton('fa-cloud', function () {
+L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
     weatherMarkers.clearLayers();
 
     const bounds = map.getBounds(); // Отримуємо межі карти (bounding box)
@@ -251,7 +251,7 @@ map.addLayer(weatherMarkers);
 // **************************************************** кнопка Валюти **************************************
     // <a href="https://www.flaticon.com/free-icons/currency" title="currency icons">Currency icons created by Pixel perfect - Flaticon</a>
 
-L.easyButton('fa-money-bill', function() {
+L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', function() {
     // Приклад: завантажуємо інформацію для вибраної країни та її валюти
     const countryName = document.getElementById('currentCountry').textContent;
     const currencyCode = document.getElementById('currentCountry').getAttribute('data-curency-code');
@@ -271,15 +271,10 @@ L.easyButton('fa-money-bill', function() {
 
 
 // **************************************************** кнопка Historycal pleaces **************************************
-{/* <a href="https://www.flaticon.com/free-icons/maps-and-location" title="maps and location icons">Maps and location icons created by Ains - Flaticon</a> */}
-// Створюємо кастомні іконки для різних типів місць
-
-
-// var historicalMarkers = L.layerGroup();
 var historicalMarkersCluster = L.markerClusterGroup({
     maxClusterRadius: 20
 });
-L.easyButton('fa-landmark', function() {
+L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
     const zoomLevel = map.getZoom(); // Отримуємо поточний рівень масштабу
     console.log("zoomLevel before:", zoomLevel);
 
