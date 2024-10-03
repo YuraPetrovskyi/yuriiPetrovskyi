@@ -60,6 +60,28 @@
     <!-- Map container -->
     <div id="map"></div>
 
+    <!-- Modal для пошуку міста -->
+    <div class="modal fade" id="citySearchModal" tabindex="-1" aria-labelledby="citySearchLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="citySearchLabel">City Search</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="input-group mb-3">
+              <input type="text" id="citySearchInput" class="form-control" 
+                      placeholder="Enter city name" aria-label="City name">
+              <button class="btn btn-primary" id="searchCityButton">Search</button>
+            </div>
+            <ul id="cityResultsList" class="list-group">
+              <!-- Результати пошуку будуть тут -->
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal -->
     <div class="modal fade text-success" id="countryModal" tabindex="-1" aria-labelledby="countryModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
@@ -68,7 +90,7 @@
             <h5 class="modal-title text-uppercase fw-bold" id="countryModalLabel">Country Information</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body p-2">
             <table class="table table-striped">              
               <tbody class="align-middle">
                 <tr>
@@ -140,7 +162,7 @@
             <h5 class="modal-title text-uppercase fw-bold" id="currencyModalLabel"></h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body p-2">
             <table class="table table-striped mt-1">
               <thead>
                 <tr>

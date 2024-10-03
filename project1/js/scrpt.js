@@ -121,7 +121,7 @@ const countryISO = document.getElementById('currentCountry').getAttribute('data-
 console.log('ISO код вибраної країни:', countryISO);
 
 // **************************************************** геолокація користувача **************************************
-L.easyButton('<img src="images/button/location.png" width="20" height="20">', function(btn, map) {
+L.easyButton('<img src="images/button/my_location.png" width="20" height="20">', function(btn, map) {
     map.locate({setView: true}); // Знаходимо місцезнаходження і переміщуємо на нього карту
 }, 'locate-btn').addTo(map);
 
@@ -150,10 +150,15 @@ map.on('locationfound', function(e) {
         myLocationMarcker.current = null;
         console.log('myLocationMarcker after cleaning:) - ', myLocationMarcker);
     }
+    const myLocation = L.icon({
+        iconUrl: 'images/button/my_location.png',  // Шлях до вашої картинки
+        iconSize: [32, 32],                  // Розмір іконки
+        iconAnchor: [16, 32],                // Точка, де іконка прикріплюється до карти
+        popupAnchor: [0, -30]                // Точка, де з'являється попап відносно іконки
+    });
     // Додаємо маркер на мапу для місцезнаходження
-    myLocationMarcker.current = L.marker(e.latlng).addTo(map)
+    myLocationMarcker.current = L.marker(e.latlng, { icon: myLocation }).addTo(map)
         .bindPopup("You are here")
-        .openPopup();
     // Плавно переміщуємо мапу до місця
     map.flyTo(e.latlng, 14);
 });
@@ -161,6 +166,58 @@ map.on('locationfound', function(e) {
 map.on('locationerror', function(e) {
     // alert(e.message);
 });
+
+// **************************************************** кнопка для Sity serch  **************************************
+
+// Додаємо кнопку пошуку міста
+L.easyButton('<img src="images/button/search.png" width="20" height="20">', function() {
+    const cityModal = new bootstrap.Modal(document.getElementById('citySearchModal'));
+    cityModal.show(); // Відкриваємо модальне вікно для пошуку міста
+}, 'search-city-btn').addTo(map);
+
+document.getElementById('searchCityButton').addEventListener('click', function() {
+    const cityName = document.getElementById('citySearchInput').value;
+    console.log('you type sity: ', cityName);
+    if (cityName.trim() === '') return; // Перевірка, чи не пусте поле
+
+    // Виконуємо пошук міст через PHP
+    fetch(`php/getCityByName.php?cityName=${encodeURIComponent(cityName)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('sity data: ', data);
+            const cityResultsList = document.getElementById('cityResultsList');
+            cityResultsList.innerHTML = ''; // Очищаємо попередні результати
+
+            // Якщо немає результатів
+            if (data.length === 0) {
+                cityResultsList.innerHTML = '<li class="list-group-item">No results found.</li>';
+                return;
+            }
+
+            // Виводимо список міст з результатами
+            data.forEach(city => {
+                const cityItem = document.createElement('li');
+                cityItem.classList.add('list-group-item', 'list-group-item-action');
+                cityItem.textContent = `${city.name}, ${city.countryName}`;
+                cityItem.addEventListener('click', function() {
+                    addCityMarker(city.lat, city.lng, city.name, city.countryName);
+                    const cityModal = bootstrap.Modal.getInstance(document.getElementById('citySearchModal'));
+                    cityModal.hide(); // Закриваємо модальне вікно після вибору
+                });
+                cityResultsList.appendChild(cityItem);
+            });
+        })
+        .catch(error => console.error('Error fetching cities:', error));
+});
+
+// Функція для додавання маркера на карту і переміщення до міста
+function addCityMarker(lat, lng, cityName, countryName) {
+    const marker = L.marker([lat, lng]).addTo(map)
+        .bindPopup(`<b>${cityName}</b><br>Country: ${countryName}`)
+        .openPopup();
+
+    map.setView([lat, lng], 10); // Переміщуємо карту до вибраного міста
+}
 
 // **************************************************** кнопка для Airoports  **************************************
 import { getAirports } from './getAirports.js';
@@ -204,14 +261,6 @@ L.easyButton('<img src="images/button/airport_butt.png" width="20" height="20">'
 }, 'airport-btn').addTo(map);
 
 // **************************************************** кнопка для модалки Info  **************************************
-
-// // Функція для оновлення інформації про країну, коли змінюється `currentCountry`
-// document.getElementById('currentCountry').addEventListener('change', function () {
-//     const isoCode = this.getAttribute('data-country-iso');
-//     if (isoCode) {
-//         getCountryDetails(isoCode);
-//     }
-// });
 
 // Додаємо кнопку на карту для виклику модального вікна
 L.easyButton('<img src="images/button/info.png" width="20" height="20">', function() {
