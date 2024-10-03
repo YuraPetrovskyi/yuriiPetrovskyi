@@ -162,6 +162,46 @@ map.on('locationerror', function(e) {
     // alert(e.message);
 });
 
+// **************************************************** кнопка для Airoports  **************************************
+import { getAirports } from './getAirports.js';
+var airportClusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 25
+});  // Ініціалізація кластерної групи
+// Додаємо кнопку для отримання аеропортів
+L.easyButton('<img src="images/button/airport_butt.png" width="20" height="20">', function() {
+    const bounds = map.getBounds();  // Отримуємо межі карти
+    const north = bounds.getNorth();
+    const south = bounds.getSouth();
+    const east = bounds.getEast();
+    const west = bounds.getWest();
+
+    // Очистити попередні маркери
+    airportClusterGroup.clearLayers();
+
+    // Створюємо кастомну іконку для аеропортів
+    const airportIcon = L.icon({
+        iconUrl: 'images/airport.png',  // Шлях до вашої картинки
+        iconSize: [32, 32],                  // Розмір іконки
+        iconAnchor: [16, 32],                // Точка, де іконка прикріплюється до карти
+        popupAnchor: [0, -30]                // Точка, де з'являється попап відносно іконки
+    });
+
+    getAirports(north, south, east, west).then(airports => {
+        airports.forEach(airport => {
+            const wikiName = airport.name.replace(/[\s\W]+/g, '_');
+            console.log()
+            const marker = L.marker([airport.lat, airport.lng], { icon: airportIcon })
+                .bindPopup(`
+                    <b>${airport.name}</b><br>
+                    Country: ${airport.countryName}<br>
+                    Region: ${airport.adminName1}<br>
+                    <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank">more on Wikipedia...</a>
+                `); 
+            airportClusterGroup.addLayer(marker); // Додаємо маркер до кластерної групи
+        });
+        map.addLayer(airportClusterGroup); // Додаємо кластерну групу на карту
+    });
+}, 'airport-btn').addTo(map);
 
 // **************************************************** кнопка для модалки Info  **************************************
 
