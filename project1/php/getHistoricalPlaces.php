@@ -7,7 +7,7 @@ $lng = $_GET['lng'] ?? '';
 $radius = 20;
 
 $username = 'yuriipetrovskyi';
-$url = "https://secure.geonames.org/findNearbyWikipediaJSON?lat=$lat&lng=$lng&radius=$radius&maxRows=50&username=yuriipetrovskyi";
+$url = "https://secure.geonames.org/findNearbyWikipediaJSON?lat=$lat&lng=$lng&radius=$radius&maxRows=100&username=yuriipetrovskyi";
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
