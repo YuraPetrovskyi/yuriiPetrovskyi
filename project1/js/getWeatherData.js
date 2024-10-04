@@ -44,12 +44,12 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
             const weatherIcon = L.divIcon({
                 className: '',  // Не потрібно окремого класу
                 html: `
-                    <div class=" bg-gradient-primarytext-center p-1  rounded shadow-sm">
-                        <img src="${iconUrl}" class="img-fluid" alt="Weather icon" style="width: 70px; height: 70px;" />
-                        <div class="fw-bold text-primary fs-5">${temp}°C</div>
+                    <div class="bg-transparent text-center p-1 rounded shadow-sm">
+                        <img src="${iconUrl}" class="img-fluid" alt="Weather icon" style="width: 50px; height: 50px;" />
+                        <div class="text-primary fw-bold fs-5">${temp.toFixed()}°C</div>
                     </div>
                 `,
-                iconSize: [60, 60], // Загальний розмір іконки
+                iconSize: [50, 50], // Загальний розмір іконки
                 iconAnchor: [30, 30] // Точка, де іконка "кріпиться" на карті
             });
 

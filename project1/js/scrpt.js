@@ -30,7 +30,9 @@ var markerRef = { current: null };
 var countryBorderLayerRef = { current: null }; // Для відстеження шару кордонів 
 var myLocationMarcker = { current: null }; // Для відстеження користувача
 // Кластерна група для маркерів погоди
-var weatherMarkers = L.markerClusterGroup();
+var weatherMarkers = L.markerClusterGroup({
+    maxClusterRadius: 45
+});
 
 // var currencyCode = '';
 
