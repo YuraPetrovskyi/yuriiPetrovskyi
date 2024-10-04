@@ -1,5 +1,5 @@
 <?php
-// getCityByName.php
+// searchPlaceByName.php
 
 $cityName = $_GET['cityName'] ?? '';
 $username = 'yuriipetrovskyi';
@@ -23,14 +23,17 @@ $cities = json_decode($response, true)['geonames'] ?? [];
 
 $result = [];
 foreach ($cities as $city) {
-    $result[] = [
-        'name' => isset($city['name']) ? $city['name'] : 'Unknown', // Якщо немає 'name', виведе 'Unknown'
-        'countryName' => isset($city['countryName']) ? $city['countryName'] : 'Unknown', // Якщо немає 'countryName', виведе 'Unknown'
-        'lat' => isset($city['lat']) ? $city['lat'] : null, // Якщо немає 'lat', виведе null
-        'lng' => isset($city['lng']) ? $city['lng'] : null // Якщо немає 'lng', виведе null
-    ];
+    // Перевіряємо, чи є всі необхідні дані
+    if (isset($city['name'], $city['countryName'], $city['countryCode'], $city['lat'], $city['lng'])) {
+        $result[] = [
+            'name' => $city['name'], // Дані перевірено, тому можна використовувати напряму
+            'countryName' => $city['countryName'],
+            'countryCode' => $city['countryCode'],
+            'lat' => $city['lat'],
+            'lng' => $city['lng']
+        ];
+    }
 }
-
 
 header('Content-Type: application/json');
 echo json_encode($result);

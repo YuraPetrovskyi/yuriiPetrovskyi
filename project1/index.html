@@ -60,23 +60,26 @@
     <!-- Map container -->
     <div id="map"></div>
 
-    <!-- Modal для пошуку міста -->
-    <div class="modal fade" id="citySearchModal" tabindex="-1" aria-labelledby="citySearchLabel" aria-hidden="true">
+    <!-- Modal для пошуку place -->
+    <div class="modal fade text-success" id="placeSearchModal" tabindex="-1" aria-labelledby="placeSearchLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="citySearchLabel">City Search</h5>
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title text-uppercase fw-bold" id="placeSearchLabel">Plase search</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
-            <div class="input-group mb-3">
-              <input type="text" id="citySearchInput" class="form-control" 
-                      placeholder="Enter city name" aria-label="City name">
-              <button class="btn btn-primary" id="searchCityButton">Search</button>
+          <div class="modal-body p-2">
+            <div class="input-group ">
+              <input type="text" id="placeSearchInput" class="form-control" 
+                      placeholder="Enter place name" aria-label="Place name">
+              <button class="btn btn-primary" id="searchPlaceButton">Search</button>
             </div>
-            <ul id="cityResultsList" class="list-group">
+            <ul id="placeResultsList" class="list-group mt-2">
               <!-- Результати пошуку будуть тут -->
             </ul>
+          </div>
+          <div class="modal-footer bg-warning p-1">
+            <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
@@ -162,12 +165,12 @@
             <h5 class="modal-title text-uppercase fw-bold" id="currencyModalLabel"></h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body p-2">
+          <div class="modal-body p-2 pt-0">
             <table class="table table-striped mt-1">
               <thead>
                 <tr>
-                  <th class="text-center" id="baseCurrencyCodeConverter">USD</th>
-                  <th class="text-center" id="curenCurrencyCodeConverter"></th>
+                  <th class="text-center p-1" id="baseCurrencyCodeConverter">USD</th>
+                  <th class="text-center p-1" id="curenCurrencyCodeConverter"></th>
                 </tr>
               </thead>
               <tbody>
