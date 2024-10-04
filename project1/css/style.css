@@ -15,3 +15,12 @@ nav {
   padding: 0;
   height: calc(100vh - 50px);  
 }
+
+.easy-button-button {
+  width: 50px;
+}
+
+.btn-lg img {
+  width: 50px;   /* Налаштовуємо розмір зображення */
+  height: 50px;
+}

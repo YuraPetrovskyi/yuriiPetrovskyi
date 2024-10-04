@@ -1,7 +1,7 @@
 // script.js
 
-import { fetchCountryData } from '../additionaly/countryData.js';
-import { getCountryBorders } from '../additionaly/getCountryBorders.js';
+// import { fetchCountryData } from '../additionaly/countryData.js';
+// import { getCountryBorders } from '../additionaly/getCountryBorders.js';
 
 import { toggleCountrySearch } from '../features/toggleCountrySearch.js';
 import { filterCountryNames } from '../features/filterCountryNames.js';
@@ -9,8 +9,8 @@ import { filterCountryNames } from '../features/filterCountryNames.js';
 import { getCountrySpecificBorders } from './getCountrySpecificBorders.js';
 import { getCountryList } from './getCountryList.js';
 import { setCountryInform } from './setCountryInform.js';
-import { getdAllCountryBorders } from './getAllCountryBorders.js'; // Імпорт нової функції
-import { getCountryCities } from './getCountryCities.js';
+// import { getdAllCountryBorders } from '../additionaly/getAllCountryBorders.js'; // Імпорт нової функції
+// import { getCountryCities } from './getCountryCities.js';
 import { getCountryByCoordinates } from './getCountryByCoordinates.js';
 
 import { getWeatherData } from './getWeatherData.js';
@@ -27,12 +27,12 @@ var map = L.map('map').fitWorld();  // Автоматично масштабув
 
 // Приклад: додавання маркеру для вибраної країни
 var markerRef = { current: null };
-var countryBorderLayerRef = { current: null }; // Для відстеження шару кордонів 
 var myLocationMarcker = { current: null }; // Для відстеження користувача
 // Кластерна група для маркерів погоди
 var weatherMarkers = L.markerClusterGroup({
     maxClusterRadius: 45
 });
+var countryBorderLayerRef = { allCountries: null,  specificCountry: null}; // Для відстеження шару кордонів 
 
 // var currencyCode = '';
 
@@ -50,10 +50,7 @@ var satellite = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.p
 });
 
 // Інший варіант Satellite з Esri
-// var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-//     maxZoom: 19,
-//     attribution: 'Tiles &copy; Esri'
-// });
+
 var satelliteTwo = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
     attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
     }
@@ -115,12 +112,10 @@ document.getElementById('countrySelect').addEventListener('change', function() {
     setCountryInform(isoCode);
 
 });
-document.getElementById('currentCountry').addEventListener('change', function() {
-    console.log('(**********************************************************)');
-});
+
 // Доступ до ISO-коду в подальшому
-const countryISO = document.getElementById('currentCountry').getAttribute('data-country-iso');
-console.log('ISO код вибраної країни:', countryISO);
+// const countryISO = document.getElementById('currentCountry').getAttribute('data-country-iso');
+// console.log('ISO код вибраної країни:', countryISO);
 
 // **************************************************** геолокація користувача **************************************
 L.easyButton('<img src="images/button/my_location.png" width="20" height="20">', function(btn, map) {
@@ -216,7 +211,7 @@ var airportClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
 });  // Ініціалізація кластерної групи
 // Додаємо кнопку для отримання аеропортів
-L.easyButton('<img src="images/button/airport_butt.png" width="20" height="20">', function() {
+L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
     const bounds = map.getBounds();  // Отримуємо межі карти
     const north = bounds.getNorth();
     const south = bounds.getSouth();
@@ -266,18 +261,161 @@ document.querySelector('[title="info-btn"]').addEventListener('click', function(
 
     console.log('you choose country: ', countryName);
     console.log('you choose country: ', isoCode);    
-    // getCountryDetails(countryName);
-    // getCountryDetails(isoCode);
-
-
+    
 });
 
-// **************************************************** кнопка Кордони всіх країн **************************************
+// ****************************************************  Кордони всіх країн **************************************
+import { loadAllCountryBorders } from './loadAllCountryBorders.js';  // Нова функція для завантаження кордонів
+
+// Змінна для збереження стану кордонів (шару)
+var bordersLayerGroup = L.layerGroup();  // Використовуємо layerGroup для зберігання кордонів
+
+// Завантажуємо всі кордони при завантаженні сторінки
+document.addEventListener('DOMContentLoaded', function() {
+    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef);  // Завантажуємо кордони
+});
 
 L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
-    map.setZoom(6);
-    getdAllCountryBorders(map, countryBorderLayerRef);  // Викликаємо функцію для завантаження/приховування кордонів
-}, 'border-btn').addTo(map);
+    // Якщо шар кордонів всіх країн не активний, додаємо його
+    if (!map.hasLayer(bordersLayerGroup)) {
+        map.setZoom(6);
+        map.addLayer(bordersLayerGroup);  // Додаємо шар з кордонами
+        document.getElementById('border-btn').style.backgroundColor = 'green';  // Активуємо зелену кнопку
+        document.getElementById('current-border-btn').style.backgroundColor = '';  // Деактивуємо кнопку поточної країни
+
+        // Якщо кордони поточної країни активні, видаляємо їх
+        if (countryBorderLayerRef.specificCountry) {
+            console.log('remuved countryBorderLayerRef.specificCountry from map');
+            map.removeLayer(countryBorderLayerRef.specificCountry);
+            countryBorderLayerRef.specificCountry = null;
+        }
+    } else {
+        // Якщо кордони вже активні, приховуємо шар кордонів всіх країн
+        map.removeLayer(bordersLayerGroup);
+        document.getElementById('border-btn').style.backgroundColor = '';  // Деактивуємо зелену кнопку
+    }
+}, {
+    id: 'border-btn',  // Присвоюємо ID кнопці для доступу
+    position: 'topleft'  // Розташування кнопки на карті
+}).addTo(map);
+
+// ****************************************************  Кордони поточної країни **************************************
+L.easyButton('<img src="images/button/country.png" width="20" height="20">', function() {
+    const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
+    if (isoCode) {
+        // Якщо кордони всіх країн активні, видаляємо їх
+        console.log('bordersLayerGroup', bordersLayerGroup);
+        console.log('countryBorderLayerRef', countryBorderLayerRef);
+
+        if (map.hasLayer(bordersLayerGroup)) {
+            map.removeLayer(bordersLayerGroup);
+        }
+        // Якщо шар кордонів поточної країни не активний, додаємо його
+        if (!countryBorderLayerRef.specificCountry) {
+            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);  // Завантажуємо кордони поточної країни
+            
+        } else {
+            // Якщо кордони поточної країни вже активні, видаляємо шар
+            map.removeLayer(countryBorderLayerRef.specificCountry);
+            countryBorderLayerRef.specificCountry = null;
+            document.getElementById('current-border-btn').style.backgroundColor = '';  // Деактивуємо зелену кнопку
+        }
+    } else {
+        alert('No country selected.');
+    }
+}, {
+    id: 'current-border-btn',  // Присвоюємо ID кнопці для доступу
+    position: 'topleft'  // Розташування кнопки на карті
+}).addTo(map);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // Створюємо кнопку для відображення/приховування кордонів
+// L.easyButton({
+//     id: 'border-btn', // Присвоюємо ID кнопці для зручного доступу
+//     position: 'topleft',
+//     states: [{
+//         stateName: 'show-borders',
+//         icon: '<img src="images/button/border.png" width="20" height="20">', // Іконка кнопки
+//         title: 'Show Borders',
+//         onClick: function(btn, map) {
+//             // Перевіряємо, чи кордони вже завантажені
+//             map.setZoom(6);
+//             if (bordersLayerGroup) {
+//                 map.addLayer(bordersLayerGroup);  // Додаємо шар з кордонами
+//                 btn.state('hide-borders');  // Змінюємо стан кнопки
+//                 btn.button.style.backgroundColor = 'green'; // Міняємо колір кнопки
+//                 // Деактивуємо кнопку "кордони поточної країни"
+//                 document.getElementById('current-border-btn').style.backgroundColor = ''; // Деактивуємо кнопку поточної країни
+//             }
+//         }
+//     }, {
+//         stateName: 'hide-borders',
+//         icon: '<img src="images/button/border.png" width="20" height="20">', // Іконка кнопки
+//         title: 'Hide Borders',
+//         onClick: function(btn, map) {
+//             // Видаляємо шар з кордонами
+//             if (bordersLayerGroup) {
+//                 map.removeLayer(bordersLayerGroup);  // Видаляємо шар кордонів
+//                 btn.state('show-borders'); // Повертаємо стан кнопки
+//                 btn.button.style.backgroundColor = ''; // Відновлюємо стандартний колір
+//             }
+//         }
+//     }]
+// }).addTo(map);
+
+// // **************************************************** кнопка кордони поточної країни **************************************
+// L.easyButton({
+//     id: 'current-border-btn', // Присвоюємо ID для цієї кнопки
+//     position: 'topleft',
+//     states: [{
+//         stateName: 'show-current-borders',
+//         icon: '<img src="images/button/border.png" width="20" height="20">', // Іконка для поточної країни
+//         title: 'Show Current Country Borders',
+//         onClick: function(btn, map) {
+//             const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
+//             if (isoCode) {
+//                 getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
+//                 // Змінюємо стан кнопки на активний
+//                 btn.state('hide-current-borders');
+//                 btn.button.style.backgroundColor = 'green'; // Активуємо кнопку поточної країни
+                
+//                 // Деактивуємо кнопку всіх кордонів
+//                 document.getElementById('border-btn').style.backgroundColor = ''; // Відновлюємо стандартний колір для кнопки всіх кордонів
+//             } else {
+//                 alert('No country selected.');
+//             }
+//         }
+//     }, {
+//         stateName: 'hide-current-borders',
+//         icon: '<img src="images/button/border.png" width="20" height="20">', // Іконка для поточної країни
+//         title: 'Hide Current Country Borders',
+//         onClick: function(btn, map) {
+//             if (countryBorderLayerRef.specificCountry) {
+//                 map.removeLayer(countryBorderLayerRef.specificCountry);
+//                 countryBorderLayerRef.specificCountry = null;
+//                 // Змінюємо стан кнопки на "неактивний"
+//                 btn.state('show-current-borders');
+//                 btn.button.style.backgroundColor = ''; // Повертаємо стандартний колір
+//             }
+//         }
+//     }]
+// }).addTo(map);
 
 
 // **************************************************** кнопка Погода **************************************
@@ -380,6 +518,13 @@ L.easyButton('<img src="images/button/history.png" width="20" height="20">', fun
 
     });
 }, 'tourist-btn').addTo(map);
+
+
+
+// L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
+//     map.setZoom(6);
+//     getdAllCountryBorders(map, countryBorderLayerRef);  // Викликаємо функцію для завантаження/приховування кордонів
+// }, 'border-btn').addTo(map);
 
 
 // **************************************************** Функції **************************************
