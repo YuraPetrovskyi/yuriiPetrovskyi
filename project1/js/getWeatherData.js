@@ -1,30 +1,32 @@
-// Функція для запиту до OpenWeather API через getWeather.php
-export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
+// getWatherData.js
+
+// A function to query the OpenWeather API via getWeather.php
+export function getWeatherData(lat, lon, locationName, weatherMarkers) {
     fetch(`php/getWeather.php?lat=${lat}&lon=${lon}`)
         .then(response => response.json())
         .then(data => {
-            // console.log('weather data: ', data);
-            const temp = data.main.temp;
-            const clouds = data.clouds.all;
-            const humidity = data.main.humidity;
-            const pressure = data.main.pressure;
-            const windSpeed = data.wind.speed;
-            const windDirection = data.wind.deg;
-            const country = data.sys.country;
-            const iconCode = data.weather[0].icon;
-            const weatherDescription = data.weather[0].description;
+            console.log('weather data: ', data);
+            const temp = data.temp;
+            const clouds = data.clouds;
+            const humidity = data.humidity;
+            const pressure = data.pressure;
+            const windSpeed = data.windSpeed;
+            const windDirection = data.windDirection;
+            const country = data.country;
+            const iconCode = data.icon;
+            const weatherDescription = data.weatherDescription;
 
             if (locationName === 'none') {
                 locationName = data.name;
             }
 
-            // URL для іконки погоди
+            
             const iconUrl = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
 
-            // Створюємо HTML для попапу з таблицею
+            // HTML table for popup
             const weatherPopupContent = `
                 <div class="weather-popup">
-                    <img src="${iconUrl}" alt="Weather icon" style="width: 50px; height: 50px;" />
+                    <img src="${iconUrl}" alt="Weather icon" class="img-fluid w-50 h-50" />
                     <h4>${locationName}, ${country}</h4>
                     <table class="table table-sm">
                     <tbody>
@@ -40,30 +42,46 @@ export function getWeatherData(lat, lon, locationName, map, weatherMarkers) {
                 </div>
             `;
 
-            // Створюємо кастомну іконку з використанням класів Bootstrap
             const weatherIcon = L.divIcon({
-                className: '',  // Не потрібно окремого класу
+                className: '',
                 html: `
-                    <div class="bg-transparent text-center p-1 rounded shadow-sm">
-                        <img src="${iconUrl}" class="img-fluid" alt="Weather icon" style="width: 50px; height: 50px;" />
-                        <div class="text-primary fw-bold fs-5">${temp.toFixed()}°C</div>
+                    <div class="d-flex align-items-center p-1 rounded shadow-sm" style="position: relative;">
+                        <img src="${iconUrl}" class="img-fluid" alt="Weather icon" style="width: 70px; height: 70px;" />
+                        <div class="text-primary fw-bold fs-5" style="margin-left: -8px; position: absolute; left: 70px;">${temp.toFixed()}°C</div>
                     </div>
                 `,
-                iconSize: [50, 50], // Загальний розмір іконки
-                iconAnchor: [30, 30] // Точка, де іконка "кріпиться" на карті
+                iconSize: [50, 50], 
+                iconAnchor: [30, 30]
             });
 
-            // Додаємо маркер з кастомною іконкою
+            // Add a marker with a custom icon
             const marker = L.marker([lat, lon], { icon: weatherIcon });
-
             marker.bindPopup(weatherPopupContent);
-            
-            // Додаємо маркер до кластерної групи
+            // Add a marker to the cluster group
             weatherMarkers.addLayer(marker);
-            // Додаємо маркер до масиву для подальшого очищення
-            // console.log('weatherMarkers', weatherMarkers);
         })
         .catch(error => {
-            console.error('Error fetching weather data:', error);
+            // console.error('Error fetching weather data:', error);
+            showAlert('Sorry for the inconvenience, something went wrong with the Weather server. Please try again later or change the location.', 'danger');
         });
+}
+
+
+function showAlert(message, alertType = 'success', autoClose = true, closeDelay = 15000) {
+    const alertPlaceholder = document.getElementById('alertPlaceholder');
+    const alertHtml = `
+        <div class="alert alert-${alertType} alert-dismissible fade show text-center" role="alert" style="z-index: 2000;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
+    alertPlaceholder.innerHTML = alertHtml;
+    if (autoClose) {
+        setTimeout(() => {
+            const alertNode = alertPlaceholder.querySelector('.alert');
+            if (alertNode) {
+                alertNode.classList.remove('show'); // hide messages
+                alertNode.addEventListener('transitionend', () => alertNode.remove());
+            }
+        }, closeDelay);
+    }
 }

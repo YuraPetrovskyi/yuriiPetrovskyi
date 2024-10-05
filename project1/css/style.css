@@ -24,3 +24,9 @@ nav {
   width: 50px;   /* Налаштовуємо розмір зображення */
   height: 50px;
 }
+
+#alertPlaceholder {
+  z-index: 1001;  /* Встановлюємо високий z-index */
+  /* width: 80%; */
+  /* max-width: 400px; */
+}

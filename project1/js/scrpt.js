@@ -22,11 +22,15 @@ import { setCoutryTitle } from './setCoutryTitle.js';
 
 import { getHistoricalPlaces } from './getHistoricalPlaces.js';
 import { getIconByTitle } from './getIconByTitle.js';
+import { showBootstrapAlert } from './showAlert.js';
+
 
 // Ініціалізація Leaflet карти
 // var map = L.map('map').setView([50, 30], 6);  // Центр на світі, масштаб 2
 const map = L.map('map').fitWorld();  // Автоматично масштабувати карту на весь світ
 const countryBorderLayerRef = { allCountries: null,  specificCountry: null}; // Для відстеження шару кордонів 
+
+
 
 // **************************************************** слої карт **************************************
 // Визначення базових шарів
@@ -133,13 +137,14 @@ map.on('locationfound', function(e) {
     myLocationMarcker.current = L.marker(e.latlng, { icon: myLocation }).addTo(map)
         .bindPopup("You are here")
     // Плавно переміщуємо мапу до місця
-    map.flyTo(e.latlng, 14);
+    // map.flyTo(e.latlng, 14);
+    map.setView(e.latlng, 14);
 });
 
 map.on('locationerror', function(e) {
-    // alert(e.message);
+    showBootstrapAlert(e.message, 'success');
 });
-
+// showBootstrapAlert('This is a centered success message!', 'success', true, 10000);
 // **************************************************** кнопка для Sity serch  **************************************
 import { searchPlaceByName } from './searchPlaceByName.js';
 // Додаємо кнопку пошуку міста
@@ -198,7 +203,6 @@ document.querySelector('[title="info-btn"]').addEventListener('click', function(
 
     console.log('you choose country: ', countryName);
     console.log('you choose country: ', isoCode);    
-    
 });
 
 // **************************************************** кнопка Валюти **************************************
@@ -207,7 +211,6 @@ L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', fu
     // Приклад: завантажуємо інформацію для вибраної країни та її валюти
     const countryName = document.getElementById('currentCountry').textContent;
     const currencyCode = document.getElementById('currentCountry').getAttribute('data-curency-code');
-
     // const currencyCode = 'GBP'; // Приклад коду валюти
     console.log('countryName', countryName)
     console.log('currencyCode', currencyCode)
@@ -286,7 +289,7 @@ L.easyButton('<img src="images/button/country.png" width="20" height="20">', fun
 }).addTo(map);
 
 // **************************************************** кнопка Погода **************************************
-// Кластерна група для маркерів погоди
+// Cluster group for weather markers
 const weatherMarkers = L.markerClusterGroup({
     maxClusterRadius: 45
 });
@@ -295,46 +298,46 @@ map.addLayer(weatherMarkers);
 L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
     weatherMarkers.clearLayers();
 
-    const bounds = map.getBounds(); // Отримуємо межі карти (bounding box)
+    const bounds = map.getBounds();
     const north = bounds.getNorth();
     const south = bounds.getSouth();
     const east = bounds.getEast();
     const west = bounds.getWest();
 
-    const zoomLevel = map.getZoom(); // Отримуємо поточний рівень масштабу
-    console.log("zoomLevel:", zoomLevel);
+    const center = bounds.getCenter();
+    const zoomLevel = map.getZoom();
+    // console.log("zoomLevel:", zoomLevel);
+
     if (zoomLevel > 14) {
-        const center = bounds.getCenter(); // Центр карти
-        console.log(center)
-        getWeatherData(center.lat, center.lng, 'none', map, weatherMarkers);
-    }
-    if (zoomLevel <= 14 && zoomLevel > 10) {
+        getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
+    } else if (zoomLevel <= 14 && zoomLevel > 10) {
         console.log("zoomLevel:", zoomLevel);
         getCityByBounds(north, south, east, west).then(cities => {
-            console.log("cities ", cities)
-            cities.geonames.forEach(city => {
-                getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);        
+            if (cities.length === 0){
+                getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
+            }
+            cities.forEach(city => {
+                getWeatherData(city.lat, city.lng, city.name, weatherMarkers);        
             });
-        })
-    }
-    if (zoomLevel <= 10 && zoomLevel > 6) {
-        getCityByBounds(north, south, east, west).then(cities => {
-            console.log("cities ", cities)            
-            cities.geonames.forEach(city => {
-                // if (city.population > 10000) {
-                //     getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);        
-                // }
+        });
+    } else if (zoomLevel <= 10 && zoomLevel > 6) {
+        getCityByBounds(north, south, east, west, 'PPL').then(cities => {
+            if (cities.length === 0){
+                getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
+            }           
+            cities.forEach(city => {
                 if (city.fcode !== "PPL") {
-                    getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);        
+                    getWeatherData(city.lat, city.lng, city.name, weatherMarkers);        
                 }
             });
-        })
+        });
+    } else {
+        showBootstrapAlert(
+            "The map zoom level is too large to retrieve weather data. We have adjusted the zoom level to provide a better view and access to weather information.",
+            'info'
+        );
+        map.setZoom(7);
     }
-    if (zoomLevel <= 7) {
-        map.setZoom(8);
-        alert('the map is to big for wather, try aganwith bigger zoom!')
-    }
-
 }).addTo(map);
 
 
