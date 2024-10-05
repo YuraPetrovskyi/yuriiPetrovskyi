@@ -11,9 +11,9 @@ export function getHistoricalPlaces(lat, lng) {
             showAlert('Sorry for the inconvenience, something went wrong with the Historical server. Please try again later or change the location.', 'danger');
             return [];
         });
-    }
+}
 
-function showAlert(message, alertType = 'success', autoClose = true, closeDelay = 15000) {
+function showAlert(message, alertType = 'success', autoClose = true, closeDelay = 5000) {
     const alertPlaceholder = document.getElementById('alertPlaceholder');
     const alertHtml = `
         <div class="alert alert-${alertType} alert-dismissible fade show text-center" role="alert" style="z-index: 2000;">
@@ -29,5 +29,5 @@ function showAlert(message, alertType = 'success', autoClose = true, closeDelay 
                 alertNode.addEventListener('transitionend', () => alertNode.remove());
             }
         }, closeDelay);
-    }
+    };
 }

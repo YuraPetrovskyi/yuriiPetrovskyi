@@ -1,12 +1,35 @@
 <?php
 // getAirports.php
 
+// Enable error display for diagnostics
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Connect autoload Composer to load libraries
+require __DIR__ . '/../vendor/autoload.php';
+
+error_log('Failed to load .env file');
+// Loading environment variables from .env
+try {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+    $dotenv->load();
+} catch (Exception $e) {
+  // Log an error if there is no .env file
+    error_log('Failed to load .env file: ' . $e->getMessage());
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Failed to load .env file']);
+    exit;
+}
+
 $north = $_GET['north'] ?? '';
 $south = $_GET['south'] ?? '';
 $east = $_GET['east'] ?? '';
 $west = $_GET['west'] ?? '';
 
-$username = 'yuriipetrovskyi';  // Ваше ім'я користувача GeoNames
+$username = $_ENV['USERNAME'];
+
 $url = "http://api.geonames.org/searchJSON?north=$north&south=$south&east=$east&west=$west&featureClass=S&featureCode=AIRP&username=$username";
 
 $ch = curl_init();
@@ -17,8 +40,22 @@ curl_setopt($ch, CURLOPT_URL, $url);
 $result = curl_exec($ch);
 curl_close($ch);
 
-$airports = json_decode($result, true);
+$airports = json_decode($result, true)['geonames'] ?? [];
+
+$output = [];
+foreach ($airports as $airport) {
+    // Перевіряємо, чи всі необхідні властивості присутні в об'єкті
+    if (isset($airport['name'], $airport['countryName'], $airport['adminName1'], $airport['lat'], $airport['lng'])) {
+        $output[] = [
+            'name' => $airport['name'],
+            'countryName' => $airport['countryName'],
+            'adminName1' => $airport['adminName1'],
+            'lat' => $airport['lat'],
+            'lng' => $airport['lng']
+        ];
+    }
+}
 
 header('Content-Type: application/json');
-echo json_encode($airports);
+echo json_encode($output);
 ?>

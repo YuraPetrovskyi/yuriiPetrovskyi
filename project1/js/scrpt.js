@@ -381,24 +381,28 @@ const airportClusterGroup = L.markerClusterGroup({
 });  
 
 L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
-    const bounds = map.getBounds();  // Отримуємо межі карти
+    const bounds = map.getBounds();
     const north = bounds.getNorth();
     const south = bounds.getSouth();
     const east = bounds.getEast();
     const west = bounds.getWest();
 
-    // Очистити попередні маркери
     airportClusterGroup.clearLayers();
 
-    // Створюємо кастомну іконку для аеропортів
     const airportIcon = L.icon({
-        iconUrl: 'images/airport.png',  // Шлях до вашої картинки
-        iconSize: [32, 32],                  // Розмір іконки
-        iconAnchor: [16, 32],                // Точка, де іконка прикріплюється до карти
-        popupAnchor: [0, -30]                // Точка, де з'являється попап відносно іконки
+        iconUrl: 'images/airport.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -30]
     });
 
     getAirports(north, south, east, west).then(airports => {
+        if (airports.length === 0) {
+            showBootstrapAlert(
+                'No airports were found in this area. Please try searching in other locations.', 
+                'warning');
+            return;
+        };
         airports.forEach(airport => {
             const wikiName = airport.name.replace(/[\s\W]+/g, '_');
             const marker = L.marker([airport.lat, airport.lng], { icon: airportIcon })
@@ -408,109 +412,8 @@ L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', fu
                     Region: ${airport.adminName1}<br>
                     <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank">Wikipedia...</a>
                 `); 
-            airportClusterGroup.addLayer(marker); // Додаємо маркер до кластерної групи
+            airportClusterGroup.addLayer(marker);
         });
-        map.addLayer(airportClusterGroup); // Додаємо кластерну групу на карту
+        map.addLayer(airportClusterGroup);
     });
 }, 'airport-btn').addTo(map);
-
-
-// L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
-//     map.setZoom(6);
-//     getdAllCountryBorders(map, countryBorderLayerRef);  // Викликаємо функцію для завантаження/приховування кордонів
-// }, 'border-btn').addTo(map);
-
-
-// **************************************************** Функції **************************************
-
-// Функція для скидання карти до початкового стану
-// function resetMap() {
-//     // Видаляємо маркер і кордони, якщо є
-//     if (markerRef.current) {
-//         map.removeLayer(markerRef.current);
-//         markerRef.current = null;
-//     }
-//     if (countryBorderLayerRef.current) {
-//         map.removeLayer(countryBorderLayerRef.current);
-//         countryBorderLayerRef.current = null;
-//     }
-//     map.setView([20, 0], 2);
-// }
-
-// function createGrid(bounds, step) {
-//     const sw = bounds.getSouthWest();
-//     const ne = bounds.getNorthEast();
-//     const grid = [];
-    
-//     // Створюємо сітку в межах видимої області карти
-//     for (let lat = sw.lat; lat < ne.lat; lat += step) {
-//         for (let lon = sw.lng; lon < ne.lng; lon += step) {
-//             grid.push({ lat, lon });
-//         }
-//     }
-    
-//     return grid;
-// }
-// function createGrid(bounds) {
-//     const center = bounds.getCenter(); // Центр карти
-//     const radiusLat = (bounds.getNorthEast().lat - bounds.getSouthWest().lat) / 2; // Половина висоти карти
-//     const radiusLng = (bounds.getNorthEast().lng - bounds.getSouthWest().lng) / 2; // Половина ширини карти
-    
-//     // Формуємо набір точок: центр та 4 точки по піврадіусу навколо центру
-//     const points = [
-//         { lat: center.lat, lng: center.lng }, // Центр карти
-//         { lat: center.lat, lng: center.lng - radiusLng }, // Зліва від центру
-//         { lat: center.lat, lng: center.lng + radiusLng }, // Справа від центру
-//         { lat: center.lat + radiusLat, lng: center.lng }, // Зверху від центру
-//         { lat: center.lat - radiusLat, lng: center.lng }, // Знизу від центру
-//     ];
-    
-//     return points;
-// }
-
-
-
-
-// // Додаємо кнопку для показу погоди на карту
-// L.easyButton('fa-cloud', function () {
-//     // const isoCode = document.getElementById('countrySelect').value; // Отримуємо ISO-код країни
-//     const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
-//     console.log('isoCode: ', isoCode);
-
-//     // Очищуємо кластерну групу погоди перед додаванням нових маркерів
-//     weatherMarkers.clearLayers();
-    
-//     getCountryCities(isoCode).then(cities => {
-//         cities.forEach(city => {            
-//             getWeatherData(city.lat, city.lng, city.name, map, weatherMarkers);
-//         })
-//     }) // Отримуємо найбільші міста та показуємо погоду
-    
-// }).addTo(map);
-// // Додаємо кластерну групу до карти
-
-
-// Формуємо bbox (межі області)
-    // const bbox = `${sw.lng},${sw.lat},${ne.lng},${ne.lat},10`;  // bbox формат: ліво, низ, право, верх
-    // console.log("Current bbox:", bbox);
-
-    // Робимо запит на отримання погоди для міст у цій області через PHP
-    // fetch(`php/getWeatherByBbox.php?bbox=${bbox}`)
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         console.log("Weather data in bbox: ", data);
-    //         // Для кожного міста додаємо погоду на мапу
-    //         data.list.forEach(city => {
-    //             const lat = city.coord.Lat;
-    //             const lon = city.coord.Lon;
-    //             const name = city.name;
-    //             console.log('lat', lat);
-    //             console.log('lon', lon);
-    //             console.log('name', name);
-    //             // Отримуємо погоду для кожного міста і додаємо маркер на мапу
-    //             getWeatherData(lat, lon, name, map, weatherMarkers);
-    //         });
-    //     })
-    //     .catch(error => {
-    //         console.error('Error fetching weather data in bbox:', error);
-    //     });
