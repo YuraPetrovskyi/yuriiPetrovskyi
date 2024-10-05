@@ -144,6 +144,7 @@ map.on('locationfound', function(e) {
 map.on('locationerror', function(e) {
     showBootstrapAlert(e.message, 'success');
 });
+
 // showBootstrapAlert('This is a centered success message!', 'success', true, 10000);
 // **************************************************** кнопка для Sity serch  **************************************
 import { searchPlaceByName } from './searchPlaceByName.js';
@@ -341,44 +342,44 @@ L.easyButton('<img src="images/button/weather.png" width="20" height="20">', fun
 }).addTo(map);
 
 
-// **************************************************** кнопка Historycal pleaces **************************************
+// **************************************************** Historycal pleaces **************************************
 const historicalMarkersCluster = L.markerClusterGroup({
     maxClusterRadius: 20
 });
 L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
-    const zoomLevel = map.getZoom(); // Отримуємо поточний рівень масштабу
-    console.log("zoomLevel before:", zoomLevel);
+    const zoomLevel = map.getZoom(); 
 
-    if (zoomLevel < 11){
-        map.setZoom(12);
-    }
-    console.log("zoomLevel after:", zoomLevel);
-    historicalMarkersCluster.clearLayers(); // Очистити попередні маркери
+    historicalMarkersCluster.clearLayers(); // Clear previous markers
 
-    const bounds = map.getBounds(); // отримуємо межі карти
-    const center = bounds.getCenter(); // центр карти
+    const bounds = map.getBounds(); 
+    const center = bounds.getCenter();
 
     getHistoricalPlaces(center.lat, center.lng).then(places => {
-        places.forEach(place => {
-            // Визначаємо іконку для кожного місця
+        if (places.length === 0) {
+            showBootstrapAlert(
+                'No historical or tourist places were found in this area. Please try searching in other locations.', 
+                'warning');
+            return;
+        };
+        if (zoomLevel < 9) {
+            map.setZoom(10);
+        };
+        places.forEach(place => {            
             const icon = getIconByTitle(place.feature, place.title);
             const marker = L.marker([place.lat, place.lng], { icon: icon })
-                .bindPopup(`<b>${place.title}</b><br>${place.summary}<br><a href="https://${place.wikipediaUrl}" target="_blank">Read more</a>`);
-            // Додаємо маркер до кластерної групи
-            historicalMarkersCluster.addLayer(marker);
+                .bindPopup(`<b>${place.title}</b><br>${place.summary}<br><a href="https://${place.wikipediaUrl}" target="_blank">wikipedia...</a>`);
+            historicalMarkersCluster.addLayer(marker); // Add a marker to the cluster group
         });
-        // historicalMarkers.addTo(map); // Додаємо групу маркерів на карту
-        map.addLayer(historicalMarkersCluster); // Додаємо групу маркерів на карту
-
+        map.addLayer(historicalMarkersCluster); // Add clustered markers to the map
     });
 }, 'tourist-btn').addTo(map);
 
-// **************************************************** кнопка для Airoports  **************************************
+// **************************************************** Airoports  **************************************
 import { getAirports } from './getAirports.js';
 const airportClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
-});  // Ініціалізація кластерної групи
-// Додаємо кнопку для отримання аеропортів
+});  
+
 L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
     const bounds = map.getBounds();  // Отримуємо межі карти
     const north = bounds.getNorth();

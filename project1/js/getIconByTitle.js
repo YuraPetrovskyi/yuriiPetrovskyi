@@ -1,8 +1,8 @@
 const castleIcon = L.icon({
   iconUrl: 'images/castle.png',
-  iconSize: [32, 32], // розміри іконки
-  iconAnchor: [16, 32], // точка, де іконка прикріплена до карти
-  popupAnchor: [0, -30] // точка, де з'являється попап відносно іконки
+  iconSize: [32, 32], 
+  iconAnchor: [16, 32], 
+  popupAnchor: [0, -30]
 });
 
 const monumentIcon = L.icon({
@@ -152,7 +152,6 @@ const houseIcon = L.icon({
   popupAnchor: [0, -30]
 });
 
-
 const marketIcon = L.icon({
   iconUrl: 'images/market.png',
   iconSize: [32, 32],
@@ -178,9 +177,8 @@ const collegeIcon = L.icon({
   popupAnchor: [0, -30]
 });
 
-// Функція для визначення іконки за типом місця
-export function getIconByTitle(feature, title) {
-  // Спочатку перевіряємо feature
+// A function for determining the icon by location type
+export function getIconByTitle(feature = '', title) {
   switch (feature) {
       case 'city':
           return cityIcon;
@@ -191,13 +189,10 @@ export function getIconByTitle(feature, title) {
       case 'mountain':
           return mountainIcon;
       default:
-          break; // Якщо feature не підходить, перевіряємо title
+          break; // If the feature does not fit, check the title
   }
-
-  // Якщо feature не відповідає, перевіряємо title на ключові слова
-  const lowerTitle = title.toLowerCase(); // Перетворюємо назву на нижній регістр для зручності порівняння
-  // const lowerTitle = title;
-  // console.log('lowerTitle', lowerTitle);
+  
+  const lowerTitle = title.toLowerCase(); 
   
   if (/\bfootball\b/.test(lowerTitle) || /\bsoccer\b/.test(lowerTitle)) {
       return footballIcon;
@@ -250,7 +245,6 @@ export function getIconByTitle(feature, title) {
   } else if (/\bchapel\b/.test(lowerTitle) || /\bkirk\b/.test(lowerTitle) || /\bchurches\b/.test(lowerTitle) || /\bchurch\b/.test(lowerTitle)) {
       return chapelIcon;
   } else {
-      // Базова іконка для інших типів
       return L.icon({
           iconUrl: 'images/default.png',
           iconSize: [32, 32],

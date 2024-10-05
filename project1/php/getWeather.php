@@ -12,15 +12,15 @@ require __DIR__ . '/../vendor/autoload.php';
 error_log('Не вдалося завантажити .env файл');
 // Loading environment variables from .env
 try {
-  $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-  $dotenv->load();
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+    $dotenv->load();
 } catch (Exception $e) {
-  // Log an error if there is no .env file
-  error_log('Не вдалося завантажити .env файл: ' . $e->getMessage());
-  http_response_code(500);
-  header('Content-Type: application/json');
-  echo json_encode(['error' => 'Не вдалося завантажити .env файл']);
-  exit;
+    // Log an error if there is no .env file
+    error_log('Не вдалося завантажити .env файл: ' . $e->getMessage());
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Не вдалося завантажити .env файл']);
+    exit;
 }
 
 if (isset($_GET['lat']) && isset($_GET['lon'])) {
@@ -63,7 +63,7 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
         } else {
             echo json_encode(['error' => 'Invalid data from Weather API']);
         }
-  }
+    }
 
     curl_close($ch);
 } else {
