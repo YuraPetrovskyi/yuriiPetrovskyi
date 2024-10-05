@@ -2,6 +2,8 @@
 
 // import { fetchCountryData } from '../additionaly/countryData.js';
 // import { getCountryBorders } from '../additionaly/getCountryBorders.js';
+// import { getdAllCountryBorders } from '../additionaly/getAllCountryBorders.js'; // Імпорт нової функції
+// import { getCountryCities } from './getCountryCities.js';
 
 import { toggleCountrySearch } from '../features/toggleCountrySearch.js';
 import { filterCountryNames } from '../features/filterCountryNames.js';
@@ -9,8 +11,7 @@ import { filterCountryNames } from '../features/filterCountryNames.js';
 import { getCountrySpecificBorders } from './getCountrySpecificBorders.js';
 import { getCountryList } from './getCountryList.js';
 import { setCountryInform } from './setCountryInform.js';
-// import { getdAllCountryBorders } from '../additionaly/getAllCountryBorders.js'; // Імпорт нової функції
-// import { getCountryCities } from './getCountryCities.js';
+
 import { getCountryByCoordinates } from './getCountryByCoordinates.js';
 
 import { getWeatherData } from './getWeatherData.js';
@@ -21,48 +22,28 @@ import { setCoutryTitle } from './setCoutryTitle.js';
 
 import { getHistoricalPlaces } from './getHistoricalPlaces.js';
 import { getIconByTitle } from './getIconByTitle.js';
+
 // Ініціалізація Leaflet карти
 // var map = L.map('map').setView([50, 30], 6);  // Центр на світі, масштаб 2
-var map = L.map('map').fitWorld();  // Автоматично масштабувати карту на весь світ
-
-// Приклад: додавання маркеру для вибраної країни
-var markerRef = { current: null };
-var myLocationMarcker = { current: null }; // Для відстеження користувача
-// Кластерна група для маркерів погоди
-var weatherMarkers = L.markerClusterGroup({
-    maxClusterRadius: 45
-});
-var countryBorderLayerRef = { allCountries: null,  specificCountry: null}; // Для відстеження шару кордонів 
-
-// var currencyCode = '';
+const map = L.map('map').fitWorld();  // Автоматично масштабувати карту на весь світ
+const countryBorderLayerRef = { allCountries: null,  specificCountry: null}; // Для відстеження шару кордонів 
 
 // **************************************************** слої карт **************************************
-
 // Визначення базових шарів
-var streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);  // Додаємо за замовчуванням
 
-var satellite = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">HOT</a>.'
-});
-
-// Інший варіант Satellite з Esri
-
-var satelliteTwo = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
     attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
     }
 );
 
-// Групування базових шарів
-var baseMaps = {
+const baseMaps = {
     "Streets": streets,
     "Satellite": satellite,
-    "SatelliteTwo": satelliteTwo
 };
-
 // Додавання контролю шарів на карту
 L.control.layers(baseMaps).addTo(map);
 
@@ -113,11 +94,8 @@ document.getElementById('countrySelect').addEventListener('change', function() {
 
 });
 
-// Доступ до ISO-коду в подальшому
-// const countryISO = document.getElementById('currentCountry').getAttribute('data-country-iso');
-// console.log('ISO код вибраної країни:', countryISO);
-
 // **************************************************** геолокація користувача **************************************
+const myLocationMarcker = { current: null }; // Для відстеження користувача
 L.easyButton('<img src="images/button/my_location.png" width="20" height="20">', function(btn, map) {
     map.locate({setView: true}); // Знаходимо місцезнаходження і переміщуємо на нього карту
 }, 'locate-btn').addTo(map);
@@ -132,10 +110,8 @@ map.locate({
 
 map.on('locationfound', function(e) {
     console.log("Location found: ", e.latlng);
-    var lat = e.latlng.lat;
-    var lon = e.latlng.lng;
-    // Використаємо Reverse Geocoding для отримання країни користувача
-    // `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}
+    const lat = e.latlng.lat;
+    const lon = e.latlng.lng;
     getCountryByCoordinates(lat, lon).then(data => {
         console.log('getCountryByCoordinates data ', data);
         setCoutryTitle(data.countryname, data.countryiso)
@@ -144,8 +120,8 @@ map.on('locationfound', function(e) {
     console.log('myLocationMarcker', myLocationMarcker);
     
     if (myLocationMarcker.current) {
+        map.removeLayer(myLocationMarcker.current);
         myLocationMarcker.current = null;
-        console.log('myLocationMarcker after cleaning:) - ', myLocationMarcker);
     }
     const myLocation = L.icon({
         iconUrl: 'images/button/my_location.png',  // Шлях до вашої картинки
@@ -205,45 +181,6 @@ document.getElementById('searchPlaceButton').addEventListener('click', function(
     .catch(error => console.error('Error fetching cities:', error));
 });
 
-// **************************************************** кнопка для Airoports  **************************************
-import { getAirports } from './getAirports.js';
-var airportClusterGroup = L.markerClusterGroup({
-    maxClusterRadius: 25
-});  // Ініціалізація кластерної групи
-// Додаємо кнопку для отримання аеропортів
-L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
-    const bounds = map.getBounds();  // Отримуємо межі карти
-    const north = bounds.getNorth();
-    const south = bounds.getSouth();
-    const east = bounds.getEast();
-    const west = bounds.getWest();
-
-    // Очистити попередні маркери
-    airportClusterGroup.clearLayers();
-
-    // Створюємо кастомну іконку для аеропортів
-    const airportIcon = L.icon({
-        iconUrl: 'images/airport.png',  // Шлях до вашої картинки
-        iconSize: [32, 32],                  // Розмір іконки
-        iconAnchor: [16, 32],                // Точка, де іконка прикріплюється до карти
-        popupAnchor: [0, -30]                // Точка, де з'являється попап відносно іконки
-    });
-
-    getAirports(north, south, east, west).then(airports => {
-        airports.forEach(airport => {
-            const wikiName = airport.name.replace(/[\s\W]+/g, '_');
-            const marker = L.marker([airport.lat, airport.lng], { icon: airportIcon })
-                .bindPopup(`
-                    <b>${airport.name}</b><br>
-                    Country: ${airport.countryName}<br>
-                    Region: ${airport.adminName1}<br>
-                    <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank">Wikipedia...</a>
-                `); 
-            airportClusterGroup.addLayer(marker); // Додаємо маркер до кластерної групи
-        });
-        map.addLayer(airportClusterGroup); // Додаємо кластерну групу на карту
-    });
-}, 'airport-btn').addTo(map);
 
 // **************************************************** кнопка для модалки Info  **************************************
 
@@ -264,11 +201,31 @@ document.querySelector('[title="info-btn"]').addEventListener('click', function(
     
 });
 
+// **************************************************** кнопка Валюти **************************************
+// <a href="https://www.flaticon.com/free-icons/currency" title="currency icons">Currency icons created by Pixel perfect - Flaticon</a>
+L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', function() {
+    // Приклад: завантажуємо інформацію для вибраної країни та її валюти
+    const countryName = document.getElementById('currentCountry').textContent;
+    const currencyCode = document.getElementById('currentCountry').getAttribute('data-curency-code');
+
+    // const currencyCode = 'GBP'; // Приклад коду валюти
+    console.log('countryName', countryName)
+    console.log('currencyCode', currencyCode)
+    console.log('currentCurencyAmount', document.getElementById('currentCurencyAmount').value)
+    console.log('baseCurrencyAmount', document.getElementById('baseCurrencyAmount').value)
+
+    document.getElementById('currentCurencyAmount').value = '';
+    document.getElementById('baseCurrencyAmount').value = '1';
+    // document.getElementById('currencyModalLabel').textContent = `${countryName}`;
+
+    showCurrencyModal(currencyCode);
+}, 'currency-btn').addTo(map);
+
 // ****************************************************  Кордони всіх країн **************************************
 import { loadAllCountryBorders } from './loadAllCountryBorders.js';  // Нова функція для завантаження кордонів
 
 // Змінна для збереження стану кордонів (шару)
-var bordersLayerGroup = L.layerGroup();  // Використовуємо layerGroup для зберігання кордонів
+const bordersLayerGroup = L.layerGroup();  // Використовуємо layerGroup для зберігання кордонів
 
 // Завантажуємо всі кордони при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', function() {
@@ -328,97 +285,13 @@ L.easyButton('<img src="images/button/country.png" width="20" height="20">', fun
     position: 'topleft'  // Розташування кнопки на карті
 }).addTo(map);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // Створюємо кнопку для відображення/приховування кордонів
-// L.easyButton({
-//     id: 'border-btn', // Присвоюємо ID кнопці для зручного доступу
-//     position: 'topleft',
-//     states: [{
-//         stateName: 'show-borders',
-//         icon: '<img src="images/button/border.png" width="20" height="20">', // Іконка кнопки
-//         title: 'Show Borders',
-//         onClick: function(btn, map) {
-//             // Перевіряємо, чи кордони вже завантажені
-//             map.setZoom(6);
-//             if (bordersLayerGroup) {
-//                 map.addLayer(bordersLayerGroup);  // Додаємо шар з кордонами
-//                 btn.state('hide-borders');  // Змінюємо стан кнопки
-//                 btn.button.style.backgroundColor = 'green'; // Міняємо колір кнопки
-//                 // Деактивуємо кнопку "кордони поточної країни"
-//                 document.getElementById('current-border-btn').style.backgroundColor = ''; // Деактивуємо кнопку поточної країни
-//             }
-//         }
-//     }, {
-//         stateName: 'hide-borders',
-//         icon: '<img src="images/button/border.png" width="20" height="20">', // Іконка кнопки
-//         title: 'Hide Borders',
-//         onClick: function(btn, map) {
-//             // Видаляємо шар з кордонами
-//             if (bordersLayerGroup) {
-//                 map.removeLayer(bordersLayerGroup);  // Видаляємо шар кордонів
-//                 btn.state('show-borders'); // Повертаємо стан кнопки
-//                 btn.button.style.backgroundColor = ''; // Відновлюємо стандартний колір
-//             }
-//         }
-//     }]
-// }).addTo(map);
-
-// // **************************************************** кнопка кордони поточної країни **************************************
-// L.easyButton({
-//     id: 'current-border-btn', // Присвоюємо ID для цієї кнопки
-//     position: 'topleft',
-//     states: [{
-//         stateName: 'show-current-borders',
-//         icon: '<img src="images/button/border.png" width="20" height="20">', // Іконка для поточної країни
-//         title: 'Show Current Country Borders',
-//         onClick: function(btn, map) {
-//             const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
-//             if (isoCode) {
-//                 getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
-//                 // Змінюємо стан кнопки на активний
-//                 btn.state('hide-current-borders');
-//                 btn.button.style.backgroundColor = 'green'; // Активуємо кнопку поточної країни
-                
-//                 // Деактивуємо кнопку всіх кордонів
-//                 document.getElementById('border-btn').style.backgroundColor = ''; // Відновлюємо стандартний колір для кнопки всіх кордонів
-//             } else {
-//                 alert('No country selected.');
-//             }
-//         }
-//     }, {
-//         stateName: 'hide-current-borders',
-//         icon: '<img src="images/button/border.png" width="20" height="20">', // Іконка для поточної країни
-//         title: 'Hide Current Country Borders',
-//         onClick: function(btn, map) {
-//             if (countryBorderLayerRef.specificCountry) {
-//                 map.removeLayer(countryBorderLayerRef.specificCountry);
-//                 countryBorderLayerRef.specificCountry = null;
-//                 // Змінюємо стан кнопки на "неактивний"
-//                 btn.state('show-current-borders');
-//                 btn.button.style.backgroundColor = ''; // Повертаємо стандартний колір
-//             }
-//         }
-//     }]
-// }).addTo(map);
-
-
 // **************************************************** кнопка Погода **************************************
+// Кластерна група для маркерів погоди
+const weatherMarkers = L.markerClusterGroup({
+    maxClusterRadius: 45
+});
+map.addLayer(weatherMarkers);
+
 L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
     weatherMarkers.clearLayers();
 
@@ -463,32 +336,10 @@ L.easyButton('<img src="images/button/weather.png" width="20" height="20">', fun
     }
 
 }).addTo(map);
-map.addLayer(weatherMarkers);
-
-// **************************************************** кнопка Валюти **************************************
-    // <a href="https://www.flaticon.com/free-icons/currency" title="currency icons">Currency icons created by Pixel perfect - Flaticon</a>
-
-L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', function() {
-    // Приклад: завантажуємо інформацію для вибраної країни та її валюти
-    const countryName = document.getElementById('currentCountry').textContent;
-    const currencyCode = document.getElementById('currentCountry').getAttribute('data-curency-code');
-
-    // const currencyCode = 'GBP'; // Приклад коду валюти
-    console.log('countryName', countryName)
-    console.log('currencyCode', currencyCode)
-    console.log('currentCurencyAmount', document.getElementById('currentCurencyAmount').value)
-    console.log('baseCurrencyAmount', document.getElementById('baseCurrencyAmount').value)
-
-    document.getElementById('currentCurencyAmount').value = '';
-    document.getElementById('baseCurrencyAmount').value = '1';
-    // document.getElementById('currencyModalLabel').textContent = `${countryName}`;
-
-    showCurrencyModal(currencyCode);
-}, 'currency-btn').addTo(map);
 
 
 // **************************************************** кнопка Historycal pleaces **************************************
-var historicalMarkersCluster = L.markerClusterGroup({
+const historicalMarkersCluster = L.markerClusterGroup({
     maxClusterRadius: 20
 });
 L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
@@ -519,6 +370,45 @@ L.easyButton('<img src="images/button/history.png" width="20" height="20">', fun
     });
 }, 'tourist-btn').addTo(map);
 
+// **************************************************** кнопка для Airoports  **************************************
+import { getAirports } from './getAirports.js';
+const airportClusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 25
+});  // Ініціалізація кластерної групи
+// Додаємо кнопку для отримання аеропортів
+L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
+    const bounds = map.getBounds();  // Отримуємо межі карти
+    const north = bounds.getNorth();
+    const south = bounds.getSouth();
+    const east = bounds.getEast();
+    const west = bounds.getWest();
+
+    // Очистити попередні маркери
+    airportClusterGroup.clearLayers();
+
+    // Створюємо кастомну іконку для аеропортів
+    const airportIcon = L.icon({
+        iconUrl: 'images/airport.png',  // Шлях до вашої картинки
+        iconSize: [32, 32],                  // Розмір іконки
+        iconAnchor: [16, 32],                // Точка, де іконка прикріплюється до карти
+        popupAnchor: [0, -30]                // Точка, де з'являється попап відносно іконки
+    });
+
+    getAirports(north, south, east, west).then(airports => {
+        airports.forEach(airport => {
+            const wikiName = airport.name.replace(/[\s\W]+/g, '_');
+            const marker = L.marker([airport.lat, airport.lng], { icon: airportIcon })
+                .bindPopup(`
+                    <b>${airport.name}</b><br>
+                    Country: ${airport.countryName}<br>
+                    Region: ${airport.adminName1}<br>
+                    <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank">Wikipedia...</a>
+                `); 
+            airportClusterGroup.addLayer(marker); // Додаємо маркер до кластерної групи
+        });
+        map.addLayer(airportClusterGroup); // Додаємо кластерну групу на карту
+    });
+}, 'airport-btn').addTo(map);
 
 
 // L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
