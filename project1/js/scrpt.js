@@ -65,61 +65,56 @@ const historicalMarkersCluster = L.markerClusterGroup({
     maxClusterRadius: 20
 });
 
-// **************************************************** Робота з DOM **************************************
+// **************************************************** 
+// DOM 
+function addCountrySelectEventListener() {
+    const listItems = document.querySelectorAll('#countrySelect li'); // get all <li> elements
+    listItems.forEach(listItem => {
+        listItem.addEventListener('click', function() {
+            const countryName = this.textContent;
+            const isoCode = this.getAttribute('data-value');
+
+            // update the display of the selected country
+            document.getElementById('currentCountry').textContent = countryName;
+            document.getElementById('currentCountry').setAttribute('data-country-iso', isoCode);
+
+            // download information and borders for the selected country
+            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
+            setCountryInform(isoCode);
+
+            // close the list after selection
+            toggleCountrySearch();
+        });
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function() {
-    // filling in the list of countries
+    // download the list of countries
     getCountryList()
         .then(countries => {
-            setCountriesList(countries);
+            setCountriesList(countries); // fill the list with countries
+            addCountrySelectEventListener(); // adding an event for choosing a country
         })
         .catch(error => {
-            // console.error('Error fetching airports:', error);
             showBootstrapAlert(
                 'Sorry for the inconvenience, something went wrong with the server. Failed to load country list.', 
-                'warning');
+                'warning'
+            );
         });
-    // loading all borders    
+
+    // loading all borders
     loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef);
-});
 
-// **************************************************** Функції для навігаційної панелі **************************************
+    // add handlers for opening/closing the list of countries
+    document.getElementById('selectCountryButton').addEventListener('click', toggleCountrySearch);
+    document.getElementById('closeCountrySelect').addEventListener('click', toggleCountrySearch);
 
-
-document.getElementById('selectCountryButton').addEventListener('click', toggleCountrySearch);
-document.getElementById('closeCountrySelect').addEventListener('click', toggleCountrySearch);
-
-// Обробник для вибору країни зі списку
-document.getElementById('countrySelect').addEventListener('change', function() {
-    const countryName = this.options[this.selectedIndex].text;
-    document.getElementById('currentCountry').textContent = countryName;
-    toggleCountrySearch();
-});
-
-// Пошук по введеному значенню у списку країн
-document.getElementById('countrySearchInput').addEventListener('input', function() {
-    const name = this.value.toLowerCase();
-    const options = document.querySelectorAll('#countrySelect option');
-    filterCountryNames(name, options);
-});
-
-
-
-
-// Оновлюємо відображення країни і зберігаємо ISO-код у атрибуті data-country-iso
-document.getElementById('countrySelect').addEventListener('change', function() {
-    // Очищуємо кластерну групу погоди
-    weatherMarkers.clearLayers();
-
-    const countryName = this.options[this.selectedIndex].text;
-    const isoCode = this.value;
-
-    const currentCountryElement = document.getElementById('currentCountry');
-    currentCountryElement.textContent = countryName; // Відображаємо назву країни
-    currentCountryElement.setAttribute('data-country-iso', isoCode); // Зберігаємо ISO-код  
-
-    getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
-    setCountryInform(isoCode);
-
+    // filtering countries by the entered text
+    document.getElementById('countrySearchInput').addEventListener('input', function() {
+        const name = this.value.toLowerCase();
+        const listItems = document.querySelectorAll('#countrySelect li'); // get all <li> for filtering
+        filterCountryNames(name, listItems);
+    });
 });
 
 // **************************************************** 
@@ -221,19 +216,11 @@ document.getElementById('searchPlaceButton').addEventListener('click', function(
 
 // **************************************************** 
 // Info modal  
-
 L.easyButton('<img src="images/button/info.png" width="20" height="20">', function() {
     // call the Bootstrap function to open a modal window
     const countryModal = new bootstrap.Modal(document.getElementById('countryModal'));
     countryModal.show();
 }, 'info-btn').addTo(map);
-
-document.querySelector('[title="info-btn"]').addEventListener('click', function() {
-    const countryName = document.getElementById('currentCountry').textContent;
-    const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
-    // console.log('you choose country: ', countryName);
-    // console.log('you choose country: ', isoCode);    
-});
 
 // **************************************************** 
 // Curency modal
@@ -260,7 +247,6 @@ L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', fu
 
 // ****************************************************  
 // All borders
-
 L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
     // If the border layer of all countries is not active, add it
     if (!map.hasLayer(bordersLayerGroup)) {
@@ -287,7 +273,6 @@ L.easyButton('<img src="images/button/border.png" width="20" height="20">', func
 
 // ****************************************************  
 // Current border 
-
 L.easyButton('<img src="images/button/country.png" width="20" height="20">', function() {
     const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
     if (isoCode) {
@@ -315,7 +300,6 @@ L.easyButton('<img src="images/button/country.png" width="20" height="20">', fun
 
 // **************************************************** 
 // Weather 
-
 L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
     weatherMarkers.clearLayers();
 
@@ -366,7 +350,6 @@ L.easyButton('<img src="images/button/weather.png" width="20" height="20">', fun
 
 // **************************************************** 
 // Historycal places
-
 L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
     const zoomLevel = map.getZoom(); 
 
@@ -402,7 +385,6 @@ L.easyButton('<img src="images/button/history.png" width="20" height="20">', fun
 
 // **************************************************** 
 // Airoports
-
 L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
     const bounds = map.getBounds();
     const north = bounds.getNorth();

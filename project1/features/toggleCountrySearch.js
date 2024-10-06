@@ -3,11 +3,11 @@ export function toggleCountrySearch() {
   const countrySelectContainer = document.getElementById('countrySelectContainer');
   
   if (button.classList.contains('d-none')) {
-    // Повертаємо кнопку "Select Country" і приховуємо список країн
+    // Return the "Choose a country" button and hide the list of countries
       button.classList.remove('d-none');
       countrySelectContainer.classList.add('d-none');
   } else {
-    // Приховуємо кнопку і показуємо список країн
+    // We hide the button and show the list of countries
       button.classList.add('d-none');
       countrySelectContainer.classList.remove('d-none');
   }

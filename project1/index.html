@@ -36,7 +36,7 @@
           <li class="nav-item">
             <!-- Кнопка для вибору країни -->
             <button id="selectCountryButton" class="btn btn-outline-success">
-              Select Country
+              Country
             </button>
     
             <!-- Контейнер для поля пошуку і списку країн -->
@@ -44,16 +44,16 @@
               <!-- Поле пошуку країни -->
               <input id="countrySearchInput" class="form-control mb-2" type="text" placeholder="Search for a country">
               <!-- Список країн -->
-              <select id="countrySelect" class="form-select" size="10" style="max-height: 300px; overflow-y: auto;">
+              <ul id="countrySelect" class="list-group" style="max-height: 300px; overflow-y: auto;">
                 <!-- Опції країн завантажуватимуться динамічно -->
-              </select>
+              </ul>
               <!-- Кнопка для закриття списку країн -->
               <button id="closeCountrySelect" class="btn btn-outline-danger mt-2 w-100">Close</button>
             </div>
           </li>          
         </ul>
         <!-- Поле для відображення поточної країни, збереження ISO-коду -->
-        <span id="currentCountry" class="navbar-text fs-3 ms-3 text-success fw-bold text-uppercase p-0" data-country-iso="" data-curency-code=""></span>
+        <span id="currentCountry" class="navbar-text fs-4 ms-3 text-success fw-bold text-uppercase p-0" data-country-iso="" data-curency-code=""></span>
       </div>
     </nav>
 
