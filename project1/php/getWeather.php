@@ -23,6 +23,8 @@ try {
     exit;
 }
 
+header('Content-Type: application/json');
+
 if (isset($_GET['lat']) && isset($_GET['lon'])) {
     $lat = $_GET['lat'];
     $lon = $_GET['lon'];
@@ -37,10 +39,7 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
 
     $response = curl_exec($ch);
     
-    header('Content-Type: application/json');
-
     if (curl_errno($ch)) {
-        header('Content-Type: application/json');
         echo json_encode(['error' => 'cURL Error: ' . curl_error($ch)]);
     } else {
         $weatherData = json_decode($response, true);
@@ -67,7 +66,6 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
 
     curl_close($ch);
 } else {
-    header('Content-Type: application/json');
     echo json_encode(['error' => 'Invalid request']);
 }
 ?>

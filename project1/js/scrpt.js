@@ -118,8 +118,8 @@ map.on('locationfound', function(e) {
     const lon = e.latlng.lng;
     getCountryByCoordinates(lat, lon).then(data => {
         console.log('getCountryByCoordinates data ', data);
-        setCoutryTitle(data.countryname, data.countryiso)
-        setCountryInform(data.countryiso);
+        setCoutryTitle(data.countryName, data.countryISO)
+        setCountryInform(data.countryISO);
     })
     console.log('myLocationMarcker', myLocationMarcker);
     
@@ -316,6 +316,7 @@ L.easyButton('<img src="images/button/weather.png" width="20" height="20">', fun
         getCityByBounds(north, south, east, west).then(cities => {
             if (cities.length === 0){
                 getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
+                return;
             }
             cities.forEach(city => {
                 getWeatherData(city.lat, city.lng, city.name, weatherMarkers);        
@@ -325,6 +326,7 @@ L.easyButton('<img src="images/button/weather.png" width="20" height="20">', fun
         getCityByBounds(north, south, east, west, 'PPL').then(cities => {
             if (cities.length === 0){
                 getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
+                return;
             }           
             cities.forEach(city => {
                 if (city.fcode !== "PPL") {
