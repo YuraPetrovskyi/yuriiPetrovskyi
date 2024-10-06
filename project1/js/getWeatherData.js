@@ -20,7 +20,6 @@ export function getWeatherData(lat, lon, locationName, weatherMarkers) {
                 locationName = data.name;
             }
 
-            
             const iconUrl = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
 
             // HTML table for popup

@@ -55,7 +55,6 @@ const countryBorderLayerRef = { allCountries: null,  specificCountry: null};
 const weatherMarkers = L.markerClusterGroup({
     maxClusterRadius: 45
 });
-map.addLayer(weatherMarkers);
 
 const airportClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
@@ -65,6 +64,13 @@ const historicalMarkersCluster = L.markerClusterGroup({
     maxClusterRadius: 20
 });
 
+const overlayMaps = {
+    "Weather": weatherMarkers,
+    "Historical Places": historicalMarkersCluster,
+    "Airports": airportClusterGroup
+};
+
+L.control.layers(null, overlayMaps).addTo(map);
 // **************************************************** 
 // DOM 
 function addCountrySelectEventListener() {
@@ -316,7 +322,7 @@ L.easyButton('<img src="images/button/weather.png" width="20" height="20">', fun
     if (zoomLevel > 14) {
         getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
     } else if (zoomLevel <= 14 && zoomLevel > 10) {
-        console.log("zoomLevel:", zoomLevel);
+        // console.log("zoomLevel:", zoomLevel);
         getCityByBounds(north, south, east, west).then(cities => {
             if (cities.length === 0){
                 getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
@@ -345,6 +351,7 @@ L.easyButton('<img src="images/button/weather.png" width="20" height="20">', fun
         );
         map.setZoom(7);
     }
+    map.addLayer(weatherMarkers);
 }).addTo(map);
 
 
