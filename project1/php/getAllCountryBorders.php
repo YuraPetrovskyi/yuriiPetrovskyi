@@ -1,20 +1,17 @@
 <?php
 // getAllCountryBorders.php
 
-// Встановлюємо заголовок для JSON відповіді
+// set the header for the JSON response
 header('Content-Type: application/json');
 
-// Читання файлу з кордонами країн
 $geojsonFilePath = '../data/countries.geojson';
 
 if (file_exists($geojsonFilePath)) {
-    // Читаємо вміст файлу
+    // read the contents of the file
     $geojsonData = file_get_contents($geojsonFilePath);
     
-    // Виводимо JSON дані
     echo $geojsonData;
 } else {
-    // Якщо файл не знайдено, повертаємо помилку
     echo json_encode(['error' => 'GeoJSON file not found']);
 }
 ?>

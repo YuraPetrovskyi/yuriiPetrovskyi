@@ -10,6 +10,7 @@ error_reporting(E_ALL);
 require __DIR__ . '/../vendor/autoload.php';
 
 error_log('Failed to load .env file');
+
 // Loading environment variables from .env
 try {
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');

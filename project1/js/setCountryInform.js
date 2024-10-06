@@ -1,26 +1,17 @@
 // setCountryInform.js
 
-// Функція для отримання інформації про країну
+// Function for obtaining and setting information about the country
 export function setCountryInform(isoCode) {
   fetch('php/getCountryDetails.php?countryName=' + isoCode)
     .then(response => response.json())
-    .then(data => {
-        console.log('getCountryDetails: ', data);
-        console.log('currency -> ',Object.values(data[0].currencies));
-
-        const country = data[0];  // Отримуємо першу країну з результату
-        const currencies = data[0].currencies;  // Отримуємо об'єкт currencies
+    .then(data => {       
+        const country = data[0];  // get the first country from the result
+        const currencies = data[0].currencies;
         const currencyCode = Object.keys(currencies)[0]; 
-        // Доступ до назви валюти і символу
+
         const currencyName = currencies[currencyCode].name ?? '';
         const currencySymbol = currencies[currencyCode].symbol ?? '';
-        console.log('currencies', currencies);
-
-        console.log('currencyCode', currencyCode);
-        console.log('currencyName', currencyName);
-        console.log('currencySymbol', currencySymbol);
-
-
+        
         document.getElementById('countryName').textContent = country.name.common;
         document.getElementById('officialName').textContent = country.name.official;
         document.getElementById('capital').textContent = country.capital[0];
@@ -32,7 +23,7 @@ export function setCountryInform(isoCode) {
         document.getElementById('area').textContent = `${country.area.toLocaleString()} km²`;
         document.getElementById('timezones').textContent = country.timezones.join(', ');
 
-        document.getElementById('currentCountry').setAttribute('data-curency-code', currencyCode); // Зберігаємо curency-code    
+        document.getElementById('currentCountry').setAttribute('data-curency-code', currencyCode); // Set curency-code    
         document.getElementById('currencyModalLabel').textContent = `${currencyName}(${currencyCode}), ${currencySymbol}, ${country.name.common}`;
         document.getElementById('currentCurrencyName').textContent = `${currencyName} - ${currencyCode}`;
         document.getElementById('curenCurrencySymbol').textContent = `${currencySymbol}`;
@@ -40,5 +31,5 @@ export function setCountryInform(isoCode) {
         // document.getElementById('curenCurrencyCode').textContent = `Currency: ${currencyName}(${currencyCode}), ${currencySymbol}, ${country.name.common}`;
 
     })
-    .catch(error => console.error('Error fetching country details:', error));
+    .catch(error => { throw error; });
 }

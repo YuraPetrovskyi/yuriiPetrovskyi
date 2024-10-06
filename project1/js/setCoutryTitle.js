@@ -1,9 +1,8 @@
 // setCoutryTitle.js
-// відображаємо країну в навігації за допомогою координат
+// display the country in the navigation using coordinates
 
 export function setCoutryTitle(countryName, countryISO) {
-  // Відображаємо країну користувача в новому контейнері навігаційної панелі
-  console.log(`Встановлено країну: ${countryName} (${countryISO})`);
+  // console.log(`country is: ${countryName} (${countryISO})`);
   document.getElementById('currentCountry').textContent = `${countryName}`;
-  document.getElementById('currentCountry').setAttribute('data-country-iso', countryISO); // Зберігаємо ISO-код
+  document.getElementById('currentCountry').setAttribute('data-country-iso', countryISO);
 }

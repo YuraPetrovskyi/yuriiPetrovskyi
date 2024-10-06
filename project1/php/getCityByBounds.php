@@ -45,14 +45,12 @@ curl_close($ch);
 // $cities = json_decode($result, true);
 $cities = json_decode($result, true)['geonames'] ?? [];
 
-// Якщо є параметр fcode, фільтруємо міста
 if (!empty($fcode)) {
     $cities = array_filter($cities, function($city) use ($fcode) {
         return isset($city['fcode']) && $city['fcode'] !== $fcode;
     });
 }
 
-// Формуємо вихідний масив з потрібними даними тільки якщо всі властивості існують
 $output = [];
 foreach ($cities as $city) {
     if (isset($city['name'], $city['lat'], $city['lng'], $city['population'])) {

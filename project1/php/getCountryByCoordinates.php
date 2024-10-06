@@ -15,6 +15,7 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'User-Agent: MyCustomApp/1.0 (your-email@example.com)'
     ]);
+    
     $response = curl_exec($ch);
     
     // We check whether an error occurred during the execution of the request

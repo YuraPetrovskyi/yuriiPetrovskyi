@@ -5,7 +5,7 @@ export function getWeatherData(lat, lon, locationName, weatherMarkers) {
     fetch(`php/getWeather.php?lat=${lat}&lon=${lon}`)
         .then(response => response.json())
         .then(data => {
-            console.log('weather data: ', data);
+            // console.log('weather data: ', data);
             const temp = data.temp;
             const clouds = data.clouds;
             const humidity = data.humidity;
@@ -66,8 +66,7 @@ export function getWeatherData(lat, lon, locationName, weatherMarkers) {
         });
 }
 
-
-function showAlert(message, alertType = 'success', autoClose = true, closeDelay = 15000) {
+function showAlert(message, alertType = 'success', autoClose = true, closeDelay = 10000) {
     const alertPlaceholder = document.getElementById('alertPlaceholder');
     const alertHtml = `
         <div class="alert alert-${alertType} alert-dismissible fade show text-center" role="alert" style="z-index: 2000;">

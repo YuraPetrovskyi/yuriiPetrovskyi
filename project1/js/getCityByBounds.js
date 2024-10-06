@@ -14,7 +14,7 @@ export function getCityByBounds(north, south, east, west, fcode = '') {
         if (!Array.isArray(cities)) {
           throw new Error('Unexpected data format');
         }
-        console.log("Cities within map bounds: ", cities);
+        // console.log("Cities within map bounds: ", cities);
         return cities;           
       })
       .catch(error => {
@@ -24,7 +24,7 @@ export function getCityByBounds(north, south, east, west, fcode = '') {
       });
 }
 
-function showAlert(message, alertType = 'success', autoClose = true, closeDelay = 15000) {
+function showAlert(message, alertType = 'success', autoClose = true, closeDelay = 10000) {
   const alertPlaceholder = document.getElementById('alertPlaceholder');
   const alertHtml = `
       <div class="alert alert-${alertType} alert-dismissible fade show text-center" role="alert" style="z-index: 2000;">

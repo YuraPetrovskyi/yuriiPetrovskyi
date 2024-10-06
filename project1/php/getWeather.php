@@ -69,3 +69,4 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
     echo json_encode(['error' => 'Invalid request']);
 }
 ?>
+

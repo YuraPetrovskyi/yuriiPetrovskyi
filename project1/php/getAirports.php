@@ -44,7 +44,6 @@ $airports = json_decode($result, true)['geonames'] ?? [];
 
 $output = [];
 foreach ($airports as $airport) {
-    // Перевіряємо, чи всі необхідні властивості присутні в об'єкті
     if (isset($airport['name'], $airport['countryName'], $airport['adminName1'], $airport['lat'], $airport['lng'])) {
         $output[] = [
             'name' => $airport['name'],
