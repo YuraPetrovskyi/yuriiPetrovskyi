@@ -15,6 +15,12 @@ export function getCountrySpecificBorders(isoCode, map, countryBorderLayerRef) {
                 };
             }
         });
+
+        if (countryBorderLayerRef.specificCountry) {
+            map.removeLayer(countryBorderLayerRef.specificCountry);
+            countryBorderLayerRef.specificCountry = null;
+        }
+
         document.getElementById('border-btn').style.backgroundColor = '';
         document.getElementById('current-border-btn').style.backgroundColor = 'red';
         
