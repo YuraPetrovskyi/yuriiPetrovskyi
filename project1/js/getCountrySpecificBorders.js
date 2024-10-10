@@ -21,8 +21,8 @@ export function getCountrySpecificBorders(isoCode, map, countryBorderLayerRef) {
             countryBorderLayerRef.specificCountry = null;
         }
 
-        document.getElementById('border-btn').style.backgroundColor = '';
-        document.getElementById('current-border-btn').style.backgroundColor = 'red';
+        // document.getElementById('border-btn').style.backgroundColor = '';
+        // document.getElementById('current-border-btn').style.backgroundColor = 'red';
         
         // We add a new layer of borders of a specific country
         countryBorderLayerRef.specificCountry = specificCountryLayer.addTo(map);

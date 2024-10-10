@@ -7,6 +7,7 @@ export function getCountryByCoordinates(lat, lon) {
         .then(data => {
             data.countryISO = data.countryISO.toUpperCase();
             // console.log(`Your country: ${data.countryName} (${data.countryISO})`);
+            // $('#countrySelect').val(data.countryISO);
             return data;
         })
         .catch(error => { throw error; });

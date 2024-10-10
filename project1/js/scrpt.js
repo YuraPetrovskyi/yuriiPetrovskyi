@@ -1,19 +1,21 @@
 // script.js
 
-import { toggleCountrySearch } from '../features/toggleCountrySearch.js';
-import { filterCountryNames } from '../features/filterCountryNames.js';
+// import { toggleCountrySearch } from '../features/toggleCountrySearch.js';
+// import { filterCountryNames } from '../features/filterCountryNames.js';
+// import { getCountryByCoordinates } from './getCountryByCoordinates.js';
+// import { setCoutryTitle } from './setCoutryTitle.js';
+
+
 
 import { getCountrySpecificBorders } from './getCountrySpecificBorders.js';
 import { getCountryList } from './getCountryList.js';
 import { setCountryInform } from './setCountryInform.js';
 
-import { getCountryByCoordinates } from './getCountryByCoordinates.js';
 
 import { getWeatherData } from './getWeatherData.js';
 import { getCityByBounds } from './getCityByBounds.js';
 
 import { getCurrencyData } from './getCurrencyData.js';
-import { setCoutryTitle } from './setCoutryTitle.js';
 
 import { getHistoricalPlaces } from './getHistoricalPlaces.js';
 import { getIconByTitle } from './getIconByTitle.js';
@@ -27,214 +29,83 @@ import { getAirports } from './getAirports.js';
 
 import { loadAllCountryBorders } from './loadAllCountryBorders.js';
 
-const map = L.map('map').fitWorld();
+// ---------------------------------------------------------
+// GLOBAL DECLARATIONS
+// ---------------------------------------------------------
 
-// map layers
-const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+var map = L.map('map').fitWorld();
+
+// tile layers
+var streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map); 
 
-const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+var satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
     attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
     }
 );
 
-const baseMaps = {
+var baseMaps = {
     "Streets": streets,
     "Satellite": satellite,
 };
 // layer controls to the map
 L.control.layers(baseMaps).addTo(map);
 
-const bordersLayerGroup = L.layerGroup();  // use layerGroup to store borders
-const myLocationMarcker = { current: null };
-const countryBorderLayerRef = { allCountries: null,  specificCountry: null}; 
+var bordersLayerGroup = L.layerGroup();  // use layerGroup to store borders
+var myLocationMarcker = { current: null };
+var countryBorderLayerRef = { allCountries: null,  specificCountry: null}; 
 
 // Cluster group for weather markers
-const weatherMarkers = L.markerClusterGroup({
+var weatherMarkers = L.markerClusterGroup({
     maxClusterRadius: 45
 });
 
-const airportClusterGroup = L.markerClusterGroup({
+var airportClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
 }); 
 
-const historicalMarkersCluster = L.markerClusterGroup({
+var historicalMarkersCluster = L.markerClusterGroup({
     maxClusterRadius: 20
 });
 
-const overlayMaps = {
+var overlayMaps = {
     "Weather": weatherMarkers,
     "Historical Places": historicalMarkersCluster,
     "Airports": airportClusterGroup
 };
 
 L.control.layers(null, overlayMaps).addTo(map);
-// **************************************************** 
-// DOM 
-function addCountrySelectEventListener() {
-    const listItems = document.querySelectorAll('#countrySelect li'); // get all <li> elements
-    listItems.forEach(listItem => {
-        listItem.addEventListener('click', function() {
-            const countryName = this.textContent;
-            const isoCode = this.getAttribute('data-value');
 
-            // update the display of the selected country
-            document.getElementById('currentCountry').textContent = countryName;
-            document.getElementById('currentCountry').setAttribute('data-country-iso', isoCode);
+// buttons
 
-            // download information and borders for the selected country
-            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
-            setCountryInform(isoCode);
-
-            // close the list after selection
-            toggleCountrySearch();
-        });
-    });
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    // download the list of countries
-    getCountryList()
-        .then(countries => {
-            setCountriesList(countries); // fill the list with countries
-            addCountrySelectEventListener(); // adding an event for choosing a country
-        })
-        .catch(error => {
-            showBootstrapAlert(
-                'Sorry for the inconvenience, something went wrong with the server. Failed to load country list.', 
-                'warning'
-            );
-        });
-
-    // loading all borders
-    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef);
-
-    // add handlers for opening/closing the list of countries
-    document.getElementById('selectCountryButton').addEventListener('click', toggleCountrySearch);
-    document.getElementById('closeCountrySelect').addEventListener('click', toggleCountrySearch);
-
-    // filtering countries by the entered text
-    document.getElementById('countrySearchInput').addEventListener('input', function() {
-        const name = this.value.toLowerCase();
-        const listItems = document.querySelectorAll('#countrySelect li'); // get all <li> for filtering
-        filterCountryNames(name, listItems);
-    });
-});
-
-// **************************************************** 
 // User location
-
-L.easyButton('<img src="images/button/my_location.png" width="20" height="20">', function(btn, map) {
+var locationBtn = L.easyButton('<img src="images/button/my_location.png" width="20" height="20">', function(btn, map) {
     map.locate({setView: true}); // find the location and move the map to it
 }, 'locate-btn').addTo(map);
 
-
-map.locate({
-    setView: true,
-    maxZoom: 6,
-    watch: false, // avoid constantly updating the coordinates
-    enableHighAccuracy: true
-});
-
-map.on('locationfound', function(e) {
-    const lat = e.latlng.lat;
-    const lon = e.latlng.lng;
-    getCountryByCoordinates(lat, lon)
-        .then(data => {
-            // console.log('getCountryByCoordinates data ', data);
-            setCoutryTitle(data.countryName, data.countryISO)
-            setCountryInform(data.countryISO);
-        })
-        .catch(error => {
-            // console.error('Error fetching country by coordinates:', error);
-            showBootstrapAlert('Sorry for the inconvenience, something went wrong with the server.', 'danger');
-        })
-    
-    if (myLocationMarcker.current) {
-        map.removeLayer(myLocationMarcker.current);
-        myLocationMarcker.current = null;
-    }
-    const myLocation = L.icon({
-        iconUrl: 'images/button/my_location.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -30]
-    });
-    // add a marker to the map for location
-    myLocationMarcker.current = L.marker(e.latlng, { icon: myLocation }).addTo(map)
-        .bindPopup("You are here")
-    // map.flyTo(e.latlng, 14);// Smoothly move the map to the location
-    map.setView(e.latlng, 14);
-});
-
-map.on('locationerror', function(e) {
-    showBootstrapAlert(e.message, 'success');
-});
-
-// **************************************************** 
 // Place serch
-
-L.easyButton('<img src="images/button/search.png" width="20" height="20">', function() {
+var searchBtn = L.easyButton('<img src="images/button/search.png" width="20" height="20">', function() {
     // modal window for city search
     const placeModal = new bootstrap.Modal(document.getElementById('placeSearchModal'));
     placeModal.show();
 }, 'search-place-btn').addTo(map);
 
-document.getElementById('searchPlaceButton').addEventListener('click', function() {
-    const placeName = document.getElementById('placeSearchInput').value;
-    if (placeName.trim() === '') return; // checking whether the field is empty
-
-    searchPlaceByName(placeName).then(data => {
-        const placeResultsList = document.getElementById('placeResultsList');
-        placeResultsList.innerHTML = ''; // clean the previous results
-
-        if (data.length === 0) {
-            placeResultsList.innerHTML = '<li class="list-group-item">No results found.</li>';
-            return;
-        }
-
-        data.forEach(place => {
-            const placeItem = document.createElement('li');
-            placeItem.classList.add('list-group-item', 'list-group-item-action');
-            placeItem.textContent = `${place.name}, ${place.countryName}`;
-            placeItem.addEventListener('click', function() {
-                setCoutryTitle(place.countryName, place.countryCode)
-                setCountryInform(place.countryCode);
-                
-                const marker = L.marker([place.lat, place.lng]).addTo(map)
-                    .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
-                
-                const placeModal = bootstrap.Modal.getInstance(document.getElementById('placeSearchModal'));
-                
-                map.setView([place.lat, place.lng], 10); // move the map to the selected city
-                placeModal.hide(); // close the modal window after selection
-            });
-            placeResultsList.appendChild(placeItem);
-        });
-    })
-    .catch(error => {
-        // console.error('Error fetching cities:', error)
-        showBootstrapAlert('Sorry for the inconvenience, something went wrong with the server. Please try again later.', 'danger');
-    });
-});
-
-// **************************************************** 
 // Info modal  
-L.easyButton('<img src="images/button/info.png" width="20" height="20">', function() {
+var infoBtn = L.easyButton('<img src="images/button/info.png" width="20" height="20">', function() {
     // call the Bootstrap function to open a modal window
     const countryModal = new bootstrap.Modal(document.getElementById('countryModal'));
     countryModal.show();
 }, 'info-btn').addTo(map);
 
-// **************************************************** 
 // Curency modal
+var currencyBtn = L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', function() {
+    // const currencyCode = $('#countrySelect option:selected').attr('data-currency');
+    // const currencyCode = $('#curenCurrencySymbol').text();
+    const currencyCode = $('#curenCurrencyCodeConverter').text();
 
-L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', function() {
-    // const countryName = document.getElementById('currentCountry').textContent;
-    const currencyCode = document.getElementById('currentCountry').getAttribute('data-curency-code');
-    
+    console.log('currencyCode', currencyCode);
     document.getElementById('currentCurencyAmount').value = '';
     document.getElementById('baseCurrencyAmount').value = '1';
     
@@ -244,69 +115,17 @@ L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', fu
             setCurrencyData(data, currencyCode);
         })
         .catch(error => {
-            console.error('Error fetching cities:', error)
+            console.error('Error fetching currency:', error)
         })
 
     const currencyModal = new bootstrap.Modal(document.getElementById('currencyModal'));
     currencyModal.show();// open model window
 }, 'currency-btn').addTo(map);
 
-// ****************************************************  
-// All borders
-L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
-    // If the border layer of all countries is not active, add it
-    if (!map.hasLayer(bordersLayerGroup)) {
-        map.setZoom(6);
-        map.addLayer(bordersLayerGroup);
-        // activate the button of all borders
-        document.getElementById('border-btn').style.backgroundColor = 'green';  // add green color to the button
-        // dictate the border button of a certain country
-        document.getElementById('current-border-btn').style.backgroundColor = ''; 
 
-        if (countryBorderLayerRef.specificCountry) {
-            map.removeLayer(countryBorderLayerRef.specificCountry);
-            countryBorderLayerRef.specificCountry = null;
-        }
-    } else {
-        // If the borders are already active, hide the border layer of all countries
-        map.removeLayer(bordersLayerGroup);
-        document.getElementById('border-btn').style.backgroundColor = '';  // Deactivate the green button
-    }
-}, {
-    id: 'border-btn',  // an ID to the access button
-    position: 'topleft'  // location of the button on the map
-}).addTo(map);
 
-// ****************************************************  
-// Current border 
-L.easyButton('<img src="images/button/country.png" width="20" height="20">', function() {
-    const isoCode = document.getElementById('currentCountry').getAttribute('data-country-iso');
-    if (isoCode) {
-        // If the borders of all countries are active, delete them
-        if (map.hasLayer(bordersLayerGroup)) {
-            map.removeLayer(bordersLayerGroup);
-        }
-        // If the border layer of the current country is not active, add it
-        if (!countryBorderLayerRef.specificCountry) {
-            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);  // load the borders of the current country
-            
-        } else {
-            // if the borders of the current country are already active, delete the layer
-            map.removeLayer(countryBorderLayerRef.specificCountry);
-            countryBorderLayerRef.specificCountry = null;
-            document.getElementById('current-border-btn').style.backgroundColor = '';  // Deactivate the red button
-        }
-    } else {
-        showBootstrapAlert('No country selected.', 'warning');
-    }
-}, {
-    id: 'current-border-btn',  // an ID to the access button
-    position: 'topleft'
-}).addTo(map);
-
-// **************************************************** 
 // Weather 
-L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
+var weatherIcon = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
     weatherMarkers.clearLayers();
 
     const bounds = map.getBounds();
@@ -355,9 +174,8 @@ L.easyButton('<img src="images/button/weather.png" width="20" height="20">', fun
 }).addTo(map);
 
 
-// **************************************************** 
 // Historycal places
-L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
+var histotyIcon = L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
     const zoomLevel = map.getZoom(); 
 
     historicalMarkersCluster.clearLayers(); // Clear previous markers
@@ -390,9 +208,8 @@ L.easyButton('<img src="images/button/history.png" width="20" height="20">', fun
         });
 }, 'tourist-btn').addTo(map);
 
-// **************************************************** 
 // Airoports
-L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
+var airportIcon = L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
     const bounds = map.getBounds();
     const north = bounds.getNorth();
     const south = bounds.getSouth();
@@ -434,3 +251,186 @@ L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', fu
             showBootstrapAlert('Sorry for the inconvenience, something went wrong with the Airport server. Please try again later or change the location.', 'danger');
         });
 }, 'airport-btn').addTo(map);
+
+// ---------------------------------------------------------
+// EVENT HANDLERS
+// ---------------------------------------------------------
+
+// initialise and add controls once DOM is ready
+
+document.addEventListener("DOMContentLoaded", function() {
+    // download the list of countries
+    getCountryList()
+        .then(countries => {
+            setCountriesList(countries); // fill the list with countries
+        })
+        .catch(error => {
+            showBootstrapAlert(
+                'Sorry for the inconvenience, something went wrong with the server. Failed to load country list.', 
+                'warning'
+            );
+        });
+
+    // loading all borders
+    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef);
+
+    $('#countrySelect').on('change', function() {
+        const isoCode = $(this).val();  // Отримуємо вибране значення
+        getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
+        setCountryInform(isoCode);
+    });
+
+
+
+    
+});
+
+// **************************************************** 
+
+map.locate({
+    setView: true,
+    maxZoom: 6,
+    watch: false, // avoid constantly updating the coordinates
+    enableHighAccuracy: true
+});
+
+map.on('locationfound', function(e) {
+    const lat = e.latlng.lat;
+    const lon = e.latlng.lng;    
+    
+    fetch(`php/getCountryByCoordinates.php?lat=${lat}&lon=${lon}`)
+        .then(response => response.json())
+        .then(data => {
+            data.countryISO = data.countryISO.toUpperCase();
+            // console.log(`Your country: ${data.countryName} (${data.countryISO})`);
+            $('#countrySelect').val(data.countryISO);
+            setCountryInform(data.countryISO);
+            // return data;
+        })
+        .catch(error => {
+            showBootstrapAlert('Sorry for the inconvenience, something went wrong with the server.', 'danger');
+        });    
+    
+    if (myLocationMarcker.current) {
+        map.removeLayer(myLocationMarcker.current);
+        myLocationMarcker.current = null;
+    }
+    const myLocation = L.icon({
+        iconUrl: 'images/button/my_location.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -30]
+    });
+    // add a marker to the map for location
+    myLocationMarcker.current = L.marker(e.latlng, { icon: myLocation }).addTo(map)
+        .bindPopup("You are here")
+    // map.flyTo(e.latlng, 14);// Smoothly move the map to the location
+    map.setView(e.latlng, 14);
+});
+
+map.on('locationerror', function(e) {
+    showBootstrapAlert(e.message, 'success');
+});
+
+// **************************************************** 
+
+
+
+document.getElementById('searchPlaceButton').addEventListener('click', function() {
+    const placeName = document.getElementById('placeSearchInput').value;
+    if (placeName.trim() === '') return; // checking whether the field is empty
+
+    searchPlaceByName(placeName).then(data => {
+        const placeResultsList = document.getElementById('placeResultsList');
+        placeResultsList.innerHTML = ''; // clean the previous results
+
+        if (data.length === 0) {
+            placeResultsList.innerHTML = '<li class="list-group-item">No results found.</li>';
+            return;
+        }
+
+        data.forEach(place => {
+            const placeItem = document.createElement('li');
+            placeItem.classList.add('list-group-item', 'list-group-item-action');
+            placeItem.textContent = `${place.name}, ${place.countryName}`;
+            placeItem.addEventListener('click', function() {
+                // setCoutryTitle(place.countryName, place.countryCode)
+                setCountryInform(place.countryCode);
+                
+                const marker = L.marker([place.lat, place.lng]).addTo(map)
+                    .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
+                
+                const placeModal = bootstrap.Modal.getInstance(document.getElementById('placeSearchModal'));
+                
+                map.setView([place.lat, place.lng], 10); // move the map to the selected city
+                placeModal.hide(); // close the modal window after selection
+            });
+            placeResultsList.appendChild(placeItem);
+        });
+    })
+    .catch(error => {
+        // console.error('Error fetching cities:', error)
+        showBootstrapAlert('Sorry for the inconvenience, something went wrong with the server. Please try again later.', 'danger');
+    });
+});
+
+// **************************************************** 
+
+
+// **************************************************** 
+
+
+// ****************************************************  
+
+// ****************************************************  
+
+// All borders
+// L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
+//     // If the border layer of all countries is not active, add it
+//     if (!map.hasLayer(bordersLayerGroup)) {
+//         map.setZoom(6);
+//         map.addLayer(bordersLayerGroup);
+//         // activate the button of all borders
+//         document.getElementById('border-btn').style.backgroundColor = 'green';  // add green color to the button
+//         // dictate the border button of a certain country
+//         document.getElementById('current-border-btn').style.backgroundColor = ''; 
+
+//         if (countryBorderLayerRef.specificCountry) {
+//             map.removeLayer(countryBorderLayerRef.specificCountry);
+//             countryBorderLayerRef.specificCountry = null;
+//         }
+//     } else {
+//         // If the borders are already active, hide the border layer of all countries
+//         map.removeLayer(bordersLayerGroup);
+//         document.getElementById('border-btn').style.backgroundColor = '';  // Deactivate the green button
+//     }
+// }, {
+//     id: 'border-btn',  // an ID to the access button
+//     position: 'topleft'  // location of the button on the map
+// }).addTo(map);
+
+// Current border 
+// L.easyButton('<img src="images/button/country.png" width="20" height="20">', function() {
+//     const isoCode = $('#countrySelect option:selected').val();
+//     if (isoCode) {
+//         // If the borders of all countries are active, delete them
+//         if (map.hasLayer(bordersLayerGroup)) {
+//             map.removeLayer(bordersLayerGroup);
+//         }
+//         // If the border layer of the current country is not active, add it
+//         if (!countryBorderLayerRef.specificCountry) {
+//             getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);  // load the borders of the current country
+            
+//         } else {
+//             // if the borders of the current country are already active, delete the layer
+//             map.removeLayer(countryBorderLayerRef.specificCountry);
+//             countryBorderLayerRef.specificCountry = null;
+//             document.getElementById('current-border-btn').style.backgroundColor = '';  // Deactivate the red button
+//         }
+//     } else {
+//         showBootstrapAlert('No country selected.', 'warning');
+//     }
+// }, {
+//     id: 'current-border-btn',  // an ID to the access button
+//     position: 'topleft'
+// }).addTo(map);
