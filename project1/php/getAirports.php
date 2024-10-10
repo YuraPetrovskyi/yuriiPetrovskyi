@@ -27,10 +27,11 @@ $north = $_GET['north'] ?? '';
 $south = $_GET['south'] ?? '';
 $east = $_GET['east'] ?? '';
 $west = $_GET['west'] ?? '';
+$countryCode = $_GET['isoCode'] ?? '';
 
 $username = $_ENV['USERNAME'];
 
-$url = "http://api.geonames.org/searchJSON?north=$north&south=$south&east=$east&west=$west&featureClass=S&featureCode=AIRP&username=$username";
+$url = "http://api.geonames.org/searchJSON?north=$north&south=$south&east=$east&west=$west&featureClass=S&featureCode=AIRP&country=$countryCode&username=$username";
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

@@ -64,6 +64,7 @@ export function setCountryInform(isoCode) {
         $('#curenCurrencyCodeConverter').text(currencyCode);
         
         console.log('#curenCurrencyCodeConverter', currencyCode);
+        $('#countrySelect').val(isoCode);
 
     })
     .catch(error => { 

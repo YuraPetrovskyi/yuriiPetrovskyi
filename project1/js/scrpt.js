@@ -4,6 +4,7 @@
 // import { filterCountryNames } from '../features/filterCountryNames.js';
 // import { getCountryByCoordinates } from './getCountryByCoordinates.js';
 // import { setCoutryTitle } from './setCoutryTitle.js';
+// import { getAirports } from './getAirports.js';
 
 
 
@@ -25,7 +26,6 @@ import { searchPlaceByName } from './searchPlaceByName.js';
 import { setCurrencyData } from './setCurrencyData.js';
 
 import { setCountriesList } from './setCountriesList.js';
-import { getAirports } from './getAirports.js';
 
 import { loadAllCountryBorders } from './loadAllCountryBorders.js';
 
@@ -33,13 +33,25 @@ import { loadAllCountryBorders } from './loadAllCountryBorders.js';
 // GLOBAL DECLARATIONS
 // ---------------------------------------------------------
 
-var map = L.map('map').fitWorld();
+// var map = L.map('map').fitWorld();
+var map, layerControl;
+var map, layerControl;
+var bordersLayerGroup = L.layerGroup();  // to store borders
+var airportClusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 25
+});  // Cluster group for airports
+var weatherMarkers = L.markerClusterGroup({
+    maxClusterRadius: 45
+});  // Cluster group for weather markers
+var historicalMarkersCluster = L.markerClusterGroup({
+    maxClusterRadius: 20
+});  // Cluster group for historical places
 
 // tile layers
 var streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map); 
+}); 
 
 var satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
     attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
@@ -50,61 +62,43 @@ var baseMaps = {
     "Streets": streets,
     "Satellite": satellite,
 };
-// layer controls to the map
-L.control.layers(baseMaps).addTo(map);
 
-var bordersLayerGroup = L.layerGroup();  // use layerGroup to store borders
 var myLocationMarcker = { current: null };
 var countryBorderLayerRef = { allCountries: null,  specificCountry: null}; 
-
-// Cluster group for weather markers
-var weatherMarkers = L.markerClusterGroup({
-    maxClusterRadius: 45
-});
-
-var airportClusterGroup = L.markerClusterGroup({
-    maxClusterRadius: 25
-}); 
-
-var historicalMarkersCluster = L.markerClusterGroup({
-    maxClusterRadius: 20
-});
 
 var overlayMaps = {
     "Weather": weatherMarkers,
     "Historical Places": historicalMarkersCluster,
-    "Airports": airportClusterGroup
+    "Airports": airportClusterGroup,
+    "All Borders": bordersLayerGroup,
 };
 
-L.control.layers(null, overlayMaps).addTo(map);
+
 
 // buttons
 
 // User location
 var locationBtn = L.easyButton('<img src="images/button/my_location.png" width="20" height="20">', function(btn, map) {
     map.locate({setView: true}); // find the location and move the map to it
-}, 'locate-btn').addTo(map);
+}, 'locate-btn');
 
 // Place serch
 var searchBtn = L.easyButton('<img src="images/button/search.png" width="20" height="20">', function() {
     // modal window for city search
     const placeModal = new bootstrap.Modal(document.getElementById('placeSearchModal'));
     placeModal.show();
-}, 'search-place-btn').addTo(map);
+}, 'search-place-btn');
 
 // Info modal  
 var infoBtn = L.easyButton('<img src="images/button/info.png" width="20" height="20">', function() {
     // call the Bootstrap function to open a modal window
     const countryModal = new bootstrap.Modal(document.getElementById('countryModal'));
     countryModal.show();
-}, 'info-btn').addTo(map);
+}, 'info-btn');
 
 // Curency modal
 var currencyBtn = L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', function() {
-    // const currencyCode = $('#countrySelect option:selected').attr('data-currency');
-    // const currencyCode = $('#curenCurrencySymbol').text();
     const currencyCode = $('#curenCurrencyCodeConverter').text();
-
     console.log('currencyCode', currencyCode);
     document.getElementById('currentCurencyAmount').value = '';
     document.getElementById('baseCurrencyAmount').value = '1';
@@ -120,12 +114,12 @@ var currencyBtn = L.easyButton('<img src="images/button/exchange.png" width="20"
 
     const currencyModal = new bootstrap.Modal(document.getElementById('currencyModal'));
     currencyModal.show();// open model window
-}, 'currency-btn').addTo(map);
+}, 'currency-btn');
 
 
 
 // Weather 
-var weatherIcon = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
+var weatherBtn = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
     weatherMarkers.clearLayers();
 
     const bounds = map.getBounds();
@@ -171,11 +165,11 @@ var weatherIcon = L.easyButton('<img src="images/button/weather.png" width="20" 
         map.setZoom(7);
     }
     map.addLayer(weatherMarkers);
-}).addTo(map);
+});
 
 
 // Historycal places
-var histotyIcon = L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
+var histotyBtn = L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
     const zoomLevel = map.getZoom(); 
 
     historicalMarkersCluster.clearLayers(); // Clear previous markers
@@ -206,51 +200,8 @@ var histotyIcon = L.easyButton('<img src="images/button/history.png" width="20" 
             // console.error('Error fetching historical places:', error);
             showBootstrapAlert('Sorry for the inconvenience, something went wrong with the Historical server. Please try again later or change the location.', 'danger');
         });
-}, 'tourist-btn').addTo(map);
+}, 'tourist-btn');
 
-// Airoports
-var airportIcon = L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
-    const bounds = map.getBounds();
-    const north = bounds.getNorth();
-    const south = bounds.getSouth();
-    const east = bounds.getEast();
-    const west = bounds.getWest();
-
-    airportClusterGroup.clearLayers();
-
-    const airportIcon = L.icon({
-        iconUrl: 'images/airport.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -30]
-    });
-
-    getAirports(north, south, east, west)
-        .then(airports => {
-            if (airports.length === 0) {
-                showBootstrapAlert(
-                    'No airports were found in this area. Please try searching in other locations.', 
-                    'warning');
-                return;
-            };
-            airports.forEach(airport => {
-                const wikiName = airport.name.replace(/[\s\W]+/g, '_');
-                const marker = L.marker([airport.lat, airport.lng], { icon: airportIcon })
-                    .bindPopup(`
-                        <b>${airport.name}</b><br>
-                        Country: ${airport.countryName}<br>
-                        Region: ${airport.adminName1}<br>
-                        <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank">Wikipedia...</a>
-                    `); 
-                airportClusterGroup.addLayer(marker);
-            });
-            map.addLayer(airportClusterGroup);
-        })
-        .catch(error => {
-            // console.error('Error fetching historical places:', error);
-            showBootstrapAlert('Sorry for the inconvenience, something went wrong with the Airport server. Please try again later or change the location.', 'danger');
-        });
-}, 'airport-btn').addTo(map);
 
 // ---------------------------------------------------------
 // EVENT HANDLERS
@@ -258,7 +209,25 @@ var airportIcon = L.easyButton('<img src="images/button/airplane.png" width="20"
 
 // initialise and add controls once DOM is ready
 
-document.addEventListener("DOMContentLoaded", function() {
+$(document).ready(function () {
+
+    // Initialize the map
+    map = L.map("map", {
+        layers: [streets],  // default view with streets
+        maxZoom: 18,
+    }).fitWorld();
+
+    // Add layer control section
+    layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+    locationBtn.addTo(map);
+    searchBtn.addTo(map);
+    infoBtn.addTo(map);
+    currencyBtn.addTo(map);
+    weatherBtn.addTo(map);
+    histotyBtn.addTo(map);
+    // airportBtn.addTo(map);
+
     // download the list of countries
     getCountryList()
         .then(countries => {
@@ -270,69 +239,159 @@ document.addEventListener("DOMContentLoaded", function() {
                 'warning'
             );
         });
+        
+    map.locate({
+        setView: true,
+        maxZoom: 6,
+        watch: false, // avoid constantly updating the coordinates
+        enableHighAccuracy: true
+    });
+    // Load country borders and airports on location found
+    map.on('locationfound', function (e) {
+        console.log('i am work!')
+        handleUserLocation(e.latlng.lat, e.latlng.lng);
+    });
+
+    map.on('locationerror', function (e) {
+        showBootstrapAlert(e.message, 'success');
+    });
 
     // loading all borders
     loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef);
 
     $('#countrySelect').on('change', function() {
-        const isoCode = $(this).val();  // Отримуємо вибране значення
+        const isoCode = $(this).val();
         getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
         setCountryInform(isoCode);
+        loadAirportsForCountry(isoCode);
     });
 
+    $('#searchPlaceButton').on('click', function() {
+        const placeName = $('#placeSearchInput').val().trim();
+        if (placeName === '') return; // checking whether the field is empty
+    
+        searchPlaceByName(placeName).then(data => {
+            const $placeResultsList = $('#placeResultsList');
+            $placeResultsList.empty(); // clean the previous results
+    
+            if (data.length === 0) {
+                $placeResultsList.append('<li class="list-group-item">No results found.</li>');
+                return;
+            }
+    
+            data.forEach(place => {
+                const $placeItem = $('<li>')
+                    .addClass('list-group-item list-group-item-action')
+                    .text(`${place.name}, ${place.countryName}`);
+    
+                $placeItem.on('click', function() {
+                    getCountrySpecificBorders(place.countryCode, map, countryBorderLayerRef);
+                    setCountryInform(place.countryCode);
+                    loadAirportsForCountry(place.countryCode);
 
-
+                    const marker = L.marker([place.lat, place.lng]).addTo(map)
+                        .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
+    
+                    const placeModal = bootstrap.Modal.getInstance($('#placeSearchModal')[0]);
+    
+                    map.setView([place.lat, place.lng], 10); // move the map to the selected city
+                    placeModal.hide(); // close the modal window after selection
+                });
+    
+                $placeResultsList.append($placeItem);
+            });
+        })
+        .catch(error => {
+            showBootstrapAlert('Sorry for the inconvenience, something went wrong with the server. Please try again later.', 'danger');
+        });
+    });
     
 });
 
-// **************************************************** 
-
-map.locate({
-    setView: true,
-    maxZoom: 6,
-    watch: false, // avoid constantly updating the coordinates
-    enableHighAccuracy: true
-});
-
-map.on('locationfound', function(e) {
-    const lat = e.latlng.lat;
-    const lon = e.latlng.lng;    
-    
+// ****************************************************
+// Load airports for the selected country based on its borders 
+function handleUserLocation(lat, lon) {
     fetch(`php/getCountryByCoordinates.php?lat=${lat}&lon=${lon}`)
         .then(response => response.json())
         .then(data => {
-            data.countryISO = data.countryISO.toUpperCase();
-            // console.log(`Your country: ${data.countryName} (${data.countryISO})`);
-            $('#countrySelect').val(data.countryISO);
-            setCountryInform(data.countryISO);
-            // return data;
+            const isoCode = data.countryISO.toUpperCase();
+            $('#countrySelect').val(isoCode);  // Set selected country in the dropdown
+            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
+            setCountryInform(isoCode);
+            console.log('countryBorderLayerRef', countryBorderLayerRef)
+            // Load airports for the current country and add them to the airport layer
+            loadAirportsForCountry(isoCode);
         })
         .catch(error => {
-            showBootstrapAlert('Sorry for the inconvenience, something went wrong with the server.', 'danger');
-        });    
+            showBootstrapAlert('Error fetching location', 'danger');
+        });
+        if (myLocationMarcker.current) {
+            map.removeLayer(myLocationMarcker.current);
+            myLocationMarcker.current = null;
+        }
+        const myLocation = L.icon({
+            iconUrl: 'images/button/my_location.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -30]
+        });
+        // add a marker to the map for location
+        myLocationMarcker.current = L.marker({lat, lon}, { icon: myLocation }).addTo(map)
+            .bindPopup("You are here")
+        // map.flyTo(e.latlng, 14);// Smoothly move the map to the location
+        // map.setView(e.latlng, 14);
+}
+// Load airports for the country within its borders
+function loadAirportsForCountry(isoCode) {
+    const countryBounds = countryBorderLayerRef.specificCountry.getBounds();  // Get the current country borders from map
     
-    if (myLocationMarcker.current) {
-        map.removeLayer(myLocationMarcker.current);
-        myLocationMarcker.current = null;
-    }
-    const myLocation = L.icon({
-        iconUrl: 'images/button/my_location.png',
+    airportClusterGroup.clearLayers();
+    
+    const airportIcon = L.icon({
+        iconUrl: 'images/airport.png',
         iconSize: [32, 32],
         iconAnchor: [16, 32],
         popupAnchor: [0, -30]
     });
-    // add a marker to the map for location
-    myLocationMarcker.current = L.marker(e.latlng, { icon: myLocation }).addTo(map)
-        .bindPopup("You are here")
-    // map.flyTo(e.latlng, 14);// Smoothly move the map to the location
-    map.setView(e.latlng, 14);
-});
 
-map.on('locationerror', function(e) {
-    showBootstrapAlert(e.message, 'success');
-});
+    fetch(`php/getAirports.php?north=${countryBounds.getNorth()}&south=${countryBounds.getSouth()}&east=${countryBounds.getEast()}&west=${countryBounds.getWest()}&isoCode=${isoCode}`)
+        .then(response => response.json())    
+        .then(airports => {
+            if (airports.length === 0) {
+                showBootstrapAlert('No airports found in this country.', 'warning');
+                return;
+            };
 
-// **************************************************** 
+            airports.forEach(airport => {
+                const wikiName = airport.name.replace(/[\s\W]+/g, '_');
+                    const marker = L.marker([airport.lat, airport.lng], { icon: airportIcon })
+                        .bindPopup(`
+                            <b>${airport.name}</b><br>
+                            Country: ${airport.countryName}<br>
+                            Region: ${airport.adminName1}<br>
+                            <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank">Wikipedia...</a>
+                        `);
+                airportClusterGroup.addLayer(marker);
+            });
+        })
+        .catch(error => {
+            showBootstrapAlert('Error fetching airports', 'danger');
+        });
+}
+
+// Handle historical markers loading
+function handleHistoricalMarkers() {
+    const bounds = map.getBounds();
+    getHistoricalPlaces(bounds.getCenter().lat, bounds.getCenter().lng)
+        .then(places => {
+            places.forEach(place => {
+                const marker = L.marker([place.lat, place.lng], { icon: getIconByTitle(place.feature, place.title) })
+                    .bindPopup(`<b>${place.title}</b><br>${place.summary}<br><a href="https://${place.wikipediaUrl}" target="_blank">Wikipedia</a>`);
+                historicalMarkersCluster.addLayer(marker);
+            });
+        });
+}
+
 
 
 
@@ -374,15 +433,53 @@ document.getElementById('searchPlaceButton').addEventListener('click', function(
     });
 });
 
+// ********************* location ******************************* 
+// map.locate({
+//     setView: true,
+//     maxZoom: 6,
+//     watch: false, // avoid constantly updating the coordinates
+//     enableHighAccuracy: true
+// });
+
+// map.on('locationfound', function(e) {
+//     const lat = e.latlng.lat;
+//     const lon = e.latlng.lng;    
+    
+//     fetch(`php/getCountryByCoordinates.php?lat=${lat}&lon=${lon}`)
+//         .then(response => response.json())
+//         .then(data => {
+//             data.countryISO = data.countryISO.toUpperCase();
+//             // console.log(`Your country: ${data.countryName} (${data.countryISO})`);
+//             $('#countrySelect').val(data.countryISO);
+//             setCountryInform(data.countryISO);
+//             // return data;
+//         })
+//         .catch(error => {
+//             showBootstrapAlert('Sorry for the inconvenience, something went wrong with the server.', 'danger');
+//         });    
+    
+    // if (myLocationMarcker.current) {
+    //     map.removeLayer(myLocationMarcker.current);
+    //     myLocationMarcker.current = null;
+    // }
+    // const myLocation = L.icon({
+    //     iconUrl: 'images/button/my_location.png',
+    //     iconSize: [32, 32],
+    //     iconAnchor: [16, 32],
+    //     popupAnchor: [0, -30]
+    // });
+    // // add a marker to the map for location
+    // myLocationMarcker.current = L.marker(e.latlng, { icon: myLocation }).addTo(map)
+    //     .bindPopup("You are here")
+    // // map.flyTo(e.latlng, 14);// Smoothly move the map to the location
+    // map.setView(e.latlng, 14);
+// });
+
+// map.on('locationerror', function(e) {
+//     showBootstrapAlert(e.message, 'success');
+// });
+
 // **************************************************** 
-
-
-// **************************************************** 
-
-
-// ****************************************************  
-
-// ****************************************************  
 
 // All borders
 // L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
@@ -434,3 +531,48 @@ document.getElementById('searchPlaceButton').addEventListener('click', function(
 //     id: 'current-border-btn',  // an ID to the access button
 //     position: 'topleft'
 // }).addTo(map);
+
+
+// Airoports
+// var airportBtn = L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
+//     const bounds = map.getBounds();
+//     const north = bounds.getNorth();
+//     const south = bounds.getSouth();
+//     const east = bounds.getEast();
+//     const west = bounds.getWest();
+
+//     airportClusterGroup.clearLayers();
+
+//     const airportIcon = L.icon({
+//         iconUrl: 'images/airport.png',
+//         iconSize: [32, 32],
+//         iconAnchor: [16, 32],
+//         popupAnchor: [0, -30]
+//     });
+
+//     getAirports(north, south, east, west)
+//         .then(airports => {
+//             if (airports.length === 0) {
+//                 showBootstrapAlert(
+//                     'No airports were found in this area. Please try searching in other locations.', 
+//                     'warning');
+//                 return;
+//             };
+//             airports.forEach(airport => {
+//                 const wikiName = airport.name.replace(/[\s\W]+/g, '_');
+//                 const marker = L.marker([airport.lat, airport.lng], { icon: airportIcon })
+//                     .bindPopup(`
+//                         <b>${airport.name}</b><br>
+//                         Country: ${airport.countryName}<br>
+//                         Region: ${airport.adminName1}<br>
+//                         <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank">Wikipedia...</a>
+//                     `); 
+//                 airportClusterGroup.addLayer(marker);
+//             });
+//             map.addLayer(airportClusterGroup);
+//         })
+//         .catch(error => {
+//             // console.error('Error fetching historical places:', error);
+//             showBootstrapAlert('Sorry for the inconvenience, something went wrong with the Airport server. Please try again later or change the location.', 'danger');
+//         });
+// }, 'airport-btn');
