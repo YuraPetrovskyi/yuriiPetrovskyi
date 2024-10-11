@@ -235,6 +235,69 @@
       </div>
     </div>
 
+    <!-- Weather Modal -->
+
+    <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success bg-opacity-25">
+            <h5 class="modal-title" id="weatherModalLabel">
+              <span id="weather-point-name">NAME</span> <span class="fw-light fs-6" id="current-date-time"></span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-1">
+            <div class="weather-main-info m-0 p-0">
+
+              <div class="d-flex justify-content-center text-center pb-1 fw-bold">
+                <div class="col-6">
+                  <p class="mb-0 ">Sunrise: <span id="sunrise"></span></p>
+                </div>
+                <div class="col-6">
+                  <p class="mb-0">Sunset: <span id="sunset"></span></p>
+                </div>
+              </div>
+
+              <div class="row d-flex justify-content-center col-12 m-0">
+                <div class="col-5 col-sm-6 mb-2">
+                  <div class="card h-100 text-center shadow bg-success bg-opacity-25">
+                    <div class="card-body p-2">
+                      <p id="weather-description" class="card-text m-0 fw-bold"></p>
+                      <img id="weather-icon" class="img-fluid mb-2" src="" alt="Weather icon">
+                      <p id="weather-temp" class="fs-4 fw-bold m-0"></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-7 col-sm-6 mb-2">
+                  <div class="card h-100 text-center shadow bg-success bg-opacity-25">
+                    <div class="card-body p-2">
+                      <p class="mt-2 fw-bold">Humidity: <span id="humidity"></span></p>
+                      <p class="fw-bold">Pressure: <span id="pressure"></span></p>
+                      <p class="fw-bold">Wind Speed: <span id="wind-speed"></span></p>
+                      <p class="mt-0 fw-bold">Visibility: <span id="visibility"></span></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+    
+            <div class="weather-forecast-scroll mb-0">
+              <div class="forecast-scroll-row d-flex justify-content-center overflow-auto p-2"></div>
+            </div>
+
+            <h6 class="text-center m-0 p-0">Daily Forecast</h6>
+
+            <div class="weather-daily-forecast mb-3 mt-0">
+              <div class="daily-forecast-scroll-row d-flex overflow-auto p-2 align-items-center"></div>
+            </div>
+    
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
 
     <!-- Bootstrap JS -->
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

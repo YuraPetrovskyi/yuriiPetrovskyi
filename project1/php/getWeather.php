@@ -43,7 +43,7 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
         echo json_encode(['error' => 'cURL Error: ' . curl_error($ch)]);
     } else {
         $weatherData = json_decode($response, true);
-
+        
         if (isset($weatherData['main'])) {
             $output = [
                 'temp' => $weatherData['main']['temp'],
@@ -51,11 +51,14 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
                 'humidity' => $weatherData['main']['humidity'],
                 'pressure' => $weatherData['main']['pressure'],
                 'windSpeed' => $weatherData['wind']['speed'],
-                'windDirection' => $weatherData['wind']['deg'],
+                'visibility' => $weatherData['visibility'],
                 'country' => $weatherData['sys']['country'],
                 'icon' => $weatherData['weather'][0]['icon'],
                 'weatherDescription' => $weatherData['weather'][0]['description'],
-                'name' => $weatherData['name']
+                'name' => $weatherData['name'],
+                "sunrise" => $weatherData['sys']['sunrise'],
+                "sunset" => $weatherData['sys']['sunset'],
+                "country" => $weatherData['sys']['country']
             ];
 
             echo json_encode($output);

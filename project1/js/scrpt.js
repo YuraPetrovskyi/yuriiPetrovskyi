@@ -13,7 +13,7 @@ import { getCountryList } from './getCountryList.js';
 import { setCountryInform } from './setCountryInform.js';
 
 
-import { getWeatherData } from './getWeatherData.js';
+// import { getWeatherData } from './getWeatherData.js';
 import { getCityByBounds } from './getCityByBounds.js';
 
 import { getCurrencyData } from './getCurrencyData.js';
@@ -40,9 +40,9 @@ var bordersLayerGroup = L.layerGroup();  // to store borders
 var airportClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
 });  // Cluster group for airports
-var weatherMarkers = L.markerClusterGroup({
-    maxClusterRadius: 45
-});  // Cluster group for weather markers
+// var weatherMarkers = L.markerClusterGroup({
+//     maxClusterRadius: 45
+// });  // Cluster group for weather markers
 var historicalMarkersCluster = L.markerClusterGroup({
     maxClusterRadius: 20
 });  // Cluster group for historical places
@@ -65,15 +65,16 @@ var baseMaps = {
 
 var myLocationMarcker = { current: null };
 var countryBorderLayerRef = { allCountries: null,  specificCountry: null}; 
+var activeCoordinates = { lat: null, lon: null };
 
 var overlayMaps = {
-    "Weather": weatherMarkers,
-    "Historical Places": historicalMarkersCluster,
-    "Airports": airportClusterGroup,
     "All Borders": bordersLayerGroup,
+    "Airports": airportClusterGroup,
+    // "Weather": weatherMarkers,
+    "Historical Places": historicalMarkersCluster,
+    
+    
 };
-
-
 
 // buttons
 
@@ -167,6 +168,16 @@ var weatherBtn = L.easyButton('<img src="images/button/weather.png" width="20" h
     map.addLayer(weatherMarkers);
 });
 
+var weatherModalBtn = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function() {
+    // Оновлюємо модальне вікно погодою на основі активних координат
+    if (activeCoordinates.lat && activeCoordinates.lon) {
+        getWeatherData(activeCoordinates.lat, activeCoordinates.lon, '');
+    } else {
+        showBootstrapAlert('Sorry, the location is not defined.', 'danger');
+    }
+    const weatherModal = new bootstrap.Modal(document.getElementById('weatherModal'));
+    weatherModal.show();
+}, 'weather-modal-btn');
 
 // Historycal places
 var histotyBtn = L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
@@ -224,7 +235,8 @@ $(document).ready(function () {
     searchBtn.addTo(map);
     infoBtn.addTo(map);
     currencyBtn.addTo(map);
-    weatherBtn.addTo(map);
+    weatherModalBtn.addTo(map);
+    // weatherBtn.addTo(map);
     histotyBtn.addTo(map);
     // airportBtn.addTo(map);
 
@@ -250,6 +262,9 @@ $(document).ready(function () {
     map.on('locationfound', function (e) {
         console.log('i am work!')
         handleUserLocation(e.latlng.lat, e.latlng.lng);
+        activeCoordinates.lat = e.latlng.lat;
+        activeCoordinates.lon = e.latlng.lng;
+        console.log('activeCoordinates', activeCoordinates);
     });
 
     map.on('locationerror', function (e) {
@@ -390,6 +405,149 @@ function handleHistoricalMarkers() {
                 historicalMarkersCluster.addLayer(marker);
             });
         });
+}
+
+function getWeatherData(lat, lon, locationName) {
+    activeCoordinates.lat = lat;
+    activeCoordinates.lon = lon;
+
+    fetch(`php/getWeather.php?lat=${lat}&lon=${lon}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('getWeather data:', data);
+            updateWeatherModal(data, locationName);
+            getWeatherForecast(lat, lon);
+        })
+        .catch(error => {
+            console.error('Error fetching weather:', error);
+            showBootstrapAlert('Sorry, something went wrong with the weather service.', 'danger');
+        });
+}
+
+function getWeatherForecast(lat, lon) {
+    fetch(`php/getWeatherForecast.php?lat=${lat}&lon=${lon}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('forecast data', data);
+            updateWeatherForecast(data);
+        })
+        .catch(error => {
+            console.error('Error fetching forecast:', error);
+            showBootstrapAlert('Sorry, something went wrong with the forecast service.', 'danger');
+        });
+}
+
+// ****************************************************
+// Update Modal Functions
+// ****************************************************
+
+function updateWeatherModal(weatherData, locationName) {
+    $('#weather-point-name').text( locationName.toUpperCase() || weatherData.name.toUpperCase());
+    $('#current-date-time').text(new Date().toLocaleString());
+    $('#weather-icon').attr('src', `http://openweathermap.org/img/wn/${weatherData.icon}@2x.png`);
+    $('#weather-description').text(weatherData.weatherDescription);
+    $('#weather-temp').text(`${weatherData.temp.toFixed()} °C`);
+    $('#humidity').text(`${weatherData.humidity} %`);
+    $('#wind-speed').text(`${weatherData.windSpeed} m/s`);
+    $('#pressure').text(`${weatherData.pressure } hPa`);
+    $('#visibility').text(`${weatherData.visibility / 1000} km`);
+    $('#sunrise').text(new Date(weatherData.sunrise * 1000).toLocaleTimeString());
+    $('#sunset').text(new Date(weatherData.sunset * 1000).toLocaleTimeString());
+}
+
+function updateWeatherForecast(data) {
+    const forecastScrollRow = $('.forecast-scroll-row');
+    forecastScrollRow.empty();
+
+    const dailyForecastContainer = $('.daily-forecast-scroll-row');
+    dailyForecastContainer.empty();
+
+    const hourlyForecast = [];
+    const dailyForecast = {};
+
+    const currentTime = new Date();
+    const forecastLimit = new Date(currentTime.getTime() + 15 * 60 * 60 * 1000); // на 15 годин вперед
+
+    // Парсинг 3-годинного та денного прогнозу
+    data.list.forEach(item => {
+        const dateTime = new Date(item.dt_txt);
+        const date = dateTime.toLocaleDateString();
+        let hours = dateTime.getHours();
+        let time = hours === 0 ? "00:00" : dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // 3-годинний прогноз на 15 годин вперед
+        if (dateTime <= forecastLimit) {
+            hourlyForecast.push({
+                time: time,
+                temp: item.main.temp,
+                icon: item.weather[0].icon
+            });
+        }
+
+        // Денний прогноз (кожні 6 годин починаючи з 00:00 або 06:00 наступного дня)
+        const isNextDay = dateTime.getDate() !== currentTime.getDate();
+        if (isNextDay && (hours === 0 || hours === 6 || hours === 12 || hours === 18 || hours === 24)) {
+            if (!dailyForecast[date]) {
+                dailyForecast[date] = {
+                    tempMin: item.main.temp_min,
+                    tempMax: item.main.temp_max,
+                    details: []
+                };
+            }
+            dailyForecast[date].tempMin = Math.min(dailyForecast[date].tempMin, item.main.temp_min);
+            dailyForecast[date].tempMax = Math.max(dailyForecast[date].tempMax, item.main.temp_max);
+
+            if (hours === 24) {
+                time = "24:00";  // Чітко відображаємо 24:00
+            } else if (hours === 0) {
+                time = "00:00";  // Чітко відображаємо 00:00 як початок нової доби
+            }
+
+            dailyForecast[date].details.push({
+                time: time,
+                temp: item.main.temp,
+                icon: item.weather[0].icon
+            });
+        }
+    });
+
+    // Виведення 3-годинного прогнозу (на 15 годин вперед)
+    hourlyForecast.forEach(hour => {
+        const forecastCard = `
+            <div class="forecast-card text-center bg-success bg-opacity-25 p-2 m-2 rounded shadow-sm">
+                <img src="http://openweathermap.org/img/wn/${hour.icon}@2x.png" alt="Weather icon" class="forecast-icon img-fluid">
+                <div class="forecast-time">${hour.time}</div>
+                <div class="forecast-temp">${hour.temp.toFixed()}°C</div>
+            </div>
+        `;
+        forecastScrollRow.append(forecastCard);
+    });
+
+    // Виведення денного прогнозу
+    Object.keys(dailyForecast).slice(0, 5).forEach(date => {
+        const forecast = dailyForecast[date];
+        const details = forecast.details.map(detail => `
+            <p class="mb-0">${detail.time} - ${detail.temp.toFixed()}°C <img src="http://openweathermap.org/img/wn/${detail.icon}@2x.png" alt="Small icon" class="img-fluid" style="width: 30px;"></p>
+        `).join('');
+
+        const dayCard = `
+            <div class="daily-forecast-card flex-shrink-0 text-center bg-success bg-opacity-25 p-1 m-1 rounded shadow-sm" style="min-width: 240px; max-width: 350px;">
+                <div class="row align-items-center m-0">
+                    <div class="col-5 text-center">
+                        <h6 class="fw-bold m-0">${date}</h6>
+                        <img src="http://openweathermap.org/img/wn/${forecast.details[0].icon}@2x.png" alt="Temp icon" class="daily-forecast-icon img-fluid mb-2">
+                        <div class="daily-temp-max fw-bold">${forecast.tempMax.toFixed()}° /  ${forecast.tempMin.toFixed()}°</div>
+                    </div>
+                    <div class="col-7 text-start p-2">
+                        <div class="daily-time-info">
+                            ${details}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        dailyForecastContainer.append(dayCard);
+    });
 }
 
 
