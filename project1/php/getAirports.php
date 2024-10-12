@@ -29,7 +29,7 @@ $east = $_GET['east'] ?? '';
 $west = $_GET['west'] ?? '';
 $countryCode = $_GET['isoCode'] ?? '';
 
-$username = $_ENV['USERNAME'];
+$username = $_ENV['USERNAME_GEONAMES_API_KEY'];
 
 $url = "http://api.geonames.org/searchJSON?north=$north&south=$south&east=$east&west=$west&featureClass=S&featureCode=AIRP&country=$countryCode&username=$username";
 

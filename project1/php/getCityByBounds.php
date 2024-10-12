@@ -30,7 +30,7 @@ $east = $_GET['east'] ?? '';
 $west = $_GET['west'] ?? '';
 $fcode = $_GET['fcode'] ?? ''; 
 
-$username = $_ENV['USERNAME'];
+$username = $_ENV['USERNAME_GEONAMES_API_KEY'];
 
 $url = "http://api.geonames.org/citiesJSON?north=$north&south=$south&east=$east&west=$west&maxRows=100&username=$username";
 

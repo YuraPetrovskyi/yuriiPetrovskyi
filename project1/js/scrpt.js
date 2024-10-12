@@ -8,7 +8,7 @@
 
 
 
-import { getCountrySpecificBorders } from './getCountrySpecificBorders.js';
+// import { getCountrySpecificBorders } from './getCountrySpecificBorders.js';
 import { getCountryList } from './getCountryList.js';
 import { setCountryInform } from './setCountryInform.js';
 
@@ -27,7 +27,7 @@ import { setCurrencyData } from './setCurrencyData.js';
 
 import { setCountriesList } from './setCountriesList.js';
 
-import { loadAllCountryBorders } from './loadAllCountryBorders.js';
+// import { loadAllCountryBorders } from './loadAllCountryBorders.js';
 
 // ---------------------------------------------------------
 // GLOBAL DECLARATIONS
@@ -39,7 +39,13 @@ var map, layerControl;
 var bordersLayerGroup = L.layerGroup();  // to store borders
 var airportClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
-});  // Cluster group for airports
+});
+var cityMarkersCluster = L.markerClusterGroup({
+    maxClusterRadius: 50
+});
+var adminCityClusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 25
+}); 
 // var weatherMarkers = L.markerClusterGroup({
 //     maxClusterRadius: 45
 // });  // Cluster group for weather markers
@@ -67,13 +73,12 @@ var myLocationMarcker = { current: null };
 var countryBorderLayerRef = { allCountries: null,  specificCountry: null}; 
 var activeCoordinates = { lat: null, lon: null };
 
-var overlayMaps = {
+var overlayMaps = {    
     "All Borders": bordersLayerGroup,
     "Airports": airportClusterGroup,
-    // "Weather": weatherMarkers,
+    "Administrative Cities": adminCityClusterGroup,
+    "Cities": cityMarkersCluster,
     "Historical Places": historicalMarkersCluster,
-    
-    
 };
 
 // buttons
@@ -190,9 +195,7 @@ $(document).ready(function () {
     infoBtn.addTo(map);
     currencyBtn.addTo(map);
     weatherModalBtn.addTo(map);
-    // weatherBtn.addTo(map);
     histotyBtn.addTo(map);
-    // airportBtn.addTo(map);
     newsBtn.addTo(map);
 
     // download the list of countries
@@ -215,7 +218,7 @@ $(document).ready(function () {
     });
     // Load country borders and airports on location found
     map.on('locationfound', function (e) {
-        console.log('i am work!')
+        console.log('i am work - locationfound!')
         handleUserLocation(e.latlng.lat, e.latlng.lng);
         activeCoordinates.lat = e.latlng.lat;
         activeCoordinates.lon = e.latlng.lng;
@@ -231,9 +234,11 @@ $(document).ready(function () {
 
     $('#countrySelect').on('change', function() {
         const isoCode = $(this).val();
+        console.log('isoCode', isoCode);
         getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
         setCountryInform(isoCode);
         loadAirportsForCountry(isoCode);
+        loadCitiesForCountry(isoCode);
     });
 
     $('#newsCategory').on('change', function() {
@@ -282,6 +287,112 @@ $(document).ready(function () {
     
 });
 
+// Load cities for the selected country
+function loadCitiesForCountry(isoCode) {
+    cityMarkersCluster.clearLayers(); 
+    adminCityClusterGroup.clearLayers();
+
+    fetch(`php/getCities.php?isoCode=${isoCode}`)
+        .then(response => response.json())
+        .then(cityData => {
+            console.log('cities: ', cityData);
+            if (cityData.pplc.length === 0 && cityData.ppla.length === 0 && cityData.ppla2.length === 0) {
+                showBootstrapAlert('No cities found in this country.', 'warning');
+                return;
+            }
+            function formatPopulation(population) {
+                if (population >= 1000000) {
+                    // Format for population greater than 1 million
+                    return 'population: ' + (population / 1000000).toFixed(2) + 'M';
+                } else if (population >= 100000) {
+                    // Format for population between 100k and 999k
+                    return 'population: ' + (population / 1000000).toFixed(2) + 'M';
+                } else {
+                    // Format for population less than 100k
+                    return 'population: ' + Math.round(population / 1000) + ' 000';
+                }
+            }
+            // Metropolitan cities (PPLC)
+            cityData.pplc.forEach(city => {
+                const capitalIcon = L.ExtraMarkers.icon({
+                    icon: 'fa-star',
+                    markerColor: 'red',
+                    shape: 'circle',
+                    prefix: 'fa'
+                });
+
+                const marker = L.marker([city.lat, city.lng], { icon: capitalIcon })
+                    .bindPopup(`
+                        <div style="font-weight: bold; font-size: 16px;">${city.name}</div>
+                        <div>${formatPopulation(city.population)}</div>
+                    `);
+
+                marker.on('click', function () {
+                    activeCoordinates.lat = city.lat;
+                    activeCoordinates.lon = city.lng;
+                    console.log('Capital city selected:', activeCoordinates);
+                });
+
+                adminCityClusterGroup.addLayer(marker); // Add marker to the admin city cluster group
+            });
+
+            // Administrative cities (PPLA)
+            cityData.ppla.forEach(city => {
+                const adminCityIcon = L.ExtraMarkers.icon({
+                    icon: 'fa-city',
+                    markerColor: 'blue',
+                    shape: 'circle',
+                    prefix: 'fa'
+                });
+
+                const marker = L.marker([city.lat, city.lng], { icon: adminCityIcon })
+                    .bindPopup(`
+                        <div style="font-weight: bold; font-size: 16px;">${city.name}</div>
+                        <div>${formatPopulation(city.population)}</div>
+                    `);
+
+                marker.on('click', function () {
+                    activeCoordinates.lat = city.lat;
+                    activeCoordinates.lon = city.lng;
+                    console.log('Admin city selected:', activeCoordinates);
+                });
+
+                adminCityClusterGroup.addLayer(marker); // Add marker to the admin city cluster group
+            });
+
+            //  Other sities (PPLA2)
+            cityData.ppla2.forEach(city => {
+                const simpleCityIcon = L.ExtraMarkers.icon({
+                    icon: 'fa-building',
+                    markerColor: 'green',
+                    shape: 'circle',
+                    prefix: 'fa'
+                });
+
+                const marker = L.marker([city.lat, city.lng], { icon: simpleCityIcon })
+                    .bindPopup(`
+                        <div style="font-weight: bold; font-size: 16px;">${city.name}</div>
+                        <div>${formatPopulation(city.population)}</div>
+                    `);
+
+                marker.on('click', function () {
+                    activeCoordinates.lat = city.lat;
+                    activeCoordinates.lon = city.lng;
+                    console.log('City selected:', activeCoordinates);
+                });
+
+                cityMarkersCluster.addLayer(marker); // Add marker to the city cluster group
+            });
+
+            // map.addLayer(cityMarkersCluster); // Add city markers to the map
+            map.addLayer(adminCityClusterGroup); // Add admin city markers to the map
+        })
+        .catch(error => {
+            showBootstrapAlert('Error fetching cities', 'danger');
+        });
+}
+
+
 // ****************************************************
 // Load airports for the selected country based on its borders 
 function handleUserLocation(lat, lon) {
@@ -294,7 +405,9 @@ function handleUserLocation(lat, lon) {
             setCountryInform(isoCode);
             console.log('countryBorderLayerRef', countryBorderLayerRef)
             // Load airports for the current country and add them to the airport layer
+            loadCitiesForCountry(isoCode);
             loadAirportsForCountry(isoCode);
+
         })
         .catch(error => {
             showBootstrapAlert('Error fetching location', 'danger');
@@ -595,196 +708,72 @@ document.getElementById('searchPlaceButton').addEventListener('click', function(
     });
 });
 
-// ********************* location ******************************* 
-// map.locate({
-//     setView: true,
-//     maxZoom: 6,
-//     watch: false, // avoid constantly updating the coordinates
-//     enableHighAccuracy: true
-// });
+function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) {
+    // getting GeoJSON boundary data
+    $.ajax({
+        url: 'php/getAllCountryBorders.php',
+        method: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            console.log("Borders data: ", data);
 
-// map.on('locationfound', function(e) {
-//     const lat = e.latlng.lat;
-//     const lon = e.latlng.lng;    
-    
-//     fetch(`php/getCountryByCoordinates.php?lat=${lat}&lon=${lon}`)
-//         .then(response => response.json())
-//         .then(data => {
-//             data.countryISO = data.countryISO.toUpperCase();
-//             // console.log(`Your country: ${data.countryName} (${data.countryISO})`);
-//             $('#countrySelect').val(data.countryISO);
-//             setCountryInform(data.countryISO);
-//             // return data;
-//         })
-//         .catch(error => {
-//             showBootstrapAlert('Sorry for the inconvenience, something went wrong with the server.', 'danger');
-//         });    
-    
-    // if (myLocationMarcker.current) {
-    //     map.removeLayer(myLocationMarcker.current);
-    //     myLocationMarcker.current = null;
-    // }
-    // const myLocation = L.icon({
-    //     iconUrl: 'images/button/my_location.png',
-    //     iconSize: [32, 32],
-    //     iconAnchor: [16, 32],
-    //     popupAnchor: [0, -30]
-    // });
-    // // add a marker to the map for location
-    // myLocationMarcker.current = L.marker(e.latlng, { icon: myLocation }).addTo(map)
-    //     .bindPopup("You are here")
-    // // map.flyTo(e.latlng, 14);// Smoothly move the map to the location
-    // map.setView(e.latlng, 14);
-// });
+            // create a layer for the borders of the countries
+            countryBorderLayerRef.allCountries = L.geoJSON(data, {
+                style: {
+                    color: '#ff0000',
+                    weight: 2,
+                    dashArray: '5, 5',  // Dotted line
+                    fillOpacity: 0     // Without filling
+                },
+                onEachFeature: function (feature, layer) {
+                    layer.bindPopup(`<b>${feature.properties.ADMIN}</b>`);
+                    // Add a click event handler to update the country name in <span>
+                    layer.on('click', function () {
+                        const isoCode = feature.properties.ISO_A2;
+                        getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
+                        setCountryInform(isoCode);
+                        loadAirportsForCountry(isoCode);
+                        loadCitiesForCountry(isoCode);
+                    });
+                }
+            });
 
-// map.on('locationerror', function(e) {
-//     showBootstrapAlert(e.message, 'success');
-// });
+            // Add borders to bordersLayerGroup
+            bordersLayerGroup.addLayer(countryBorderLayerRef.allCountries);
+        },
+        error: function(error) {
+            // console.error('Error loading country borders:', error);
+            showBootstrapAlert('Sorry for the inconvenience, all country borders are not loaded yet. An Error occurred while trying to get all borders, please try again later.', 'danger');
+        }
+    });
+}
 
-// **************************************************** 
+function getCountrySpecificBorders(isoCode, map, countryBorderLayerRef) {
+    if (countryBorderLayerRef.allCountries) {
+        const specificCountryLayer = L.geoJSON(countryBorderLayerRef.allCountries.toGeoJSON(), {
+            filter: function (feature) {
+                return feature.properties.ISO_A2 === isoCode;
+            },
+            style: function () {
+                return {
+                    color: '#0000FF',
+                    weight: 3,
+                    dashArray: '5, 5',
+                    fillOpacity: 0
+                };
+            }
+        });
 
-// All borders
-// L.easyButton('<img src="images/button/border.png" width="20" height="20">', function() {
-//     // If the border layer of all countries is not active, add it
-//     if (!map.hasLayer(bordersLayerGroup)) {
-//         map.setZoom(6);
-//         map.addLayer(bordersLayerGroup);
-//         // activate the button of all borders
-//         document.getElementById('border-btn').style.backgroundColor = 'green';  // add green color to the button
-//         // dictate the border button of a certain country
-//         document.getElementById('current-border-btn').style.backgroundColor = ''; 
+        if (countryBorderLayerRef.specificCountry) {
+            map.removeLayer(countryBorderLayerRef.specificCountry);
+            countryBorderLayerRef.specificCountry = null;
+        }
 
-//         if (countryBorderLayerRef.specificCountry) {
-//             map.removeLayer(countryBorderLayerRef.specificCountry);
-//             countryBorderLayerRef.specificCountry = null;
-//         }
-//     } else {
-//         // If the borders are already active, hide the border layer of all countries
-//         map.removeLayer(bordersLayerGroup);
-//         document.getElementById('border-btn').style.backgroundColor = '';  // Deactivate the green button
-//     }
-// }, {
-//     id: 'border-btn',  // an ID to the access button
-//     position: 'topleft'  // location of the button on the map
-// }).addTo(map);
+        // We add a new layer of borders of a specific country
+        countryBorderLayerRef.specificCountry = specificCountryLayer.addTo(map);
+        map.fitBounds(specificCountryLayer.getBounds());
 
-// Current border 
-// L.easyButton('<img src="images/button/country.png" width="20" height="20">', function() {
-//     const isoCode = $('#countrySelect option:selected').val();
-//     if (isoCode) {
-//         // If the borders of all countries are active, delete them
-//         if (map.hasLayer(bordersLayerGroup)) {
-//             map.removeLayer(bordersLayerGroup);
-//         }
-//         // If the border layer of the current country is not active, add it
-//         if (!countryBorderLayerRef.specificCountry) {
-//             getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);  // load the borders of the current country
-            
-//         } else {
-//             // if the borders of the current country are already active, delete the layer
-//             map.removeLayer(countryBorderLayerRef.specificCountry);
-//             countryBorderLayerRef.specificCountry = null;
-//             document.getElementById('current-border-btn').style.backgroundColor = '';  // Deactivate the red button
-//         }
-//     } else {
-//         showBootstrapAlert('No country selected.', 'warning');
-//     }
-// }, {
-//     id: 'current-border-btn',  // an ID to the access button
-//     position: 'topleft'
-// }).addTo(map);
-
-
-// Airoports
-// var airportBtn = L.easyButton('<img src="images/button/airplane.png" width="20" height="20">', function() {
-//     const bounds = map.getBounds();
-//     const north = bounds.getNorth();
-//     const south = bounds.getSouth();
-//     const east = bounds.getEast();
-//     const west = bounds.getWest();
-
-//     airportClusterGroup.clearLayers();
-
-//     const airportIcon = L.icon({
-//         iconUrl: 'images/airport.png',
-//         iconSize: [32, 32],
-//         iconAnchor: [16, 32],
-//         popupAnchor: [0, -30]
-//     });
-
-//     getAirports(north, south, east, west)
-//         .then(airports => {
-//             if (airports.length === 0) {
-//                 showBootstrapAlert(
-//                     'No airports were found in this area. Please try searching in other locations.', 
-//                     'warning');
-//                 return;
-//             };
-//             airports.forEach(airport => {
-//                 const wikiName = airport.name.replace(/[\s\W]+/g, '_');
-//                 const marker = L.marker([airport.lat, airport.lng], { icon: airportIcon })
-//                     .bindPopup(`
-//                         <b>${airport.name}</b><br>
-//                         Country: ${airport.countryName}<br>
-//                         Region: ${airport.adminName1}<br>
-//                         <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank">Wikipedia...</a>
-//                     `); 
-//                 airportClusterGroup.addLayer(marker);
-//             });
-//             map.addLayer(airportClusterGroup);
-//         })
-//         .catch(error => {
-//             // console.error('Error fetching historical places:', error);
-//             showBootstrapAlert('Sorry for the inconvenience, something went wrong with the Airport server. Please try again later or change the location.', 'danger');
-//         });
-// }, 'airport-btn');
-
-
-// Weather 
-// var weatherBtn = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
-//     weatherMarkers.clearLayers();
-
-//     const bounds = map.getBounds();
-//     const north = bounds.getNorth();
-//     const south = bounds.getSouth();
-//     const east = bounds.getEast();
-//     const west = bounds.getWest();
-
-//     const center = bounds.getCenter();
-//     const zoomLevel = map.getZoom();
-//     // console.log("zoomLevel:", zoomLevel);
-
-//     if (zoomLevel > 14) {
-//         getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
-//     } else if (zoomLevel <= 14 && zoomLevel > 10) {
-//         // console.log("zoomLevel:", zoomLevel);
-//         getCityByBounds(north, south, east, west).then(cities => {
-//             if (cities.length === 0){
-//                 getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
-//                 return;
-//             }
-//             cities.forEach(city => {
-//                 getWeatherData(city.lat, city.lng, city.name, weatherMarkers);        
-//             });
-//         });
-//     } else if (zoomLevel <= 10 && zoomLevel > 6) {
-//         getCityByBounds(north, south, east, west, 'PPL').then(cities => {
-//             if (cities.length === 0){
-//                 getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
-//                 return;
-//             }           
-//             cities.forEach(city => {
-//                 if (city.fcode !== "PPL") {
-//                     getWeatherData(city.lat, city.lng, city.name, weatherMarkers);        
-//                 }
-//             });
-//         });
-//     } else {
-//         showBootstrapAlert(
-//             "The map zoom level is too large to retrieve weather data. We have adjusted the zoom level to provide a better view and access to weather information.",
-//             'info'
-//         );
-//         map.setZoom(7);
-//     }
-//     map.addLayer(weatherMarkers);
-// });
+    } else {
+        showBootstrapAlert('Sorry for the inconvenience, country borders are not loaded yet. Please try again later.', 'danger');
+    }
+}

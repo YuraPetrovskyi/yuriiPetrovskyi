@@ -35,41 +35,41 @@
 // }
 
 export function setCountryInform(isoCode) {
-  fetch('php/getCountryDetails.php?countryName=' + isoCode)
-    .then(response => response.json())
-    .then(data => {       
-        const country = data[0];  // беремо першу країну з результату
-        const currencies = country.currencies;
-        const currencyCode = Object.keys(currencies)[0];  // беремо перший код валюти
+    fetch('php/getCountryDetails.php?countryName=' + isoCode)
+        .then(response => response.json())
+        .then(data => {       
+            const country = data[0];  // беремо першу країну з результату
+            const currencies = country.currencies;
+            const currencyCode = Object.keys(currencies)[0];  // беремо перший код валюти
 
-        const currencyName = currencies[currencyCode]?.name ?? '';
-        const currencySymbol = currencies[currencyCode]?.symbol ?? '';
+            const currencyName = currencies[currencyCode]?.name ?? '';
+            const currencySymbol = currencies[currencyCode]?.symbol ?? '';
 
-        // Заповнюємо інформацію за допомогою jQuery
-        $('#countryName').text(country.name.common);
-        $('#officialName').text(country.name.official);
-        $('#capital').text(country.capital[0]);
-        $('#population').text(`${(country.population / 1000000).toLocaleString()} million people`);
-        $('#currency').text(`${currencyName}, ${currencySymbol}`);
-        $('#flag').html(`<img src="${country.flags.svg}" width="50">`);
-        $('#region').text(country.region);
-        $('#languages').text(Object.values(country.languages).join(', '));
-        $('#area').text(`${country.area.toLocaleString()} km²`);
-        $('#timezones').text(country.timezones.join(', '));
+            // Заповнюємо інформацію за допомогою jQuery
+            $('#countryName').text(country.name.common);
+            $('#officialName').text(country.name.official);
+            $('#capital').text(country.capital[0]);
+            $('#population').text(`${(country.population / 1000000).toLocaleString()} million people`);
+            $('#currency').text(`${currencyName}, ${currencySymbol}`);
+            $('#flag').html(`<img src="${country.flags.svg}" width="50">`);
+            $('#region').text(country.region);
+            $('#languages').text(Object.values(country.languages).join(', '));
+            $('#area').text(`${country.area.toLocaleString()} km²`);
+            $('#timezones').text(country.timezones.join(', '));
 
-        // Оновлюємо модальне вікно для валюти
-        $('#currencyModalLabel').text(`${currencyName}(${currencyCode}), ${currencySymbol}, ${country.name.common}`);
-        $('#currentCurrencyName').text(`${currencyName} - ${currencyCode}`);
-        $('#curenCurrencySymbol').text(currencySymbol);
-        $('#curenCurrencyCodeConverter').text(currencyCode);
-        
-        console.log('#curenCurrencyCodeConverter', currencyCode);
-        $('#countrySelect').val(isoCode);
+            // Оновлюємо модальне вікно для валюти
+            $('#currencyModalLabel').text(`${currencyName}(${currencyCode}), ${currencySymbol}, ${country.name.common}`);
+            $('#currentCurrencyName').text(`${currencyName} - ${currencyCode}`);
+            $('#curenCurrencySymbol').text(currencySymbol);
+            $('#curenCurrencyCodeConverter').text(currencyCode);
+            
+            console.log('#curenCurrencyCodeConverter', currencyCode);
+            $('#countrySelect').val(isoCode);
 
-    })
-    .catch(error => { 
-        console.error(error);
-        showBootstrapAlert('Error fetching country information', 'danger');
-    });
+        })
+        .catch(error => { 
+            console.error(error);
+            showBootstrapAlert('Error fetching country information', 'danger');
+        });
 }
 

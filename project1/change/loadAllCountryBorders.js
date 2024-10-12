@@ -8,7 +8,7 @@ export function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) 
     fetch('php/getAllCountryBorders.php')
         .then(response => response.json())
         .then(data => {
-            // console.log("Borders data: ", data);
+            console.log("Borders data: ", data);
 
             // create a layer for the borders of the countries
             countryBorderLayerRef.allCountries = L.geoJSON(data, {
@@ -23,14 +23,11 @@ export function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) 
                     layer.bindPopup(`<b>${feature.properties.ADMIN}</b>`);
                     // Add a click event handler to update the country name in <span>
                     layer.on('click', function () {
-                        const countryName = feature.properties.ADMIN;
                         const isoCode = feature.properties.ISO_A2;
-
-                        // Update the <span> element with the current country
-                        const currentCountryElement = document.getElementById('currentCountry');
-                        currentCountryElement.textContent = countryName;
-                        currentCountryElement.setAttribute('data-country-iso', isoCode);
+                        getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
                         setCountryInform(isoCode);
+                        loadAirportsForCountry(isoCode);
+                        loadCitiesForCountry(isoCode);
                     });
                 }
             });

@@ -24,7 +24,7 @@ try {
 }
 
 $cityName = $_GET['cityName'] ?? '';
-$username = $_ENV['USERNAME'];
+$username = $_ENV['USERNAME_GEONAMES_API_KEY'];
 
 if (empty($cityName)) {
     echo json_encode([]);

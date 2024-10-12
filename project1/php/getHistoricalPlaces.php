@@ -28,7 +28,7 @@ $lat = $_GET['lat'] ?? '';
 $lng = $_GET['lng'] ?? '';
 $radius = 20;
 
-$username = $_ENV['USERNAME'];
+$username = $_ENV['USERNAME_GEONAMES_API_KEY'];
 
 $url = "https://secure.geonames.org/findNearbyWikipediaJSON?lat=$lat&lng=$lng&radius=$radius&maxRows=100&username=$username";
 $ch = curl_init();
