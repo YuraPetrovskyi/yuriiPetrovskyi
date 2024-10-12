@@ -117,57 +117,6 @@ var currencyBtn = L.easyButton('<img src="images/button/exchange.png" width="20"
     currencyModal.show();// open model window
 }, 'currency-btn');
 
-
-
-// Weather 
-var weatherBtn = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
-    weatherMarkers.clearLayers();
-
-    const bounds = map.getBounds();
-    const north = bounds.getNorth();
-    const south = bounds.getSouth();
-    const east = bounds.getEast();
-    const west = bounds.getWest();
-
-    const center = bounds.getCenter();
-    const zoomLevel = map.getZoom();
-    // console.log("zoomLevel:", zoomLevel);
-
-    if (zoomLevel > 14) {
-        getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
-    } else if (zoomLevel <= 14 && zoomLevel > 10) {
-        // console.log("zoomLevel:", zoomLevel);
-        getCityByBounds(north, south, east, west).then(cities => {
-            if (cities.length === 0){
-                getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
-                return;
-            }
-            cities.forEach(city => {
-                getWeatherData(city.lat, city.lng, city.name, weatherMarkers);        
-            });
-        });
-    } else if (zoomLevel <= 10 && zoomLevel > 6) {
-        getCityByBounds(north, south, east, west, 'PPL').then(cities => {
-            if (cities.length === 0){
-                getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
-                return;
-            }           
-            cities.forEach(city => {
-                if (city.fcode !== "PPL") {
-                    getWeatherData(city.lat, city.lng, city.name, weatherMarkers);        
-                }
-            });
-        });
-    } else {
-        showBootstrapAlert(
-            "The map zoom level is too large to retrieve weather data. We have adjusted the zoom level to provide a better view and access to weather information.",
-            'info'
-        );
-        map.setZoom(7);
-    }
-    map.addLayer(weatherMarkers);
-});
-
 var weatherModalBtn = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function() {
     // Оновлюємо модальне вікно погодою на основі активних координат
     if (activeCoordinates.lat && activeCoordinates.lon) {
@@ -213,6 +162,11 @@ var histotyBtn = L.easyButton('<img src="images/button/history.png" width="20" h
         });
 }, 'tourist-btn');
 
+var newsBtn = L.easyButton('<img src="images/theater.png" width="20" height="20">', function () {
+    fetchNews();  // Отримуємо новини, коли відкривається модальне вікно
+    const newsModal = new bootstrap.Modal(document.getElementById('newsModal'));
+    newsModal.show();
+}, 'news-btn');
 
 // ---------------------------------------------------------
 // EVENT HANDLERS
@@ -239,6 +193,7 @@ $(document).ready(function () {
     // weatherBtn.addTo(map);
     histotyBtn.addTo(map);
     // airportBtn.addTo(map);
+    newsBtn.addTo(map);
 
     // download the list of countries
     getCountryList()
@@ -279,6 +234,10 @@ $(document).ready(function () {
         getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
         setCountryInform(isoCode);
         loadAirportsForCountry(isoCode);
+    });
+
+    $('#newsCategory').on('change', function() {
+        fetchNews(this.value);
     });
 
     $('#searchPlaceButton').on('click', function() {
@@ -527,7 +486,7 @@ function updateWeatherForecast(data) {
     Object.keys(dailyForecast).slice(0, 5).forEach(date => {
         const forecast = dailyForecast[date];
         const details = forecast.details.map(detail => `
-            <p class="mb-0">${detail.time} - ${detail.temp.toFixed()}°C <img src="http://openweathermap.org/img/wn/${detail.icon}@2x.png" alt="Small icon" class="img-fluid" style="width: 30px;"></p>
+            <p class="mb-0">${detail.time} - <img src="http://openweathermap.org/img/wn/${detail.icon}@2x.png" alt="Small icon" class="img-fluid" style="width: 30px;"> ${detail.temp.toFixed()}°C</p>
         `).join('');
 
         const dayCard = `
@@ -550,8 +509,53 @@ function updateWeatherForecast(data) {
     });
 }
 
+function fetchNews(category = '') {
+    $.ajax({
+        url: `php/getNews.php?category=${category}`,
+        method: 'GET',
+        dataType: 'json',
+        success: function (articles) {
+            console.log('articles', articles);
+            const newsList = $('#news-list');
+            newsList.empty(); 
 
+            if (articles.error) {
+                newsList.append(`<p>${articles.error}</p>`);
+                return;
+            }
 
+            articles.forEach(article => {
+                const articleItem = `
+                    <a href="${article.url}" target="_blank" class="text-decoration-none text-dark">
+                        <div class="card mb-3 shadow-sm">
+                            <div class="card-header p-2 text-center bg-warning bg-opacity-25">
+                                <h5 class="card-title">${article.title}</h5>
+                            </div>
+                            <div class="card-body p-1">
+                                <div class="row g-0">
+                                    <div class="d-flex align-items-center col-md-5 p-1">
+                                        <img src="${article.urlToImage}" class="img-fluid rounded" alt="News image">
+                                    </div>
+                                    <div class="col-md-7 p-2">
+                                        <p class="card-text">${article.description}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between">
+                                <small class="text-muted">${new Date(article.publishedAt).toLocaleString()}</small>
+                                <small class="text-muted fw-bold tw text-uppercase">${article.source.name}</small>
+                            </div>
+                        </div>
+                    </a>`;
+                newsList.append(articleItem);
+            });
+        },
+        error: function (error) {
+            // console.error('Error fetching news:', error);
+            showBootstrapAlert('Sorry, something went wrong with the News service.', 'danger');
+        }
+    });
+}
 
 document.getElementById('searchPlaceButton').addEventListener('click', function() {
     const placeName = document.getElementById('placeSearchInput').value;
@@ -734,3 +738,53 @@ document.getElementById('searchPlaceButton').addEventListener('click', function(
 //             showBootstrapAlert('Sorry for the inconvenience, something went wrong with the Airport server. Please try again later or change the location.', 'danger');
 //         });
 // }, 'airport-btn');
+
+
+// Weather 
+// var weatherBtn = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function () {
+//     weatherMarkers.clearLayers();
+
+//     const bounds = map.getBounds();
+//     const north = bounds.getNorth();
+//     const south = bounds.getSouth();
+//     const east = bounds.getEast();
+//     const west = bounds.getWest();
+
+//     const center = bounds.getCenter();
+//     const zoomLevel = map.getZoom();
+//     // console.log("zoomLevel:", zoomLevel);
+
+//     if (zoomLevel > 14) {
+//         getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
+//     } else if (zoomLevel <= 14 && zoomLevel > 10) {
+//         // console.log("zoomLevel:", zoomLevel);
+//         getCityByBounds(north, south, east, west).then(cities => {
+//             if (cities.length === 0){
+//                 getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
+//                 return;
+//             }
+//             cities.forEach(city => {
+//                 getWeatherData(city.lat, city.lng, city.name, weatherMarkers);        
+//             });
+//         });
+//     } else if (zoomLevel <= 10 && zoomLevel > 6) {
+//         getCityByBounds(north, south, east, west, 'PPL').then(cities => {
+//             if (cities.length === 0){
+//                 getWeatherData(center.lat, center.lng, 'none', weatherMarkers);
+//                 return;
+//             }           
+//             cities.forEach(city => {
+//                 if (city.fcode !== "PPL") {
+//                     getWeatherData(city.lat, city.lng, city.name, weatherMarkers);        
+//                 }
+//             });
+//         });
+//     } else {
+//         showBootstrapAlert(
+//             "The map zoom level is too large to retrieve weather data. We have adjusted the zoom level to provide a better view and access to weather information.",
+//             'info'
+//         );
+//         map.setZoom(7);
+//     }
+//     map.addLayer(weatherMarkers);
+// });
