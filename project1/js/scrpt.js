@@ -321,11 +321,11 @@ function loadAirportsForCountry(isoCode) {
     
     airportClusterGroup.clearLayers();
     
-    const airportIcon = L.icon({
-        iconUrl: 'images/airport.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -30]
+    const airportMarker = L.ExtraMarkers.icon({
+        icon: 'fa-plane',
+        markerColor: 'yellow',
+        shape: 'square',
+        prefix: 'fa'
     });
 
     fetch(`php/getAirports.php?north=${countryBounds.getNorth()}&south=${countryBounds.getSouth()}&east=${countryBounds.getEast()}&west=${countryBounds.getWest()}&isoCode=${isoCode}`)
@@ -338,7 +338,7 @@ function loadAirportsForCountry(isoCode) {
 
             airports.forEach(airport => {
                 const wikiName = airport.name.replace(/[\s\W]+/g, '_');
-                    const marker = L.marker([airport.lat, airport.lng], { icon: airportIcon })
+                    const marker = L.marker([airport.lat, airport.lng], { icon: airportMarker  })
                         .bindPopup(`
                             <b>${airport.name}</b><br>
                             Country: ${airport.countryName}<br>
