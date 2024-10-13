@@ -56,7 +56,7 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
         if (isset($countryData['address'])) {
             $output = [
                 'countryName' => $countryData['address']['country'],
-                'countryISO' => $countryData['address']['country_code'],
+                'countryISO' => strtoupper($countryData['address']['country_code']),
             ];
             echo json_encode($output);
         } else {

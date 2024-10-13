@@ -50,7 +50,7 @@ var activeCoordinates = { lat: null, lon: null };
 
 // user location
 var locationBtn = L.easyButton('<img src="images/button/my_location.png" width="20" height="20">', function(btn, map) {
-    map.locate({setView: true}); // find the location and move the map to it
+    map.locate({setView: false}); // find the location and do not move the map to it
 });
 
 // place serch
@@ -112,18 +112,14 @@ $(document).ready(function () {
     // Add layer control section
     layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
 
+    // Add buttons to the map
     locationBtn.addTo(map);
     searchBtn.addTo(map);
     infoBtn.addTo(map);
     currencyBtn.addTo(map);
     weatherModalBtn.addTo(map);
     newsBtn.addTo(map);
-
-    // download the list of countries
-    loadCountryList();
-    // loading all borders
-    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef);        
-        
+    
     map.locate({
         setView: true,
         maxZoom: 6,
@@ -142,6 +138,11 @@ $(document).ready(function () {
         showAlert(e.message, 'warning');
     });
 
+    // download the list of countries
+    loadCountryList();
+    // loading all borders
+    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef); 
+
     $('#countrySelect').on('change', function() {
         const isoCode = $(this).val();
         getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
@@ -157,54 +158,54 @@ $(document).ready(function () {
     });
 
     $('#newsCategory').on('change', function() {
-        fetchNews(this.value);
+        fetchNews(this.value); // get news of the selected category
     });
     
 });
 
-function searchPlaceByName(placeName) {
+// ---------------------------------------------------------
+// Functions
+// ---------------------------------------------------------
+
+// after finding the user, set all the necessary information by coordinates
+function handleUserLocation(lat, lon) {
     $.ajax({
-        url: `php/searchPlaceByName.php?cityName=${encodeURIComponent(placeName)}`,
+        url: 'php/getCountryByCoordinates.php',
         method: 'GET',
+        data: { lat: lat, lon: lon },
         dataType: 'json',
         success: function(data) {
-            const $placeResultsList = $('#placeResultsList');
-            $placeResultsList.empty(); // clean the previous results
-
-            if (data.length === 0) {
-                $placeResultsList.append('<li class="list-group-item">No results found.</li>');
-                return;
-            }
-
-            data.forEach(place => {
-                const $placeItem = $('<li>')
-                    .addClass('list-group-item list-group-item-action')
-                    .text(`${place.name}, ${place.countryName}`);
-
-                $placeItem.on('click', function() {
-                    getCountrySpecificBorders(place.countryCode, map, countryBorderLayerRef);
-                    setCountryInform(place.countryCode);
-                    loadAirportsForCountry(place.countryCode);
-                    loadCitiesForCountry(place.countryCode);
-
-                    const marker = L.marker([place.lat, place.lng]).addTo(map)
-                        .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
-
-                    const placeModal = bootstrap.Modal.getInstance($('#placeSearchModal')[0]);
-
-                    map.setView([place.lat, place.lng], 10); // move the map to the selected city
-                    placeModal.hide(); // close the modal window after selection
-                });
-
-                $placeResultsList.append($placeItem);
-            });
+            const isoCode = data.countryISO;
+            $('#countrySelect').val(isoCode);  // Set selected country in the dropdown
+            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
+            setCountryInform(isoCode);
+            loadCitiesForCountry(isoCode);
+            loadAirportsForCountry(isoCode);
         },
         error: function() {
-            showAlert('Sorry for the inconvenience, something went wrong with the server. Please try again later.', 'danger');
+            showAlert('Error fetching location', 'danger');
         }
     });
+
+    // Check if marker already exists, remove it
+    if (myLocationMarcker.current) {
+        map.removeLayer(myLocationMarcker.current);
+        myLocationMarcker.current = null;
+    }
+
+    const myLocation = L.icon({
+        iconUrl: 'images/button/my_location.png',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -30]
+    });
+
+    // Add a marker to the map for the user's current location
+    myLocationMarcker.current = L.marker({ lat, lon }, { icon: myLocation }).addTo(map)
+        .bindPopup("You are here");
 }
 
+// function to download the list of countries
 function loadCountryList() {
     $.ajax({
         url: 'php/getCountries.php',
@@ -213,7 +214,7 @@ function loadCountryList() {
         success: function(countries) {
             const $countrySelect = $('#countrySelect');
             $countrySelect.empty();
-            console.log('countries', countries);            
+            // console.log('countries', countries);            
             countries.forEach(country => {
                 const option = $('<option></option>')
                     .val(country.iso)
@@ -231,6 +232,78 @@ function loadCountryList() {
     });
 }
 
+// function to add all country borders and add to map
+function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) {
+    // getting GeoJSON boundary data
+    $.ajax({
+        url: 'php/getAllCountryBorders.php',
+        method: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            // console.log("Borders data: ", data);
+            // create a layer for the borders of the countries
+            countryBorderLayerRef.allCountries = L.geoJSON(data, {
+                style: {
+                    color: '#ff0000',
+                    weight: 2,
+                    dashArray: '5, 5',  // Dotted line
+                    fillOpacity: 0     // Without filling
+                },
+                onEachFeature: function (feature, layer) {
+                    layer.bindPopup(`<b>${feature.properties.ADMIN}</b>`);
+                    // Add a click event handler to update the country name in <span>
+                    layer.on('click', function () {
+                        const isoCode = feature.properties.ISO_A2;
+                        getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
+                        setCountryInform(isoCode);
+                        loadAirportsForCountry(isoCode);
+                        loadCitiesForCountry(isoCode);
+                    });
+                }
+            });
+
+            // Add borders to bordersLayerGroup
+            bordersLayerGroup.addLayer(countryBorderLayerRef.allCountries);
+        },
+        error: function(error) {
+            // console.error('Error loading country borders:', error);
+            showAlert('Sorry for the inconvenience, all country borders are not loaded yet. An Error occurred while trying to get all borders, please try again later.', 'danger');
+        }
+    });
+}
+
+// add the borders of the selected country to the map
+function getCountrySpecificBorders(isoCode, map, countryBorderLayerRef) {
+    if (countryBorderLayerRef.allCountries) {
+        const specificCountryLayer = L.geoJSON(countryBorderLayerRef.allCountries.toGeoJSON(), {
+            filter: function (feature) {
+                return feature.properties.ISO_A2 === isoCode;
+            },
+            style: function () {
+                return {
+                    color: '#0000FF',
+                    weight: 3,
+                    dashArray: '5, 5',
+                    fillOpacity: 0
+                };
+            }
+        });
+
+        if (countryBorderLayerRef.specificCountry) {
+            map.removeLayer(countryBorderLayerRef.specificCountry);
+            countryBorderLayerRef.specificCountry = null;
+        }
+
+        // add a new layer of borders of a specific country
+        countryBorderLayerRef.specificCountry = specificCountryLayer.addTo(map);
+        map.fitBounds(specificCountryLayer.getBounds());
+
+    } else {
+        showAlert('Sorry for the inconvenience, country borders are not loaded yet. Please try again later.', 'danger');
+    }
+}
+
+// function for filling information modal with data
 function setCountryInform(isoCode) {
     $.ajax({
         url: 'php/getCountryDetails.php',
@@ -269,70 +342,52 @@ function setCountryInform(isoCode) {
     });
 }
 
-
-function getCurrencyData(currencyCode) {
-    const baseCurrency = 'USD';
-    $('#currentCurencyAmount').val('');
-    $('#baseCurrencyAmount').val('1');
+// Load airports for the country within its borders and add to the map
+function loadAirportsForCountry(isoCode) {
+    const countryBounds = countryBorderLayerRef.specificCountry.getBounds();  // Get the current country borders from map
     
+    airportClusterGroup.clearLayers();
+    
+    const airportMarker = L.ExtraMarkers.icon({
+        icon: 'fa-plane',
+        markerColor: 'yellow',
+        shape: 'square',
+        prefix: 'fa'
+    });
+
     $.ajax({
-        url: 'php/getCurrencyRates.php',
+        url: 'php/getAirports.php',
         method: 'GET',
         data: {
-            currencyCode: currencyCode,
-            baseCurrency: baseCurrency
+            north: countryBounds.getNorth(),
+            south: countryBounds.getSouth(),
+            east: countryBounds.getEast(),
+            west: countryBounds.getWest(),
+            isoCode: isoCode
         },
         dataType: 'json',
-        success: function(data) {
-            if (data.error) {
-                console.error('Error fetching currency:', data.error);
-                showAlert('Error fetching currency data', 'danger');
+        success: function(airports) {
+            if (airports.length === 0) {
+                showAlert('No airports found in this country.', 'warning');
                 return;
-            }
-            setCurrencyData(data, currencyCode);
+            };
+
+            airports.forEach(airport => {
+                const wikiName = airport.name.replace(/[\s\W]+/g, '_');
+                const marker = L.marker([airport.lat, airport.lng], { icon: airportMarker  })
+                    .bindPopup(`
+                        <div class="fw-bold fs-5">${airport.name}</div>
+                        <div class="fw-bold">Country: ${airport.countryName}</div>
+                        <div class="fw-bold">Region: ${airport.adminName1}</div>                        
+                        <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank" class="text-decoration-none fw-bold">search in wikipedia...</a>
+
+                    `);
+                airportClusterGroup.addLayer(marker);
+            });
         },
-        error: function(xhr, status, error) {
-            // console.error('Error fetching currency:', error);
-            showAlert('Error fetching currency data', 'danger');
+        error: function() {
+            showAlert('Error fetching airports', 'danger');
         }
-    });
-}
-
-function setCurrencyData(data, currencyCode) {
-    $('#curenCurrencyCode').text(data[currencyCode].toFixed(2));
-    $('#USD').text(data['USD'].toFixed(2));
-    $('#EUR').text(data['EUR'].toFixed(2));
-    $('#GBP').text(data['GBP'].toFixed(2));
-    $('#CNY').text(data['CNY'].toFixed(2));
-    $('#JPY').text(data['JPY'].toFixed(2));
-    $('#INR').text(data['INR'].toFixed(2));
-    $('#CAD').text(data['CAD'].toFixed(2));
-
-    $('#baseCurrencyAmount').on('input', function() { //Event handler for entering base currency
-        $('#currentCurencyAmount').val('');
-        const amount = $(this).val();
-        $('#curenCurrencyCode').text((data[currencyCode] * amount).toFixed(2));
-        $('#USD').text((data['USD'] * amount).toFixed(2));
-        $('#EUR').text((data['EUR'] * amount).toFixed(2));
-        $('#GBP').text((data['GBP'] * amount).toFixed(2));
-        $('#CNY').text((data['CNY'] * amount).toFixed(2));
-        $('#JPY').text((data['JPY'] * amount).toFixed(2));
-        $('#INR').text((data['INR'] * amount).toFixed(2));
-        $('#CAD').text((data['CAD'] * amount).toFixed(2));
-    });
-    
-    const k = 1 / data[currencyCode];
-    $('#currentCurencyAmount').on('input', function() { // Event handler for entering the selected currency field
-        $('#baseCurrencyAmount').val('');
-        const amount = $(this).val();
-        $('#curenCurrencyCode').text(amount);
-        $('#USD').text((data['USD'] * amount * k).toFixed(2));
-        $('#EUR').text((data['EUR'] * amount * k).toFixed(2));
-        $('#GBP').text((data['GBP'] * amount * k).toFixed(2));
-        $('#CNY').text((data['CNY'] * amount * k).toFixed(2));
-        $('#JPY').text((data['JPY'] * amount * k).toFixed(2));
-        $('#INR').text((data['INR'] * amount * k).toFixed(2));
-        $('#CAD').text((data['CAD'] * amount * k).toFixed(2));
     });
 }
 
@@ -347,7 +402,7 @@ function loadCitiesForCountry(isoCode) {
         data: { isoCode: isoCode },
         dataType: 'json',
         success: function(cityData) {
-            console.log('cities: ', cityData);
+            // console.log('cities: ', cityData);
             if (cityData.pplc.length === 0 && cityData.ppla.length === 0 && cityData.ppla2.length === 0) {
                 showAlert('No cities found in this country.', 'warning');
                 return;
@@ -394,7 +449,6 @@ function loadCitiesForCountry(isoCode) {
                 marker.on('click', function() {
                     activeCoordinates.lat = city.lat;
                     activeCoordinates.lon = city.lng;
-                    console.log('Admin city selected:', activeCoordinates);
                 });
 
                 adminCityClusterGroup.addLayer(marker);
@@ -432,98 +486,114 @@ function loadCitiesForCountry(isoCode) {
     });
 }
 
-
-
-// ****************************************************
-// Load airports for the selected country based on its borders 
-function handleUserLocation(lat, lon) {
+// function for searching for places in a search modal
+function searchPlaceByName(placeName) {
     $.ajax({
-        url: 'php/getCountryByCoordinates.php',
+        url: `php/searchPlaceByName.php?cityName=${encodeURIComponent(placeName)}`,
         method: 'GET',
-        data: { lat: lat, lon: lon },
         dataType: 'json',
         success: function(data) {
-            const isoCode = data.countryISO.toUpperCase();
-            $('#countrySelect').val(isoCode);  // Set selected country in the dropdown
-            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
-            setCountryInform(isoCode);
-            console.log('countryBorderLayerRef', countryBorderLayerRef);
-            
-            // Load airports and cities for the current country
-            loadCitiesForCountry(isoCode);
-            loadAirportsForCountry(isoCode);
-        },
-        error: function() {
-            showAlert('Error fetching location', 'danger');
-        }
-    });
+            const $placeResultsList = $('#placeResultsList');
+            $placeResultsList.empty(); // clean the previous results
 
-    // Check if marker already exists, remove it
-    if (myLocationMarcker.current) {
-        map.removeLayer(myLocationMarcker.current);
-        myLocationMarcker.current = null;
-    }
-
-    const myLocation = L.icon({
-        iconUrl: 'images/button/my_location.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -30]
-    });
-
-    // Add a marker to the map for the user's current location
-    myLocationMarcker.current = L.marker({ lat, lon }, { icon: myLocation }).addTo(map)
-        .bindPopup("You are here");
-}
-
-
-// Load airports for the country within its borders
-function loadAirportsForCountry(isoCode) {
-    const countryBounds = countryBorderLayerRef.specificCountry.getBounds();  // Get the current country borders from map
-    
-    airportClusterGroup.clearLayers();
-    
-    const airportMarker = L.ExtraMarkers.icon({
-        icon: 'fa-plane',
-        markerColor: 'yellow',
-        shape: 'square',
-        prefix: 'fa'
-    });
-
-    // Використовуємо jQuery ajax
-    $.ajax({
-        url: 'php/getAirports.php',
-        method: 'GET',
-        data: {
-            north: countryBounds.getNorth(),
-            south: countryBounds.getSouth(),
-            east: countryBounds.getEast(),
-            west: countryBounds.getWest(),
-            isoCode: isoCode
-        },
-        dataType: 'json',
-        success: function(airports) {
-            if (airports.length === 0) {
-                showAlert('No airports found in this country.', 'warning');
+            if (data.length === 0) {
+                $placeResultsList.append('<li class="list-group-item">No results found.</li>');
                 return;
-            };
+            }
 
-            airports.forEach(airport => {
-                const wikiName = airport.name.replace(/[\s\W]+/g, '_');
-                const marker = L.marker([airport.lat, airport.lng], { icon: airportMarker  })
-                    .bindPopup(`
-                        <div class="fw-bold fs-5">${airport.name}</div>
-                        <div class="fw-bold">Country: ${airport.countryName}</div>
-                        <div class="fw-bold">Region: ${airport.adminName1}</div>                        
-                        <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank" class="text-decoration-none fw-bold">search in wikipedia...</a>
+            data.forEach(place => {
+                const $placeItem = $('<li>')
+                    .addClass('list-group-item list-group-item-action')
+                    .text(`${place.name}, ${place.countryName}`);
 
-                    `);
-                airportClusterGroup.addLayer(marker);
+                $placeItem.on('click', function() {
+                    getCountrySpecificBorders(place.countryCode, map, countryBorderLayerRef);
+                    setCountryInform(place.countryCode);
+                    loadAirportsForCountry(place.countryCode);
+                    loadCitiesForCountry(place.countryCode);
+
+                    const marker = L.marker([place.lat, place.lng]).addTo(map)
+                        .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
+
+                    const placeModal = bootstrap.Modal.getInstance($('#placeSearchModal')[0]);
+
+                    map.setView([place.lat, place.lng], 10); // move the map to the selected city
+                    placeModal.hide(); // close the modal window after selection
+                });
+
+                $placeResultsList.append($placeItem);
             });
         },
         error: function() {
-            showAlert('Error fetching airports', 'danger');
+            showAlert('Sorry for the inconvenience, something went wrong with the server. Please try again later.', 'danger');
         }
+    });
+}
+
+// functions for processing currency modal
+function getCurrencyData(currencyCode) {
+    const baseCurrency = 'USD';
+    $('#currentCurencyAmount').val('');
+    $('#baseCurrencyAmount').val('1');
+    
+    $.ajax({
+        url: 'php/getCurrencyRates.php',
+        method: 'GET',
+        data: {
+            currencyCode: currencyCode,
+            baseCurrency: baseCurrency
+        },
+        dataType: 'json',
+        success: function(data) {
+            if (data.error) {
+                console.error('Error fetching currency:', data.error);
+                showAlert('Error fetching currency data', 'danger');
+                return;
+            }
+            handleCurrencyData(data, currencyCode);
+        },
+        error: function(xhr, status, error) {
+            // console.error('Error fetching currency:', error);
+            showAlert('Error fetching currency data', 'danger');
+        }
+    });
+}
+
+function handleCurrencyData(data, currencyCode) {
+    $('#curenCurrencyCode').text(data[currencyCode].toFixed(2));
+    $('#USD').text(data['USD'].toFixed(2));
+    $('#EUR').text(data['EUR'].toFixed(2));
+    $('#GBP').text(data['GBP'].toFixed(2));
+    $('#CNY').text(data['CNY'].toFixed(2));
+    $('#JPY').text(data['JPY'].toFixed(2));
+    $('#INR').text(data['INR'].toFixed(2));
+    $('#CAD').text(data['CAD'].toFixed(2));
+
+    $('#baseCurrencyAmount').on('input', function() { //Event handler for entering base currency
+        $('#currentCurencyAmount').val('');
+        const amount = $(this).val();
+        $('#curenCurrencyCode').text((data[currencyCode] * amount).toFixed(2));
+        $('#USD').text((data['USD'] * amount).toFixed(2));
+        $('#EUR').text((data['EUR'] * amount).toFixed(2));
+        $('#GBP').text((data['GBP'] * amount).toFixed(2));
+        $('#CNY').text((data['CNY'] * amount).toFixed(2));
+        $('#JPY').text((data['JPY'] * amount).toFixed(2));
+        $('#INR').text((data['INR'] * amount).toFixed(2));
+        $('#CAD').text((data['CAD'] * amount).toFixed(2));
+    });
+    
+    const k = 1 / data[currencyCode];
+    $('#currentCurencyAmount').on('input', function() { // Event handler for entering the selected currency field
+        $('#baseCurrencyAmount').val('');
+        const amount = $(this).val();
+        $('#curenCurrencyCode').text(amount);
+        $('#USD').text((data['USD'] * amount * k).toFixed(2));
+        $('#EUR').text((data['EUR'] * amount * k).toFixed(2));
+        $('#GBP').text((data['GBP'] * amount * k).toFixed(2));
+        $('#CNY').text((data['CNY'] * amount * k).toFixed(2));
+        $('#JPY').text((data['JPY'] * amount * k).toFixed(2));
+        $('#INR').text((data['INR'] * amount * k).toFixed(2));
+        $('#CAD').text((data['CAD'] * amount * k).toFixed(2));
     });
 }
 
@@ -538,7 +608,7 @@ function getWeatherData(lat, lon, locationName) {
         data: { lat: lat, lon: lon },
         dataType: 'json',
         success: function(data) {
-            console.log('getWeather data:', data);
+            // console.log('getWeather data:', data);
             updateWeatherModal(data, locationName);
             getWeatherForecast(lat, lon);
         },
@@ -556,7 +626,7 @@ function getWeatherForecast(lat, lon) {
         data: { lat: lat, lon: lon },
         dataType: 'json',
         success: function(data) {
-            console.log('forecast data', data);
+            // console.log('forecast data', data);
             updateWeatherForecast(data);
         },
         error: function() {
@@ -565,10 +635,6 @@ function getWeatherForecast(lat, lon) {
         }
     });
 }
-
-// ****************************************************
-// Update Modal Functions
-// ****************************************************
 
 function updateWeatherModal(weatherData, locationName) {
     $('#weather-point-name').text( locationName.toUpperCase() || weatherData.name.toUpperCase());
@@ -683,13 +749,14 @@ function updateWeatherForecast(data) {
     });
 }
 
+// function for receiving news
 function fetchNews(category = '') {
     $.ajax({
         url: `php/getNews.php?category=${category}`,
         method: 'GET',
         dataType: 'json',
         success: function (articles) {
-            console.log('articles', articles);
+            // console.log('articles', articles);
             const newsList = $('#news-list');
             newsList.empty(); 
 
@@ -731,77 +798,7 @@ function fetchNews(category = '') {
     });
 }
 
-function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) {
-    // getting GeoJSON boundary data
-    $.ajax({
-        url: 'php/getAllCountryBorders.php',
-        method: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            console.log("Borders data: ", data);
-
-            // create a layer for the borders of the countries
-            countryBorderLayerRef.allCountries = L.geoJSON(data, {
-                style: {
-                    color: '#ff0000',
-                    weight: 2,
-                    dashArray: '5, 5',  // Dotted line
-                    fillOpacity: 0     // Without filling
-                },
-                onEachFeature: function (feature, layer) {
-                    layer.bindPopup(`<b>${feature.properties.ADMIN}</b>`);
-                    // Add a click event handler to update the country name in <span>
-                    layer.on('click', function () {
-                        const isoCode = feature.properties.ISO_A2;
-                        getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
-                        setCountryInform(isoCode);
-                        loadAirportsForCountry(isoCode);
-                        loadCitiesForCountry(isoCode);
-                    });
-                }
-            });
-
-            // Add borders to bordersLayerGroup
-            bordersLayerGroup.addLayer(countryBorderLayerRef.allCountries);
-        },
-        error: function(error) {
-            // console.error('Error loading country borders:', error);
-            showAlert('Sorry for the inconvenience, all country borders are not loaded yet. An Error occurred while trying to get all borders, please try again later.', 'danger');
-        }
-    });
-}
-
-function getCountrySpecificBorders(isoCode, map, countryBorderLayerRef) {
-    if (countryBorderLayerRef.allCountries) {
-        const specificCountryLayer = L.geoJSON(countryBorderLayerRef.allCountries.toGeoJSON(), {
-            filter: function (feature) {
-                return feature.properties.ISO_A2 === isoCode;
-            },
-            style: function () {
-                return {
-                    color: '#0000FF',
-                    weight: 3,
-                    dashArray: '5, 5',
-                    fillOpacity: 0
-                };
-            }
-        });
-
-        if (countryBorderLayerRef.specificCountry) {
-            map.removeLayer(countryBorderLayerRef.specificCountry);
-            countryBorderLayerRef.specificCountry = null;
-        }
-
-        // We add a new layer of borders of a specific country
-        countryBorderLayerRef.specificCountry = specificCountryLayer.addTo(map);
-        map.fitBounds(specificCountryLayer.getBounds());
-
-    } else {
-        showAlert('Sorry for the inconvenience, country borders are not loaded yet. Please try again later.', 'danger');
-    }
-}
-
-
+// function to notify the user
 function showAlert(message, alertType = 'success', autoClose = true, closeDelay = 5000) {
     const $alertPlaceholder = $('#alertPlaceholder');
     const $alertHtml = $(`
