@@ -1,18 +1,13 @@
 // script.js
 
-
-import { getHistoricalPlaces } from './getHistoricalPlaces.js';
-import { getIconByTitle } from './getIconByTitle.js';
-
-
 // ---------------------------------------------------------
 // GLOBAL DECLARATIONS
 // ---------------------------------------------------------
 
-// var map = L.map('map').fitWorld();
 var map, layerControl;
 var map, layerControl;
-var bordersLayerGroup = L.layerGroup();  // to store borders
+
+var bordersLayerGroup = L.layerGroup();
 var airportClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
 });
@@ -22,14 +17,9 @@ var cityMarkersCluster = L.markerClusterGroup({
 var adminCityClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
 }); 
-// var weatherMarkers = L.markerClusterGroup({
-//     maxClusterRadius: 45
-// });  // Cluster group for weather markers
-var historicalMarkersCluster = L.markerClusterGroup({
-    maxClusterRadius: 20
-});  // Cluster group for historical places
 
 // tile layers
+
 var streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -45,49 +35,48 @@ var baseMaps = {
     "Satellite": satellite,
 };
 
-var myLocationMarcker = { current: null };
-var countryBorderLayerRef = { allCountries: null,  specificCountry: null}; 
-var activeCoordinates = { lat: null, lon: null };
-
 var overlayMaps = {    
     "All Borders": bordersLayerGroup,
     "Airports": airportClusterGroup,
     "Administrative Cities": adminCityClusterGroup,
     "Cities": cityMarkersCluster,
-    "Historical Places": historicalMarkersCluster,
 };
+
+var myLocationMarcker = { current: null };
+var countryBorderLayerRef = { allCountries: null,  specificCountry: null}; 
+var activeCoordinates = { lat: null, lon: null };
 
 // buttons
 
-// User location
+// user location
 var locationBtn = L.easyButton('<img src="images/button/my_location.png" width="20" height="20">', function(btn, map) {
     map.locate({setView: true}); // find the location and move the map to it
-}, 'locate-btn');
+});
 
-// Place serch
+// place serch
 var searchBtn = L.easyButton('<img src="images/button/search.png" width="20" height="20">', function() {
-    // modal window for city search
-    const placeModal = new bootstrap.Modal(document.getElementById('placeSearchModal'));
+    const placeModal = new bootstrap.Modal($('#placeSearchModal')[0]);
     placeModal.show();
-}, 'search-place-btn');
+});
 
-// Info modal  
+// info modal  
 var infoBtn = L.easyButton('<img src="images/button/info.png" width="20" height="20">', function() {
-    // call the Bootstrap function to open a modal window
-    const countryModal = new bootstrap.Modal(document.getElementById('countryModal'));
+    const countryModal = new bootstrap.Modal($('#countryModal')[0]);
     countryModal.show();
-}, 'info-btn');
+});
 
-// Curency modal
+// curency modal
 var currencyBtn = L.easyButton('<img src="images/button/exchange.png" width="20" height="20">', function() {
-    const currencyCode = $('#curenCurrencyCodeConverter').text();
-    console.log('currencyCode', currencyCode);
-    
+    const currencyCode = $('#curenCurrencyCodeConverter').text();  
+    if (!currencyCode) {
+        showAlert('Currency data is not available. Please try again later.', 'warning');
+        return;
+    }
     getCurrencyData(currencyCode);        
 
-    const currencyModal = new bootstrap.Modal(document.getElementById('currencyModal'));
-    currencyModal.show();// open model window
-}, 'currency-btn');
+    const currencyModal = new bootstrap.Modal($('#currencyModal')[0]);
+    currencyModal.show();
+});
 
 var weatherModalBtn = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function() {
     // We update the modal window with weather based on the active coordinates
@@ -96,49 +85,15 @@ var weatherModalBtn = L.easyButton('<img src="images/button/weather.png" width="
     } else {
         showAlert('Sorry, the location is not defined.', 'danger');
     }
-    const weatherModal = new bootstrap.Modal(document.getElementById('weatherModal'));
+    const weatherModal = new bootstrap.Modal($('#weatherModal')[0]);
     weatherModal.show();
-}, 'weather-modal-btn');
+});
 
-// Historycal places
-var histotyBtn = L.easyButton('<img src="images/button/history.png" width="20" height="20">', function() {
-    const zoomLevel = map.getZoom(); 
-
-    historicalMarkersCluster.clearLayers(); // Clear previous markers
-
-    const bounds = map.getBounds(); 
-    const center = bounds.getCenter();
-
-    getHistoricalPlaces(center.lat, center.lng)
-        .then(places => {
-            if (places.length === 0) {
-                showAlert(
-                    'No historical or tourist places were found in this area. Please try searching in other locations.', 
-                    'warning');
-                return;
-            };
-            if (zoomLevel < 9) {
-                map.setZoom(10);
-            };
-            places.forEach(place => {            
-                const icon = getIconByTitle(place.feature, place.title);
-                const marker = L.marker([place.lat, place.lng], { icon: icon })
-                    .bindPopup(`<b>${place.title}</b><br>${place.summary}<br><a href="https://${place.wikipediaUrl}" target="_blank">wikipedia...</a>`);
-                historicalMarkersCluster.addLayer(marker); // Add a marker to the cluster group
-            });
-            map.addLayer(historicalMarkersCluster); // Add clustered markers to the map
-        })
-        .catch(error => {
-            // console.error('Error fetching historical places:', error);
-            showAlert('Sorry for the inconvenience, something went wrong with the Historical server. Please try again later or change the location.', 'danger');
-        });
-}, 'tourist-btn');
-
-var newsBtn = L.easyButton('<img src="images/theater.png" width="20" height="20">', function () {
+var newsBtn = L.easyButton('<img src="images/button/news.png" width="20" height="20">', function () {
     fetchNews();
-    const newsModal = new bootstrap.Modal(document.getElementById('newsModal'));
+    const newsModal = new bootstrap.Modal($('#newsModal')[0]);
     newsModal.show();
-}, 'news-btn');
+});
 
 // ---------------------------------------------------------
 // EVENT HANDLERS
@@ -162,11 +117,12 @@ $(document).ready(function () {
     infoBtn.addTo(map);
     currencyBtn.addTo(map);
     weatherModalBtn.addTo(map);
-    histotyBtn.addTo(map);
     newsBtn.addTo(map);
 
     // download the list of countries
-    getCountryList();        
+    loadCountryList();
+    // loading all borders
+    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef);        
         
     map.locate({
         setView: true,
@@ -174,39 +130,34 @@ $(document).ready(function () {
         watch: false, // avoid constantly updating the coordinates
         enableHighAccuracy: true
     });
+
     // Load country borders and airports on location found
     map.on('locationfound', function (e) {
-        console.log('i am work - locationfound!')
         handleUserLocation(e.latlng.lat, e.latlng.lng);
         activeCoordinates.lat = e.latlng.lat;
         activeCoordinates.lon = e.latlng.lng;
-        console.log('activeCoordinates', activeCoordinates);
     });
 
     map.on('locationerror', function (e) {
-        showAlert(e.message, 'success');
+        showAlert(e.message, 'warning');
     });
-
-    // loading all borders
-    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef);
 
     $('#countrySelect').on('change', function() {
         const isoCode = $(this).val();
-        console.log('isoCode', isoCode);
         getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
         setCountryInform(isoCode);
         loadAirportsForCountry(isoCode);
         loadCitiesForCountry(isoCode);
     });
 
-    $('#newsCategory').on('change', function() {
-        fetchNews(this.value);
-    });
-
     $('#searchPlaceButton').on('click', function() {
         const placeName = $('#placeSearchInput').val().trim();
         if (placeName === '') return; // checking whether the field is empty
         searchPlaceByName(placeName);
+    });
+
+    $('#newsCategory').on('change', function() {
+        fetchNews(this.value);
     });
     
 });
@@ -254,13 +205,21 @@ function searchPlaceByName(placeName) {
     });
 }
 
-function getCountryList() {
+function loadCountryList() {
     $.ajax({
         url: 'php/getCountries.php',
         method: 'GET',
         dataType: 'json',
         success: function(countries) {
-            setCountriesList(countries); // fill the list with countries
+            const $countrySelect = $('#countrySelect');
+            $countrySelect.empty();
+            console.log('countries', countries);            
+            countries.forEach(country => {
+                const option = $('<option></option>')
+                    .val(country.iso)
+                    .text(country.name);
+                $countrySelect.append(option);
+    });
         },
         error: function(xhr, status, error) {
             console.error('Error fetching countries:', error);
@@ -272,51 +231,35 @@ function getCountryList() {
     });
 }
 
-function setCountriesList(countries) {
-    const $countrySelect = $('#countrySelect');
-    $countrySelect.empty();
-    console.log('countries', countries)
-    
-    countries.forEach(country => {
-        const option = $('<option></option>')
-            .val(country.iso)
-            .text(country.name);
-        $countrySelect.append(option);
-    });
-}
-
 function setCountryInform(isoCode) {
     $.ajax({
         url: 'php/getCountryDetails.php',
         method: 'GET',
-        data: { countryName: isoCode },
+        data: { isoCode: isoCode },
         dataType: 'json',
         success: function(data) {
-            const country = data[0];  // we take the first country from the result
-            const currencies = country.currencies;
-            const currencyCode = Object.keys(currencies)[0];  // we take the first currency code
-
-            const currencyName = currencies[currencyCode]?.name ?? '';
-            const currencySymbol = currencies[currencyCode]?.symbol ?? '';
-
-            $('#countryName').text(country.name.common);
-            $('#officialName').text(country.name.official);
-            $('#capital').text(country.capital[0]);
-            $('#population').text(`${(country.population / 1000000).toLocaleString()} million people`);
-            $('#currency').text(`${currencyName}, ${currencySymbol}`);
-            $('#flag').html(`<img src="${country.flags.svg}" width="50">`);
-            $('#region').text(country.region);
-            $('#languages').text(Object.values(country.languages).join(', '));
-            $('#area').text(`${country.area.toLocaleString()} km²`);
-            $('#timezones').text(country.timezones.join(', '));
+            // console.log(data);            
+            // Updating data in the modal window
+            $('#countryName').text(data.name);
+            $('#officialName').text(data.officialName);
+            $('#capital').text(data.capital);
+            $('#population').text(`${data.population.toLocaleString()}`);
+            $('#currency').text(`${data.currency.name}, ${data.currency.symbol}`);
+            $('#flag').html(`<img src="${data.flag}" width="100" alt="${data.flagAlt}">`);
+            $('#region').text(data.region);
+            $('#languages').text(data.languages);
+            $('#area').text(`${data.area.toLocaleString()} km²`);
+            $('#timezones').text(data.timezones);
+            $('#flagDescription').text(data.flagAlt);
+            $('#coatOfArms').html(`<img src="${data.coatOfArms}" width="100" alt="Coat of Arms">`);
 
             // Updating the modal window for currency
-            $('#currencyModalLabel').text(`${currencyName}(${currencyCode}), ${currencySymbol}, ${country.name.common}`);
-            $('#currentCurrencyName').text(`${currencyName} - ${currencyCode}`);
-            $('#curenCurrencySymbol').text(currencySymbol);
-            $('#curenCurrencyCodeConverter').text(currencyCode);
+            $('#currencyModalLabel').text(`${data.currency.name} (${data.currency.currencyCode}) -- ${data.currency.symbol} -- ${data.name}`);
+            $('#currentCurrencyName').text(`${data.currency.name} - ${data.currency.currencyCode}`);
+            $('#curenCurrencySymbol').text(data.currency.symbol);
+            $('#curenCurrencyCodeConverter').text(data.currency.currencyCode);
             
-            console.log('#curenCurrencyCodeConverter', currencyCode);
+            // Update the selected country in the list
             $('#countrySelect').val(isoCode);
         },
         error: function(error) {
@@ -325,6 +268,7 @@ function setCountryInform(isoCode) {
         }
     });
 }
+
 
 function getCurrencyData(currencyCode) {
     const baseCurrency = 'USD';
@@ -355,43 +299,40 @@ function getCurrencyData(currencyCode) {
 }
 
 function setCurrencyData(data, currencyCode) {
-    $('#curenCurrencyCode').text(data.rates[currencyCode].toFixed(2));
-    $('#USD').text(data.rates['USD'].toFixed(2));
-    $('#EUR').text(data.rates['EUR'].toFixed(2));
-    $('#GBP').text(data.rates['GBP'].toFixed(2));
-    $('#CNY').text(data.rates['CNY'].toFixed(2));
-    $('#JPY').text(data.rates['JPY'].toFixed(2));
-    $('#INR').text(data.rates['INR'].toFixed(2));
-    $('#CAD').text(data.rates['CAD'].toFixed(2));
+    $('#curenCurrencyCode').text(data[currencyCode].toFixed(2));
+    $('#USD').text(data['USD'].toFixed(2));
+    $('#EUR').text(data['EUR'].toFixed(2));
+    $('#GBP').text(data['GBP'].toFixed(2));
+    $('#CNY').text(data['CNY'].toFixed(2));
+    $('#JPY').text(data['JPY'].toFixed(2));
+    $('#INR').text(data['INR'].toFixed(2));
+    $('#CAD').text(data['CAD'].toFixed(2));
 
-    // Обробник події для введення базової валюти
-    $('#baseCurrencyAmount').on('input', function() {
+    $('#baseCurrencyAmount').on('input', function() { //Event handler for entering base currency
         $('#currentCurencyAmount').val('');
         const amount = $(this).val();
-        $('#curenCurrencyCode').text((data.rates[currencyCode] * amount).toFixed(2));
-        $('#USD').text((data.rates['USD'] * amount).toFixed(2));
-        $('#EUR').text((data.rates['EUR'] * amount).toFixed(2));
-        $('#GBP').text((data.rates['GBP'] * amount).toFixed(2));
-        $('#CNY').text((data.rates['CNY'] * amount).toFixed(2));
-        $('#JPY').text((data.rates['JPY'] * amount).toFixed(2));
-        $('#INR').text((data.rates['INR'] * amount).toFixed(2));
-        $('#CAD').text((data.rates['CAD'] * amount).toFixed(2));
+        $('#curenCurrencyCode').text((data[currencyCode] * amount).toFixed(2));
+        $('#USD').text((data['USD'] * amount).toFixed(2));
+        $('#EUR').text((data['EUR'] * amount).toFixed(2));
+        $('#GBP').text((data['GBP'] * amount).toFixed(2));
+        $('#CNY').text((data['CNY'] * amount).toFixed(2));
+        $('#JPY').text((data['JPY'] * amount).toFixed(2));
+        $('#INR').text((data['INR'] * amount).toFixed(2));
+        $('#CAD').text((data['CAD'] * amount).toFixed(2));
     });
     
-    const k = 1 / data.rates[currencyCode];
-
-    // Event handler for entering the selected currency field
-    $('#currentCurencyAmount').on('input', function() {
+    const k = 1 / data[currencyCode];
+    $('#currentCurencyAmount').on('input', function() { // Event handler for entering the selected currency field
         $('#baseCurrencyAmount').val('');
         const amount = $(this).val();
         $('#curenCurrencyCode').text(amount);
-        $('#USD').text((data.rates['USD'] * amount * k).toFixed(2));
-        $('#EUR').text((data.rates['EUR'] * amount * k).toFixed(2));
-        $('#GBP').text((data.rates['GBP'] * amount * k).toFixed(2));
-        $('#CNY').text((data.rates['CNY'] * amount * k).toFixed(2));
-        $('#JPY').text((data.rates['JPY'] * amount * k).toFixed(2));
-        $('#INR').text((data.rates['INR'] * amount * k).toFixed(2));
-        $('#CAD').text((data.rates['CAD'] * amount * k).toFixed(2));
+        $('#USD').text((data['USD'] * amount * k).toFixed(2));
+        $('#EUR').text((data['EUR'] * amount * k).toFixed(2));
+        $('#GBP').text((data['GBP'] * amount * k).toFixed(2));
+        $('#CNY').text((data['CNY'] * amount * k).toFixed(2));
+        $('#JPY').text((data['JPY'] * amount * k).toFixed(2));
+        $('#INR').text((data['INR'] * amount * k).toFixed(2));
+        $('#CAD').text((data['CAD'] * amount * k).toFixed(2));
     });
 }
 
@@ -412,16 +353,6 @@ function loadCitiesForCountry(isoCode) {
                 return;
             }
 
-            function formatPopulation(population) {
-                if (population >= 1000000) {
-                    return 'population: ' + (population / 1000000).toFixed(2) + 'M';
-                } else if (population >= 100000) {
-                    return 'population: ' + (population / 1000000).toFixed(2) + 'M';
-                } else {
-                    return 'population: ' + Math.round(population / 1000) + ' 000';
-                }
-            }
-
             // Metropolitan cities (PPLC)
             cityData.pplc.forEach(function(city) {
                 const capitalIcon = L.ExtraMarkers.icon({
@@ -434,13 +365,12 @@ function loadCitiesForCountry(isoCode) {
                 const marker = L.marker([city.lat, city.lng], { icon: capitalIcon })
                     .bindPopup(`
                         <div class="fw-bold fs-5">${city.name}</div>
-                        <div>${formatPopulation(city.population)}</div>
+                        <div class="fw-bold"><i class="fas fa-users"></i> ${(city.population).toLocaleString()}</div>
                     `);
 
                 marker.on('click', function() {
                     activeCoordinates.lat = city.lat;
                     activeCoordinates.lon = city.lng;
-                    console.log('Capital city selected:', activeCoordinates);
                 });
 
                 adminCityClusterGroup.addLayer(marker);
@@ -458,7 +388,7 @@ function loadCitiesForCountry(isoCode) {
                 const marker = L.marker([city.lat, city.lng], { icon: adminCityIcon })
                     .bindPopup(`
                         <div class="fw-bold fs-5">${city.name}</div>
-                        <div>${formatPopulation(city.population)}</div>
+                        <div class="fw-bold"><i class="fas fa-users"></i> ${(city.population).toLocaleString()}</div>
                     `);
 
                 marker.on('click', function() {
@@ -482,7 +412,7 @@ function loadCitiesForCountry(isoCode) {
                 const marker = L.marker([city.lat, city.lng], { icon: simpleCityIcon })
                     .bindPopup(`
                         <div class="fw-bold fs-5">${city.name}</div>
-                        <div>${formatPopulation(city.population)}</div>
+                        <div class="fw-bold"><i class="fas fa-users"></i> ${(city.population).toLocaleString()}</div>
                     `);
 
                 marker.on('click', function() {
@@ -582,10 +512,11 @@ function loadAirportsForCountry(isoCode) {
                 const wikiName = airport.name.replace(/[\s\W]+/g, '_');
                 const marker = L.marker([airport.lat, airport.lng], { icon: airportMarker  })
                     .bindPopup(`
-                        <b>${airport.name}</b><br>
-                        Country: ${airport.countryName}<br>
-                        Region: ${airport.adminName1}<br>
-                        <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank">Wikipedia...</a>
+                        <div class="fw-bold fs-5">${airport.name}</div>
+                        <div class="fw-bold">Country: ${airport.countryName}</div>
+                        <div class="fw-bold">Region: ${airport.adminName1}</div>                        
+                        <a href="https://en.wikipedia.org/wiki/${wikiName}" target="_blank" class="text-decoration-none fw-bold">search in wikipedia...</a>
+
                     `);
                 airportClusterGroup.addLayer(marker);
             });
@@ -594,20 +525,6 @@ function loadAirportsForCountry(isoCode) {
             showAlert('Error fetching airports', 'danger');
         }
     });
-}
-
-
-// Handle historical markers loading
-function handleHistoricalMarkers() {
-    const bounds = map.getBounds();
-    getHistoricalPlaces(bounds.getCenter().lat, bounds.getCenter().lng)
-        .then(places => {
-            places.forEach(place => {
-                const marker = L.marker([place.lat, place.lng], { icon: getIconByTitle(place.feature, place.title) })
-                    .bindPopup(`<b>${place.title}</b><br>${place.summary}<br><a href="https://${place.wikipediaUrl}" target="_blank">Wikipedia</a>`);
-                historicalMarkersCluster.addLayer(marker);
-            });
-        });
 }
 
 // Get the weather data

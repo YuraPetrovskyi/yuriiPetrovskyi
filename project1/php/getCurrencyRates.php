@@ -1,11 +1,6 @@
 <?php
 // getCurrencyRates.php
 
-// Enable error display for diagnostics
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 // Connect autoload Composer to load libraries
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -23,7 +18,20 @@ try {
     exit;
 }
 
-$apiKey = $_ENV['EXCHANGE_RATES_API_KEY']; // Ключ Open Exchange Rates
+// Check the environment and configure error display
+$environment = $_ENV['ENVIRONMENT'];
+
+if ($environment === 'development') {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', 0);
+    ini_set('display_startup_errors', 0);
+    error_reporting(0);  // No error reporting in production
+}
+
+$apiKey = $_ENV['EXCHANGE_RATES_API_KEY']; // Key Open Exchange Rates
 
 $currencyCode = $_GET['currencyCode'] ?? 'USD';
 $baseCurrency = $_GET['baseCurrency'] ?? 'USD';
@@ -39,7 +47,12 @@ $response = curl_exec($ch);
 curl_close($ch);
 
 if ($response) {
-    echo $response;
+    $data = json_decode($response, true);
+    if (isset($data['rates'])) {
+        echo json_encode($data['rates']);
+    } else {
+        echo json_encode(['error' => 'No rates available']);
+    }
 } else {
     echo json_encode(['error' => 'Cannot retrieve exchange rates']);
 }
