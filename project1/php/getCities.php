@@ -1,15 +1,8 @@
 <?php
-// getCity.php
-
-// Enable error display for diagnostics
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// getCities.php
 
 // Connect autoload Composer to load libraries
 require __DIR__ . '/../vendor/autoload.php';
-
-header('Content-Type: application/json');
 
 error_log('Failed to load .env file');
 // Loading environment variables from .env
@@ -24,6 +17,21 @@ try {
     echo json_encode(['error' => 'Failed to load .env file']);
     exit;
 }
+
+// Check the environment and configure error display
+$environment = $_ENV['ENVIRONMENT'];
+
+if ($environment === 'development') {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', 0);
+    ini_set('display_startup_errors', 0);
+    error_reporting(0);  // No error reporting in production
+}
+
+header('Content-Type: application/json');
 
 $username = $_ENV['USERNAME_GEONAMES_API_KEY'];
 $isoCode = isset($_GET['isoCode']) ? $_GET['isoCode'] : '';

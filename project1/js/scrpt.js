@@ -609,7 +609,7 @@ function updateWeatherForecast(data) {
             hourlyForecast.push({
                 time: time,
                 temp: item.main.temp,
-                icon: item.weather[0].icon
+                icon: item.weather.icon
             });
         }
 
@@ -635,7 +635,7 @@ function updateWeatherForecast(data) {
             dailyForecast[date].details.push({
                 time: time,
                 temp: item.main.temp,
-                icon: item.weather[0].icon
+                icon: item.weather.icon
             });
         }
     });

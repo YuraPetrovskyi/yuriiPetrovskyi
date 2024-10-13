@@ -46,6 +46,8 @@ curl_setopt($ch, CURLOPT_URL, $url);
 $response = curl_exec($ch);
 curl_close($ch);
 
+header('Content-Type: application/json');
+
 if ($response) {
     $data = json_decode($response, true);
     if (isset($data['rates'])) {
