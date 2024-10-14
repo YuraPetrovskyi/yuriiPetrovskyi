@@ -347,6 +347,31 @@
       </div>      
     </div>
 
+    <!-- Wikipedia Modal -->
+    <div class="modal fade" id="wikiModal" tabindex="-1" aria-labelledby="wikiModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="wikiModalLabel">Wikipedia Information</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body fw-bold">
+            <!-- Wikipedia content -->
+            <div id="wikiContent">
+              <h6 class="fs-5 text-center"><span id="wiki-country-name"></span></h6>
+              <p id="wiki-intro"></p>
+              <img id="wiki-image" class="img-fluid my-3" alt="Country Image">
+              <a href="#" target="_blank" id="wiki-link" class="text-decoration-none">Read full article</a>
+            </div>
+          </div>
+          <div class="modal-footer bg-primary text-white">
+            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
 
     <!-- Bootstrap JS -->
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

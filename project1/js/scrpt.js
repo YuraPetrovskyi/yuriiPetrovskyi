@@ -95,6 +95,10 @@ var newsBtn = L.easyButton('<img src="images/button/news.png" width="20" height=
     newsModal.show();
 });
 
+var wikiBtn = L.easyButton('<img src="images/button/wikipedia.png" width="20" height="20">', function() {
+    showWikiModal();
+});
+
 // ---------------------------------------------------------
 // EVENT HANDLERS
 // ---------------------------------------------------------
@@ -119,6 +123,7 @@ $(document).ready(function () {
     currencyBtn.addTo(map);
     weatherModalBtn.addTo(map);
     newsBtn.addTo(map);
+    wikiBtn.addTo(map);
     
     map.locate({
         setView: true,
@@ -794,6 +799,39 @@ function fetchNews(category = '') {
         error: function (error) {
             // console.error('Error fetching news:', error);
             showAlert('Sorry, something went wrong with the News service.', 'danger');
+        }
+    });
+}
+
+// Function to display a modal window with information from Wikipedia
+function showWikiModal() {
+    let countryName = $('#countrySelect option:selected').text();
+    countryName = countryName.replace(/\s+/g, '_');
+    // console.log(countryName);
+
+    $.ajax({
+        url: 'php/getWikiData.php',
+        method: 'GET',
+        data: { countryName: countryName },
+        dataType: 'json',
+        success: function(data) {
+            console.log(data);
+            $('#wiki-country-name').text(data.title);
+            $('#wiki-intro').text(data.extract);
+            $('#wiki-link').attr('href', data.content_urls);
+
+            if (data.originalimage) {
+                $('#wiki-image').attr('src', data.originalimage);
+            } else {
+                $('#wiki-image').hide();
+            }
+            const newsModal = new bootstrap.Modal($('#wikiModal')[0]);
+            newsModal.show();
+
+        },
+        error: function(error) {
+            // console.error('Error fetching Wikipedia data:', error);
+            showAlert('Error fetching Wikipedia data. Sorry for the inconvenience, data is available for this country.', 'danger');
         }
     });
 }
