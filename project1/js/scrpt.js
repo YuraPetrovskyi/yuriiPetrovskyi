@@ -107,6 +107,12 @@ var wikiBtn = L.easyButton('<img src="images/button/wikipedia.png" width="20" he
 
 $(document).ready(function () {
 
+    
+    // loading all borders
+    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef); 
+    // download the list of countries
+    loadCountryList();
+
     // Initialize the map
     map = L.map("map", {
         layers: [streets],  // default view with streets
@@ -123,7 +129,7 @@ $(document).ready(function () {
     currencyBtn.addTo(map);
     weatherModalBtn.addTo(map);
     newsBtn.addTo(map);
-    wikiBtn.addTo(map);
+    wikiBtn.addTo(map);    
     
     map.locate({
         setView: true,
@@ -143,17 +149,17 @@ $(document).ready(function () {
         showAlert(e.message, 'warning');
     });
 
-    // download the list of countries
-    loadCountryList();
-    // loading all borders
-    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef); 
-
     $('#countrySelect').on('change', function() {
         const isoCode = $(this).val();
-        getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
         setCountryInform(isoCode);
-        loadAirportsForCountry(isoCode);
-        loadCitiesForCountry(isoCode);
+            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef)
+                .then(() => {
+                    loadAirportsForCountry(isoCode);
+                    loadCitiesForCountry(isoCode);
+                })
+                .catch((error) => {
+                    console.error('Error after fetching borders:', error);
+                });
     });
 
     $('#searchPlaceButton').on('click', function() {
@@ -182,10 +188,15 @@ function handleUserLocation(lat, lon) {
         success: function(data) {
             const isoCode = data.countryISO;
             $('#countrySelect').val(isoCode);  // Set selected country in the dropdown
-            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
             setCountryInform(isoCode);
-            loadCitiesForCountry(isoCode);
-            loadAirportsForCountry(isoCode);
+            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef)
+                .then(() => {
+                    loadAirportsForCountry(isoCode);
+                    loadCitiesForCountry(isoCode);
+                })
+                .catch((error) => {
+                    console.error('Error after fetching borders:', error);
+                });
         },
         error: function() {
             showAlert('Error fetching location', 'danger');
@@ -259,10 +270,15 @@ function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) {
                     // Add a click event handler to update the country name in <span>
                     layer.on('click', function () {
                         const isoCode = feature.properties.ISO_A2;
-                        getCountrySpecificBorders(isoCode, map, countryBorderLayerRef);
                         setCountryInform(isoCode);
-                        loadAirportsForCountry(isoCode);
-                        loadCitiesForCountry(isoCode);
+                        getCountrySpecificBorders(isoCode, map, countryBorderLayerRef)
+                            .then(() => {
+                                loadAirportsForCountry(isoCode);
+                                loadCitiesForCountry(isoCode);
+                })
+                .catch((error) => {
+                    console.error('Error after fetching borders:', error);
+                });
                     });
                 }
             });
@@ -279,33 +295,68 @@ function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) {
 
 // add the borders of the selected country to the map
 function getCountrySpecificBorders(isoCode, map, countryBorderLayerRef) {
-    if (countryBorderLayerRef.allCountries) {
-        const specificCountryLayer = L.geoJSON(countryBorderLayerRef.allCountries.toGeoJSON(), {
-            filter: function (feature) {
-                return feature.properties.ISO_A2 === isoCode;
-            },
-            style: function () {
-                return {
-                    color: '#0000FF',
-                    weight: 3,
-                    dashArray: '5, 5',
-                    fillOpacity: 0
-                };
+    return new Promise((resolve, reject) => {
+        if (countryBorderLayerRef.allCountries) {
+            // If all boundaries are already loaded
+            const specificCountryLayer = L.geoJSON(countryBorderLayerRef.allCountries.toGeoJSON(), {
+                filter: function (feature) {
+                    return feature.properties.ISO_A2 === isoCode;
+                },
+                style: function () {
+                    return {
+                        color: '#0000FF',
+                        weight: 3,
+                        dashArray: '5, 5',
+                        fillOpacity: 0
+                    };
+                }
+            });
+
+            if (countryBorderLayerRef.specificCountry) {
+                map.removeLayer(countryBorderLayerRef.specificCountry);
+                countryBorderLayerRef.specificCountry = null;
             }
-        });
 
-        if (countryBorderLayerRef.specificCountry) {
-            map.removeLayer(countryBorderLayerRef.specificCountry);
-            countryBorderLayerRef.specificCountry = null;
-        }
+            countryBorderLayerRef.specificCountry = specificCountryLayer.addTo(map);
+            map.fitBounds(specificCountryLayer.getBounds());
 
-        // add a new layer of borders of a specific country
-        countryBorderLayerRef.specificCountry = specificCountryLayer.addTo(map);
-        map.fitBounds(specificCountryLayer.getBounds());
-
-    } else {
-        showAlert('Sorry for the inconvenience, country borders are not loaded yet. Please try again later.', 'danger');
-    }
+            resolve();
+        } else {
+            $.ajax({
+                url: 'php/getCountryBorder.php',
+                method: 'GET',
+                data: { isoCode: isoCode },
+                dataType: 'json',
+                success: function(data) {
+                    const specificCountryLayer = L.geoJSON(data, {
+                        style: function () {
+                            return {
+                                color: '#0000FF',
+                                weight: 3,
+                                dashArray: '5, 5',
+                                fillOpacity: 0
+                            };
+                        }
+                    });
+    
+                    if (countryBorderLayerRef.specificCountry) {
+                        map.removeLayer(countryBorderLayerRef.specificCountry);
+                        countryBorderLayerRef.specificCountry = null;
+                    }
+    
+                    countryBorderLayerRef.specificCountry = specificCountryLayer.addTo(map);
+                    map.fitBounds(specificCountryLayer.getBounds());
+    
+                    resolve();
+                },
+                error: function(error) {
+                    console.error('Error fetching country borders:', error);
+                    showAlert('Sorry, there was an error fetching country borders. Please try again later.', 'danger');
+                    reject(error);
+                }
+            });
+        }        
+    });
 }
 
 // function for filling information modal with data
@@ -510,12 +561,17 @@ function searchPlaceByName(placeName) {
                 const $placeItem = $('<li>')
                     .addClass('list-group-item list-group-item-action')
                     .text(`${place.name}, ${place.countryName}`);
-
+                    
                 $placeItem.on('click', function() {
-                    getCountrySpecificBorders(place.countryCode, map, countryBorderLayerRef);
                     setCountryInform(place.countryCode);
-                    loadAirportsForCountry(place.countryCode);
-                    loadCitiesForCountry(place.countryCode);
+                    getCountrySpecificBorders(place.countryCode, map, countryBorderLayerRef)
+                        .then(() => {
+                            loadAirportsForCountry(place.countryCode);
+                            loadCitiesForCountry(place.countryCode);
+                        })
+                        .catch((error) => {
+                            console.error('Error after fetching borders:', error);
+                        });
 
                     const marker = L.marker([place.lat, place.lng]).addTo(map)
                         .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
@@ -815,7 +871,7 @@ function showWikiModal() {
         data: { countryName: countryName },
         dataType: 'json',
         success: function(data) {
-            console.log(data);
+            // console.log(data);
             $('#wiki-country-name').text(data.title);
             $('#wiki-intro').text(data.extract);
             $('#wiki-link').attr('href', data.content_urls);
