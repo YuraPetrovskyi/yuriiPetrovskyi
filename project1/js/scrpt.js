@@ -110,7 +110,7 @@ $(document).ready(function () {
 
     
     // loading all borders
-    loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef); 
+    loadAllCountryBorders(); 
     // download the list of countries
     loadCountryList();
 
@@ -153,7 +153,7 @@ $(document).ready(function () {
     $('#countrySelect').on('change', function() {
         const isoCode = $(this).val();
         setCountryInform(isoCode);
-            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef)
+            getCountrySpecificBorders(isoCode)
                 .then(() => {
                     loadAirportsForCountry(isoCode);
                     loadCitiesForCountry(isoCode);
@@ -190,7 +190,7 @@ function handleUserLocation(lat, lon) {
             const isoCode = data.countryISO;
             $('#countrySelect').val(isoCode);  // Set selected country in the dropdown
             setCountryInform(isoCode);
-            getCountrySpecificBorders(isoCode, map, countryBorderLayerRef)
+            getCountrySpecificBorders(isoCode)
                 .then(() => {
                     loadAirportsForCountry(isoCode);
                     loadCitiesForCountry(isoCode);
@@ -250,7 +250,7 @@ function loadCountryList() {
 }
 
 // function to add all country borders and add to map
-function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) {
+function loadAllCountryBorders() {
     // getting GeoJSON boundary data
     $.ajax({
         url: 'php/getAllCountryBorders.php',
@@ -272,7 +272,7 @@ function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) {
                     layer.on('click', function () {
                         const isoCode = feature.properties.ISO_A2;
                         setCountryInform(isoCode);
-                        getCountrySpecificBorders(isoCode, map, countryBorderLayerRef)
+                        getCountrySpecificBorders(isoCode)
                             .then(() => {
                                 loadAirportsForCountry(isoCode);
                                 loadCitiesForCountry(isoCode);
@@ -295,7 +295,7 @@ function loadAllCountryBorders(bordersLayerGroup, countryBorderLayerRef) {
 }
 
 // add the borders of the selected country to the map
-function getCountrySpecificBorders(isoCode, map, countryBorderLayerRef) {
+function getCountrySpecificBorders(isoCode) {
     return new Promise((resolve, reject) => {
         if (countryBorderLayerRef.allCountries) {
             // If all boundaries are already loaded
@@ -582,7 +582,7 @@ function searchPlaceByName(placeName) {
                             map.removeLayer(placeMarker);
                         }
                         setCountryInform(place.countryCode);
-                        getCountrySpecificBorders(place.countryCode, map, countryBorderLayerRef)
+                        getCountrySpecificBorders(place.countryCode)
                             .then(() => {
                                 loadAirportsForCountry(place.countryCode);
                                 loadCitiesForCountry(place.countryCode);
