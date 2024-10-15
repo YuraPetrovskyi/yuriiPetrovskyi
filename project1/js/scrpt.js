@@ -17,6 +17,7 @@ var cityMarkersCluster = L.markerClusterGroup({
 var adminCityClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
 }); 
+var placeMarker = null; // marker to indicate the places we were looking for
 
 // tile layers
 
@@ -563,22 +564,41 @@ function searchPlaceByName(placeName) {
                     .text(`${place.name}, ${place.countryName}`);
                     
                 $placeItem.on('click', function() {
-                    setCountryInform(place.countryCode);
-                    getCountrySpecificBorders(place.countryCode, map, countryBorderLayerRef)
-                        .then(() => {
-                            loadAirportsForCountry(place.countryCode);
-                            loadCitiesForCountry(place.countryCode);
-                        })
-                        .catch((error) => {
-                            console.error('Error after fetching borders:', error);
-                        });
+                    const selectedCountryCode = $('#countrySelect').val();
 
-                    const marker = L.marker([place.lat, place.lng]).addTo(map)
-                        .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
+                    if (place.countryCode === selectedCountryCode){
+                        if (placeMarker) {
+                            map.removeLayer(placeMarker);
+                        }
 
+                        placeMarker = L.marker([place.lat, place.lng])
+                            .addTo(map)
+                            .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
+
+                        map.setView([place.lat, place.lng], 10); // move the map to the selected place
+                        
+                    } else {
+                        if (placeMarker) {
+                            map.removeLayer(placeMarker);
+                        }
+                        setCountryInform(place.countryCode);
+                        getCountrySpecificBorders(place.countryCode, map, countryBorderLayerRef)
+                            .then(() => {
+                                loadAirportsForCountry(place.countryCode);
+                                loadCitiesForCountry(place.countryCode);
+                            })
+                            .catch((error) => {
+                                console.error('Error after fetching borders:', error);
+                            });
+
+                        placeMarker = L.marker([place.lat, place.lng])
+                            .addTo(map)
+                            .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
+
+                        map.setView([place.lat, place.lng], 10); // move the map to the selected city
+                        
+                    }
                     const placeModal = bootstrap.Modal.getInstance($('#placeSearchModal')[0]);
-
-                    map.setView([place.lat, place.lng], 10); // move the map to the selected city
                     placeModal.hide(); // close the modal window after selection
                 });
 
@@ -586,7 +606,7 @@ function searchPlaceByName(placeName) {
             });
         },
         error: function() {
-            showAlert('Sorry for the inconvenience, something went wrong with the server. Please try again later.', 'danger');
+            showAlert('Sorry for the inconvenience,something happened while searching for a place. Please try again later.', 'danger');
         }
     });
 }
