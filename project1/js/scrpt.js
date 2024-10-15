@@ -573,7 +573,11 @@ function searchPlaceByName(placeName) {
 
                         placeMarker = L.marker([place.lat, place.lng])
                             .addTo(map)
-                            .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
+                            .bindPopup(`
+                                <div class="fw-bold fs-5">${place.name}</div>
+                                <div class="fw-bold"><i class="fas fa-flag"></i> ${(place.countryName)}</div>
+                            `)
+                            .openPopup();
 
                         map.setView([place.lat, place.lng], 10); // move the map to the selected place
                         
@@ -592,8 +596,12 @@ function searchPlaceByName(placeName) {
                             });
 
                         placeMarker = L.marker([place.lat, place.lng])
-                            .addTo(map)
-                            .bindPopup(`<b>${place.name}</b><br>Country: ${place.countryName}`);
+                        .addTo(map)
+                        .bindPopup(`
+                            <div class="fw-bold fs-5">${place.name}</div>
+                            <div class="fw-bold"><i class="fas fa-flag"></i> ${(place.countryName)}</div>
+                        `)
+                        .openPopup();
 
                         map.setView([place.lat, place.lng], 10); // move the map to the selected city
                         
