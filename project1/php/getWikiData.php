@@ -47,6 +47,8 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // We turn off the check of SSL
 
 $response = curl_exec($ch);
 
+header('Content-Type: application/json');
+
 if (curl_errno($ch)) {
     http_response_code(500);
     echo json_encode(['error' => 'Error fetching data from Wikipedia']);
@@ -71,6 +73,5 @@ $filteredData = [
     'originalimage' => $data['originalimage']['source'] ?? '',
 ];
 
-header('Content-Type: application/json');
 echo json_encode($filteredData);
 ?>

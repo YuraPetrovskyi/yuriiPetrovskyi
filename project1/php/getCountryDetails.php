@@ -30,8 +30,9 @@ if ($environment === 'development') {
     error_reporting(0);  // No error reporting in production
 }
 
-
 $isoCode = isset($_GET['isoCode']) ? urlencode($_GET['isoCode']) : '';
+
+header('Content-Type: application/json');
 
 if (!$isoCode) {
     http_response_code(400);
@@ -40,7 +41,6 @@ if (!$isoCode) {
 }
 
 $url = "https://restcountries.com/v3.1/alpha/{$isoCode}";
-
 
 // execute a request to the API
 $ch = curl_init();
@@ -85,7 +85,6 @@ $filteredData = [
 ];
 
 // Return the filtered data as JSON
-header('Content-Type: application/json');
 echo json_encode($filteredData);
 
 // echo $response;

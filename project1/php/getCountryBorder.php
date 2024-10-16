@@ -31,6 +31,8 @@ if ($environment === 'development') {
 
 $filePath = '../data/countries.geojson';
 
+header('Content-Type: application/json');
+
 if (!isset($_GET['isoCode'])) {
     http_response_code(400);
     echo json_encode(['error' => 'isoCode is required']);
@@ -69,6 +71,5 @@ $result = [
     'features' => array_values($filteredCountry)
 ];
 
-header('Content-Type: application/json');
 echo json_encode($result);
 ?>
