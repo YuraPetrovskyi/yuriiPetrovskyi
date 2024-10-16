@@ -4,7 +4,6 @@
 // Connect autoload Composer to load libraries
 require __DIR__ . '/../vendor/autoload.php';
 
-error_log('Failed to load .env file');
 // Loading environment variables from .env
 try {
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
@@ -31,6 +30,8 @@ if ($environment === 'development') {
     error_reporting(0);  // No error reporting in production
 }
 
+header('Content-Type: application/json');
+
 $cityName = $_GET['cityName'] ?? '';
 $username = $_ENV['USERNAME_GEONAMES_API_KEY'];
 
@@ -49,8 +50,6 @@ curl_setopt($ch, CURLOPT_URL, $url);
 $response = curl_exec($ch);
 curl_close($ch);
 
-header('Content-Type: application/json');
-
 $cities = json_decode($response, true)['geonames'] ?? [];
 
 $result = [];
@@ -66,7 +65,6 @@ foreach ($cities as $city) {
     }
 }
 
-header('Content-Type: application/json');
 echo json_encode($result);
 // echo json_encode($cities);
 

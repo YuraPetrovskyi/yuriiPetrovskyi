@@ -3,7 +3,6 @@
 // Connect autoload Composer to load libraries
 require __DIR__ . '/../vendor/autoload.php';
 
-error_log('Failed to load .env file');
 // Loading environment variables from .env
 try {
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
