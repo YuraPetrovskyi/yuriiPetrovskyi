@@ -567,6 +567,8 @@ function searchPlaceByName(placeName) {
                     .text(`${place.name}, ${place.countryName}`);
                     
                 $placeItem.on('click', function() {
+                    activeCoordinates.lat = place.lat;
+                    activeCoordinates.lon = place.lng;
                     const selectedCountryCode = $('#countrySelect').val();
 
                     if (place.countryCode === selectedCountryCode){
