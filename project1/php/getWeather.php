@@ -60,7 +60,6 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
                 'pressure' => $weatherData['main']['pressure'],
                 'windSpeed' => $weatherData['wind']['speed'],
                 'visibility' => $weatherData['visibility'],
-                'country' => $weatherData['sys']['country'],
                 'icon' => $weatherData['weather'][0]['icon'],
                 'weatherDescription' => $weatherData['weather'][0]['description'],
                 'name' => $weatherData['name'],
