@@ -529,7 +529,7 @@ function loadCitiesForCountry(isoCode) {
                 marker.on('click', function() {
                     activeCoordinates.lat = city.lat;
                     activeCoordinates.lon = city.lng;
-                    console.log('City selected:', activeCoordinates);
+                    // console.log('City selected:', activeCoordinates);
                 });
 
                 cityMarkersCluster.addLayer(marker);
