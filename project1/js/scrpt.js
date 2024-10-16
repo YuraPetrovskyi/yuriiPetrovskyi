@@ -715,7 +715,6 @@ function getWeatherForecast(lat, lon) {
         data: { lat: lat, lon: lon },
         dataType: 'json',
         success: function(data) {
-            // console.log('forecast data', data);
             updateWeatherForecast(data);
         },
         error: function() {
@@ -740,10 +739,10 @@ function updateWeatherModal(weatherData, locationName) {
 }
 
 function updateWeatherForecast(data) {
-    const forecastScrollRow = $('.forecast-scroll-row');
+    const forecastScrollRow = $('#forecast-scroll-row');
     forecastScrollRow.empty();
 
-    const dailyForecastContainer = $('.daily-forecast-scroll-row');
+    const dailyForecastContainer = $('#daily-forecast-scroll-row');
     dailyForecastContainer.empty();
 
     const hourlyForecast = [];
@@ -757,7 +756,7 @@ function updateWeatherForecast(data) {
         const dateTime = new Date(item.dt_txt);
         const date = dateTime.toLocaleDateString();
         let hours = dateTime.getHours();
-        let time = hours === 0 ? "00:00" : dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        let time = dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         // 3-hour forecast for 15 hours ahead
         if (dateTime <= forecastLimit) {
@@ -770,7 +769,7 @@ function updateWeatherForecast(data) {
 
         // Daily forecast (every 6 hours starting at 00:00 or 06:00 the next day)
         const isNextDay = dateTime.getDate() !== currentTime.getDate();
-        if (isNextDay && (hours === 0 || hours === 6 || hours === 12 || hours === 18 || hours === 24)) {
+        if (isNextDay && (hours === 0 || hours === 6 || hours === 12 || hours === 18)) {
             if (!dailyForecast[date]) {
                 dailyForecast[date] = {
                     tempMin: item.main.temp_min,
@@ -780,12 +779,6 @@ function updateWeatherForecast(data) {
             }
             dailyForecast[date].tempMin = Math.min(dailyForecast[date].tempMin, item.main.temp_min);
             dailyForecast[date].tempMax = Math.max(dailyForecast[date].tempMax, item.main.temp_max);
-
-            if (hours === 24) {
-                time = "24:00";
-            } else if (hours === 0) {
-                time = "00:00";
-            }
 
             dailyForecast[date].details.push({
                 time: time,
@@ -798,10 +791,10 @@ function updateWeatherForecast(data) {
     // 3-hour forecast (15 hours ahead)
     hourlyForecast.forEach(hour => {
         const forecastCard = `
-            <div class="forecast-card text-center bg-success bg-opacity-25 p-2 m-2 rounded shadow-sm">
-                <img src="http://openweathermap.org/img/wn/${hour.icon}@2x.png" alt="Weather icon" class="forecast-icon img-fluid">
-                <div class="forecast-time">${hour.time}</div>
-                <div class="forecast-temp">${hour.temp.toFixed()}°C</div>
+            <div class="text-center bg-success bg-opacity-25 p-2 m-2 rounded shadow-sm">
+                <img src="http://openweathermap.org/img/wn/${hour.icon}@2x.png" alt="Weather icon" class="img-fluid">
+                <div>${hour.time}</div>
+                <div>${hour.temp.toFixed()}°C</div>
             </div>
         `;
         forecastScrollRow.append(forecastCard);
@@ -813,21 +806,21 @@ function updateWeatherForecast(data) {
         const details = forecast.details.map(detail => `
             <p class="mb-0">
                 ${detail.time} - 
-                <img src="http://openweathermap.org/img/wn/${detail.icon}@2x.png" alt="Small icon" class="img-fluid" width="30"> 
+                <img src="http://openweathermap.org/img/wn/${detail.icon}@2x.png" alt="Small weather icon" class="img-fluid" width="30"> 
                 ${detail.temp.toFixed()}°C
             </p>
         `).join('');
-
+        console.log('details', details)
         const dayCard = `
-            <div class="daily-forecast-card flex-shrink-0 text-center bg-success bg-opacity-25 p-1 m-1 rounded shadow-sm" style="min-width: 240px;">
+            <div class="flex-shrink-0 text-center bg-success bg-opacity-25 p-1 m-1 rounded shadow-sm" style="min-width: 240px;">
                 <div class="row align-items-center m-0">
                     <div class="col-5 text-center">
                         <h6 class="fw-bold m-0">${date}</h6>
-                        <img src="http://openweathermap.org/img/wn/${forecast.details[0].icon}@2x.png" alt="Temp icon" class="daily-forecast-icon img-fluid mb-2">
-                        <div class="daily-temp-max fw-bold">${forecast.tempMax.toFixed()}° /  ${forecast.tempMin.toFixed()}°</div>
+                        <img src="http://openweathermap.org/img/wn/${forecast.details[0].icon}@2x.png" alt="Daily weather icon" class="daily-forecast-icon img-fluid mb-2">
+                        <div class="fw-bold">${forecast.tempMax.toFixed()}° /  ${forecast.tempMin.toFixed()}°</div>
                     </div>
                     <div class="col-7 text-start p-2">
-                        <div class="daily-time-info">
+                        <div>
                             ${details}
                         </div>
                     </div>
