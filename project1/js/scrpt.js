@@ -159,7 +159,8 @@ $(document).ready(function () {
                     loadCitiesForCountry(isoCode);
                 })
                 .catch((error) => {
-                    console.error('Error after fetching borders:', error);
+                    // console.error('Error after fetching borders:', error);
+                    showAlert('Error after fetching borders:', 'danger');
                 });
     });
 
@@ -196,7 +197,8 @@ function handleUserLocation(lat, lon) {
                     loadCitiesForCountry(isoCode);
                 })
                 .catch((error) => {
-                    console.error('Error after fetching borders:', error);
+                    // console.error('Error after fetching borders:', error);
+                    showAlert('Error after fetching borders:', 'danger');
                 });
         },
         error: function() {
@@ -240,7 +242,7 @@ function loadCountryList() {
     });
         },
         error: function(xhr, status, error) {
-            console.error('Error fetching countries:', error);
+            // console.error('Error fetching countries:', error);
             showAlert(
                 'Sorry for the inconvenience, something went wrong with the server. Failed to load country list.',
                 'warning'
@@ -276,12 +278,13 @@ function loadAllCountryBorders() {
                             .then(() => {
                                 loadAirportsForCountry(isoCode);
                                 loadCitiesForCountry(isoCode);
-                })
-                .catch((error) => {
-                    console.error('Error after fetching borders:', error);
-                });
-                    });
-                }
+                            })
+                            .catch((error) => {
+                                // console.error('Error after fetching borders:', error);
+                                showAlert('Error after fetching borders:', 'danger');
+                            });
+                                });
+                            }
             });
 
             // Add borders to bordersLayerGroup
@@ -351,7 +354,7 @@ function getCountrySpecificBorders(isoCode) {
                     resolve();
                 },
                 error: function(error) {
-                    console.error('Error fetching country borders:', error);
+                    // console.error('Error fetching country borders:', error);
                     showAlert('Sorry, there was an error fetching country borders. Please try again later.', 'danger');
                     reject(error);
                 }
@@ -393,7 +396,7 @@ function setCountryInform(isoCode) {
             $('#countrySelect').val(isoCode);
         },
         error: function(error) {
-            console.error(error);
+            // console.error(error);
             showAlert('Error fetching country information', 'danger');
         }
     });
@@ -635,7 +638,7 @@ function getCurrencyData(currencyCode) {
         dataType: 'json',
         success: function(data) {
             if (data.error) {
-                console.error('Error fetching currency:', data.error);
+                // console.error('Error fetching currency:', data.error);
                 showAlert('Error fetching currency data', 'danger');
                 return;
             }
@@ -702,7 +705,7 @@ function getWeatherData(lat, lon, locationName) {
             getWeatherForecast(lat, lon);
         },
         error: function() {
-            console.error('Error fetching weather');
+            // console.error('Error fetching weather');
             showAlert('Sorry, something went wrong with the weather service.', 'danger');
         }
     });
@@ -718,7 +721,7 @@ function getWeatherForecast(lat, lon) {
             updateWeatherForecast(data);
         },
         error: function() {
-            console.error('Error fetching forecast');
+            // console.error('Error fetching forecast');
             showAlert('Sorry, something went wrong with the forecast service.', 'danger');
         }
     });
@@ -810,7 +813,7 @@ function updateWeatherForecast(data) {
                 ${detail.temp.toFixed()}°C
             </p>
         `).join('');
-        console.log('details', details)
+
         const dayCard = `
             <div class="flex-shrink-0 text-center bg-success bg-opacity-25 p-1 m-1 rounded shadow-sm" style="min-width: 240px;">
                 <div class="row align-items-center m-0">
