@@ -846,37 +846,45 @@ function fetchNews(category = '') {
             // console.log('articles', articles);
             const newsList = $('#news-list');
             newsList.empty(); 
-
             if (articles.error) {
-                newsList.append(`<p>${articles.error}</p>`);
+                newsList.append(`
+                    <div class="card-header p-2 text-center bg-warning bg-opacity-25">
+                        <h5>Sorry, something went wrong with the News service.</h5>
+                    </div>`);
                 return;
             }
-
-            articles.forEach(article => {
-                const articleItem = `
-                    <a href="${article.url}" target="_blank" class="text-decoration-none text-dark">
-                        <div class="card mb-3 shadow-sm">
-                            <div class="card-header p-2 text-center bg-warning bg-opacity-25">
-                                <h5 class="card-title">${article.title}</h5>
-                            </div>
-                            <div class="card-body p-1">
-                                <div class="row g-0">
-                                    <div class="d-flex align-items-center col-md-5 p-1">
-                                        <img src="${article.urlToImage}" class="img-fluid rounded" alt="News image">
-                                    </div>
-                                    <div class="col-md-7 p-2">
-                                        <p class="card-text">${article.description}</p>
+            if (articles.length === 0) {
+                newsList.append(`
+                    <div class="card-header p-2 text-center bg-warning bg-opacity-25">
+                        <h5>Sorry, there are currently no articles for this category</h5>
+                    </div>`);
+            } else {
+                articles.forEach(article => {
+                    const articleItem = `
+                        <a href="${article.url}" target="_blank" class="text-decoration-none text-dark">
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-header p-2 text-center bg-warning bg-opacity-25">
+                                    <h5 class="card-title">${article.title}</h5>
+                                </div>
+                                <div class="card-body p-1">
+                                    <div class="row g-0">
+                                        <div class="d-flex align-items-center col-md-5 p-1">
+                                            <img src="${article.urlToImage}" class="img-fluid rounded" alt="News image">
+                                        </div>
+                                        <div class="col-md-7 p-2">
+                                            <p class="card-text">${article.description}</p>
+                                        </div>
                                     </div>
                                 </div>
+                                <div class="card-footer d-flex justify-content-between">
+                                    <small class="text-muted">${new Date(article.publishedAt).toLocaleString()}</small>
+                                    <small class="text-muted fw-bold tw text-uppercase">${article.source.name}</small>
+                                </div>
                             </div>
-                            <div class="card-footer d-flex justify-content-between">
-                                <small class="text-muted">${new Date(article.publishedAt).toLocaleString()}</small>
-                                <small class="text-muted fw-bold tw text-uppercase">${article.source.name}</small>
-                            </div>
-                        </div>
-                    </a>`;
-                newsList.append(articleItem);
-            });
+                        </a>`;
+                    newsList.append(articleItem);
+                });
+            }            
         },
         error: function (error) {
             // console.error('Error fetching news:', error);
