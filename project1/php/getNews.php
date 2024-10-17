@@ -32,8 +32,9 @@ if ($environment === 'development') {
 
 $apiKey = $_ENV['NEWS_API_KEY'];  
 $country = 'us';
+$pageSize ='100';
 $category = (!empty($_GET['category'])) ? $_GET['category'] : 'general';
-$endpoint = "https://newsapi.org/v2/top-headlines?country=$country&category=$category&apiKey=$apiKey";
+$endpoint = "https://newsapi.org/v2/top-headlines?country=$country&category=$category&pageSize=$pageSize&apiKey=$apiKey";
 
 // Initialization curl
 $ch = curl_init();
@@ -69,6 +70,8 @@ if ($data['status'] === 'ok') {
             !empty($article['description']) && $article['description'] !== '[Removed]' &&
             !empty($article['url']) && filter_var($article['url'], FILTER_VALIDATE_URL);
     });
+
+    // echo json_encode($data);
 
     echo json_encode(array_values($filteredArticles));
 } else {
