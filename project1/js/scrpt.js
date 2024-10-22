@@ -868,12 +868,18 @@ function fetchNews(category = '') {
                                 </div>
                                 <div class="card-body p-1">
                                     <div class="row g-0">
-                                        <div class="d-flex align-items-center col-md-5 p-1">
-                                            <img src="${article.urlToImage}" class="img-fluid rounded" alt="News image">
-                                        </div>
-                                        <div class="col-md-7 p-2">
-                                            <p class="card-text">${article.description}</p>
-                                        </div>
+                                        ${article.urlToImage 
+                                                ? 
+                                            `<div class="d-flex align-items-center col-md-5 p-1">
+                                                <img src="${article.urlToImage}" class="img-fluid rounded" alt="News image">
+                                            </div>
+                                            <div class="col-md-7 p-2">
+                                                <p class="card-text">${article.description}</p>
+                                            </div>` 
+                                                : 
+                                            `<div class="col-md-12 p-2">
+                                                <p class="card-text">${article.description}</p>
+                                            </div>`} 
                                     </div>
                                 </div>
                                 <div class="card-footer d-flex justify-content-between">
