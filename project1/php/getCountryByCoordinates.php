@@ -38,12 +38,13 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
 
     $url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon";
 
+    $userEmail = $_ENV['USER_EMAIL'];
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'User-Agent: MyCustomApp/1.0 (your-email@example.com)'
-    ]);
+        "User-Agent: Gazetter/1.0 ($userEmail)"
+    ]);;
     
     $response = curl_exec($ch);
     

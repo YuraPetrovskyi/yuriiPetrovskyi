@@ -39,14 +39,14 @@ $endpoint = "https://newsapi.org/v2/top-headlines?country=$country&category=$cat
 // Initialization curl
 $ch = curl_init();
 
+$userEmail = $_ENV['USER_EMAIL'];
 // Settings curl
 curl_setopt($ch, CURLOPT_URL, $endpoint);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Returns the result as a string instead of direct output
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // We turn off the check of SSL certificates (not recommended in production)
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36' // Title User-Agent
+    "User-Agent: Gazetter/1.0 ($userEmail)"
 ]);
-
 // Execution of the request
 $response = curl_exec($ch);
 

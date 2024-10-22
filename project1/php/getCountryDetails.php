@@ -42,12 +42,14 @@ if (!$isoCode) {
 
 $url = "https://restcountries.com/v3.1/alpha/{$isoCode}";
 
+$userEmail = $_ENV['USER_EMAIL'];
+
 // execute a request to the API
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'User-Agent: Gazetter/1.0 (yurakarpaty@gmail.com)'
+    "User-Agent: Gazetter/1.0 ($userEmail)"
 ]);
 
 $response = curl_exec($ch);
