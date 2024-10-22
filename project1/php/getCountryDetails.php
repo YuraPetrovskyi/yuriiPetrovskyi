@@ -49,7 +49,7 @@ $ch = curl_init();
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    "User-Agent: Gazetter/1.0 ($userEmail)"
+    "User-Agent: Gazetteer/1.0 ($userEmail)"
 ]);
 
 $response = curl_exec($ch);

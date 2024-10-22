@@ -45,7 +45,7 @@ curl_setopt($ch, CURLOPT_URL, $endpoint);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Returns the result as a string instead of direct output
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // We turn off the check of SSL certificates (not recommended in production)
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    "User-Agent: Gazetter/1.0 ($userEmail)"
+    "User-Agent: Gazetteer/1.0 ($userEmail)"
 ]);
 // Execution of the request
 $response = curl_exec($ch);
