@@ -107,8 +107,8 @@ var wikiBtn = L.easyButton('<img src="images/button/wikipedia.png" width="20" he
 // initialise and add controls once DOM is ready
 
 $(document).ready(function () {
+    $('#preloader').show();
 
-    
     // loading all borders
     loadAllCountryBorders(); 
     // download the list of countries
@@ -148,6 +148,7 @@ $(document).ready(function () {
 
     map.on('locationerror', function (e) {
         showAlert(e.message, 'warning');
+        $('#preloader').hide();
     });
 
     $('#countrySelect').on('change', function() {
@@ -195,14 +196,17 @@ function handleUserLocation(lat, lon) {
                 .then(() => {
                     loadAirportsForCountry(isoCode);
                     loadCitiesForCountry(isoCode);
+                    $('#preloader').hide();
                 })
                 .catch((error) => {
                     // console.error('Error after fetching borders:', error);
                     showAlert('Error after fetching borders:', 'danger');
+                    $('#preloader').hide();
                 });
         },
         error: function() {
             showAlert('Error fetching location', 'danger');
+            $('#preloader').hide();
         }
     });
 
