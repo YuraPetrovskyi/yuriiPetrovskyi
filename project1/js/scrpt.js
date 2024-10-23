@@ -36,15 +36,14 @@ var baseMaps = {
     "Satellite": satellite,
 };
 
-var overlayMaps = {    
-    "All Borders": bordersLayerGroup,
+var overlayMaps = {
     "Airports": airportClusterGroup,
     "Administrative Cities": adminCityClusterGroup,
     "Cities": cityMarkersCluster,
 };
 
 var myLocationMarcker = { current: null };
-var countryBorderLayerRef = { allCountries: null,  specificCountry: null}; 
+var countryBorderLayerRef = { specificCountry: null}; 
 var activeCoordinates = { lat: null, lon: null };
 
 // buttons
@@ -110,7 +109,7 @@ $(document).ready(function () {
     $('#preloader').show();
 
     // loading all borders
-    loadAllCountryBorders(); 
+    // loadAllCountryBorders(); 
     // download the list of countries
     loadCountryList();
 
@@ -255,82 +254,10 @@ function loadCountryList() {
     });
 }
 
-// function to add all country borders and add to map
-function loadAllCountryBorders() {
-    // getting GeoJSON boundary data
-    $.ajax({
-        url: 'php/getAllCountryBorders.php',
-        method: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            // console.log("Borders data: ", data);
-            // create a layer for the borders of the countries
-            countryBorderLayerRef.allCountries = L.geoJSON(data, {
-                style: {
-                    color: '#ff0000',
-                    weight: 2,
-                    dashArray: '5, 5',  // Dotted line
-                    fillOpacity: 0     // Without filling
-                },
-                onEachFeature: function (feature, layer) {
-                    layer.bindPopup(`<b>${feature.properties.ADMIN}</b>`);
-                    // Add a click event handler to update the country name in <span>
-                    layer.on('click', function () {
-                        const isoCode = feature.properties.ISO_A2;
-                        setCountryInform(isoCode);
-                        getCountrySpecificBorders(isoCode)
-                            .then(() => {
-                                loadAirportsForCountry(isoCode);
-                                loadCitiesForCountry(isoCode);
-                            })
-                            .catch((error) => {
-                                // console.error('Error after fetching borders:', error);
-                                showAlert('Error after fetching borders:', 'danger');
-                            });
-                                });
-                            }
-            });
-
-            // Add borders to bordersLayerGroup
-            bordersLayerGroup.addLayer(countryBorderLayerRef.allCountries);
-        },
-        error: function(error) {
-            // console.error('Error loading country borders:', error);
-            showAlert('Sorry for the inconvenience, all country borders are not loaded yet. An Error occurred while trying to get all borders, please try again later.', 'danger');
-        }
-    });
-}
-
 // add the borders of the selected country to the map
 function getCountrySpecificBorders(isoCode) {
     return new Promise((resolve, reject) => {
-        if (countryBorderLayerRef.allCountries) {
-            // If all boundaries are already loaded
-            const specificCountryLayer = L.geoJSON(countryBorderLayerRef.allCountries.toGeoJSON(), {
-                filter: function (feature) {
-                    return feature.properties.ISO_A2 === isoCode;
-                },
-                style: function () {
-                    return {
-                        color: '#0000FF',
-                        weight: 3,
-                        dashArray: '5, 5',
-                        fillOpacity: 0
-                    };
-                }
-            });
-
-            if (countryBorderLayerRef.specificCountry) {
-                map.removeLayer(countryBorderLayerRef.specificCountry);
-                countryBorderLayerRef.specificCountry = null;
-            }
-
-            countryBorderLayerRef.specificCountry = specificCountryLayer.addTo(map);
-            map.fitBounds(specificCountryLayer.getBounds());
-
-            resolve();
-        } else {
-            $.ajax({
+        $.ajax({
                 url: 'php/getCountryBorder.php',
                 method: 'GET',
                 data: { isoCode: isoCode },
@@ -364,7 +291,7 @@ function getCountrySpecificBorders(isoCode) {
                 }
             });
         }        
-    });
+    );
 }
 
 // function for filling information modal with data
