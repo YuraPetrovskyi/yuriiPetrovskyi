@@ -278,12 +278,14 @@ function setCountryInform(isoCode) {
             $('#countryName').text(data.name);
             $('#officialName').text(data.officialName);
             $('#capital').text(data.capital);
-            $('#population').text(`${data.population.toLocaleString()}`);
+            // Format population using numeralJS
+            $('#population').text(numeral(data.population).format('0.0a'));
             $('#currency').text(`${data.currency.name}, ${data.currency.symbol}`);
             $('#flag').html(`<img src="${data.flag}" width="100" alt="${data.flagAlt}">`);
             $('#region').text(data.region);
             $('#languages').text(data.languages);
-            $('#area').text(`${data.area.toLocaleString()} km²`);
+            // Format area using numeralJS (showing km²)
+            $('#area').text(`${numeral(data.area).format('0.0a')} km²`);
             $('#timezones').text(data.timezones);
             $('#flagDescription').text(data.flagAlt);
             $('#coatOfArms').html(`<img src="${data.coatOfArms}" width="100" alt="Coat of Arms">`);
@@ -382,7 +384,7 @@ function loadCitiesForCountry(isoCode) {
                 const marker = L.marker([city.lat, city.lng], { icon: capitalIcon })
                     .bindPopup(`
                         <div class="fw-bold fs-5">${city.name}</div>
-                        <div class="fw-bold"><i class="fas fa-users"></i> ${(city.population).toLocaleString()}</div>
+                        <div class="fw-bold"><i class="fas fa-users"></i> ${numeral(city.population).format('0.0a')}</div>
                     `);
 
                 marker.on('click', function() {
@@ -405,7 +407,7 @@ function loadCitiesForCountry(isoCode) {
                 const marker = L.marker([city.lat, city.lng], { icon: adminCityIcon })
                     .bindPopup(`
                         <div class="fw-bold fs-5">${city.name}</div>
-                        <div class="fw-bold"><i class="fas fa-users"></i> ${(city.population).toLocaleString()}</div>
+                        <div class="fw-bold"><i class="fas fa-users"></i> ${numeral(city.population).format('0.0a')}</div>
                     `);
 
                 marker.on('click', function() {
@@ -428,7 +430,7 @@ function loadCitiesForCountry(isoCode) {
                 const marker = L.marker([city.lat, city.lng], { icon: simpleCityIcon })
                     .bindPopup(`
                         <div class="fw-bold fs-5">${city.name}</div>
-                        <div class="fw-bold"><i class="fas fa-users"></i> ${(city.population).toLocaleString()}</div>
+                        <div class="fw-bold"><i class="fas fa-users"></i> ${numeral(city.population).format('0.0a')}</div>
                     `);
 
                 marker.on('click', function() {
@@ -478,42 +480,44 @@ function getCurrencyData(currencyCode) {
 }
 
 function handleCurrencyData(data, currencyCode) {
-    $('#curenCurrencyCode').text(data[currencyCode].toFixed(2));
-    $('#USD').text(data['USD'].toFixed(2));
-    $('#EUR').text(data['EUR'].toFixed(2));
-    $('#GBP').text(data['GBP'].toFixed(2));
-    $('#CNY').text(data['CNY'].toFixed(2));
-    $('#JPY').text(data['JPY'].toFixed(2));
-    $('#INR').text(data['INR'].toFixed(2));
-    $('#CAD').text(data['CAD'].toFixed(2));
+    // Use numeral.js to format the currency data
+    $('#curenCurrencyCode').text(numeral(data[currencyCode]).format('0,0.00'));
+    $('#USD').text(numeral(data['USD']).format('0,0.00'));
+    $('#EUR').text(numeral(data['EUR']).format('0,0.00'));
+    $('#GBP').text(numeral(data['GBP']).format('0,0.00'));
+    $('#CNY').text(numeral(data['CNY']).format('0,0.00'));
+    $('#JPY').text(numeral(data['JPY']).format('0,0.00'));
+    $('#INR').text(numeral(data['INR']).format('0,0.00'));
+    $('#CAD').text(numeral(data['CAD']).format('0,0.00'));
 
     $('#baseCurrencyAmount').on('input', function() { //Event handler for entering base currency
         $('#currentCurencyAmount').val('');
         const amount = $(this).val();
-        $('#curenCurrencyCode').text((data[currencyCode] * amount).toFixed(2));
-        $('#USD').text((data['USD'] * amount).toFixed(2));
-        $('#EUR').text((data['EUR'] * amount).toFixed(2));
-        $('#GBP').text((data['GBP'] * amount).toFixed(2));
-        $('#CNY').text((data['CNY'] * amount).toFixed(2));
-        $('#JPY').text((data['JPY'] * amount).toFixed(2));
-        $('#INR').text((data['INR'] * amount).toFixed(2));
-        $('#CAD').text((data['CAD'] * amount).toFixed(2));
+        $('#curenCurrencyCode').text(numeral(data[currencyCode] * amount).format('0,0.00'));
+        $('#USD').text(numeral(data['USD'] * amount).format('0,0.00'));
+        $('#EUR').text(numeral(data['EUR'] * amount).format('0,0.00'));
+        $('#GBP').text(numeral(data['GBP'] * amount).format('0,0.00'));
+        $('#CNY').text(numeral(data['CNY'] * amount).format('0,0.00'));
+        $('#JPY').text(numeral(data['JPY'] * amount).format('0,0.00'));
+        $('#INR').text(numeral(data['INR'] * amount).format('0,0.00'));
+        $('#CAD').text(numeral(data['CAD'] * amount).format('0,0.00'));
     });
-    
+
     const k = 1 / data[currencyCode];
     $('#currentCurencyAmount').on('input', function() { // Event handler for entering the selected currency field
         $('#baseCurrencyAmount').val('');
         const amount = $(this).val();
-        $('#curenCurrencyCode').text(amount);
-        $('#USD').text((data['USD'] * amount * k).toFixed(2));
-        $('#EUR').text((data['EUR'] * amount * k).toFixed(2));
-        $('#GBP').text((data['GBP'] * amount * k).toFixed(2));
-        $('#CNY').text((data['CNY'] * amount * k).toFixed(2));
-        $('#JPY').text((data['JPY'] * amount * k).toFixed(2));
-        $('#INR').text((data['INR'] * amount * k).toFixed(2));
-        $('#CAD').text((data['CAD'] * amount * k).toFixed(2));
+        $('#curenCurrencyCode').text(numeral(amount).format('0,0.00'));
+        $('#USD').text(numeral(data['USD'] * amount * k).format('0,0.00'));
+        $('#EUR').text(numeral(data['EUR'] * amount * k).format('0,0.00'));
+        $('#GBP').text(numeral(data['GBP'] * amount * k).format('0,0.00'));
+        $('#CNY').text(numeral(data['CNY'] * amount * k).format('0,0.00'));
+        $('#JPY').text(numeral(data['JPY'] * amount * k).format('0,0.00'));
+        $('#INR').text(numeral(data['INR'] * amount * k).format('0,0.00'));
+        $('#CAD').text(numeral(data['CAD'] * amount * k).format('0,0.00'));
     });
 }
+
 
 // Get the weather data
 function getWeatherData(lat, lon, locationName) {
@@ -554,17 +558,25 @@ function getWeatherForecast(lat, lon) {
 }
 
 function updateWeatherModal(weatherData, locationName) {
-    $('#weather-point-name').text( locationName.toUpperCase() || weatherData.name.toUpperCase());
-    $('#current-date-time').text(new Date().toLocaleString());
+    $('#weather-point-name').text(locationName.toUpperCase() || weatherData.name.toUpperCase());
+
+    const formattedDate = moment().format('DD MMMM YYYY, hh:mm A');
+    $('#current-date-time').text(formattedDate);
+
     $('#weather-icon').attr('src', `http://openweathermap.org/img/wn/${weatherData.icon}@2x.png`);
     $('#weather-description').text(weatherData.weatherDescription);
-    $('#weather-temp').text(`${weatherData.temp.toFixed()} °C`);
-    $('#humidity').text(`${weatherData.humidity} %`);
-    $('#wind-speed').text(`${weatherData.windSpeed} m/s`);
-    $('#pressure').text(`${weatherData.pressure } hPa`);
-    $('#visibility').text(`${weatherData.visibility / 1000} km`);
-    $('#sunrise').text(new Date(weatherData.sunrise * 1000).toLocaleTimeString());
-    $('#sunset').text(new Date(weatherData.sunset * 1000).toLocaleTimeString());
+
+    $('#weather-temp').text(`${numeral(weatherData.temp).format('0')} °C`);
+
+    $('#humidity').text(`${numeral(weatherData.humidity).format('0')} %`);
+    $('#wind-speed').text(`${numeral(weatherData.windSpeed).format('0.0')} m/s`);
+    $('#pressure').text(`${numeral(weatherData.pressure).format('0')} hPa`);
+    $('#visibility').text(`${numeral(weatherData.visibility / 1000).format('0.0')} km`);
+
+    const formattedSunrise = moment.unix(weatherData.sunrise).format('hh:mm A');
+    const formattedSunset = moment.unix(weatherData.sunset).format('hh:mm A');
+    $('#sunrise').text(formattedSunrise);
+    $('#sunset').text(formattedSunset);
 }
 
 function updateWeatherForecast(data) {
@@ -577,18 +589,17 @@ function updateWeatherForecast(data) {
     const hourlyForecast = [];
     const dailyForecast = {};
 
-    const currentTime = new Date();
-    const forecastLimit = new Date(currentTime.getTime() + 15 * 60 * 60 * 1000); // 15 hours ahead
+    const currentTime = moment(); 
+    const forecastLimit = moment().add(15, 'hours'); 
 
     // Parsing of 3-hour and daily forecast
     data.list.forEach(item => {
-        const dateTime = new Date(item.dt_txt);
-        const date = dateTime.toLocaleDateString();
-        let hours = dateTime.getHours();
-        let time = dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateTime = moment(item.dt_txt); 
+        const date = dateTime.format('DD MMMM YYYY');
+        const time = dateTime.format('HH:mm'); 
 
         // 3-hour forecast for 15 hours ahead
-        if (dateTime <= forecastLimit) {
+        if (dateTime.isBefore(forecastLimit)) {
             hourlyForecast.push({
                 time: time,
                 temp: item.main.temp,
@@ -597,8 +608,10 @@ function updateWeatherForecast(data) {
         }
 
         // Daily forecast (every 6 hours starting at 00:00 or 06:00 the next day)
-        const isNextDay = dateTime.getDate() !== currentTime.getDate();
-        if (isNextDay && (hours === 0 || hours === 6 || hours === 12 || hours === 18)) {
+        const isNextDay = dateTime.date() !== currentTime.date();
+        const hours = dateTime.hours();
+
+        if (isNextDay && hours % 6 === 0) {
             if (!dailyForecast[date]) {
                 dailyForecast[date] = {
                     tempMin: item.main.temp_min,
@@ -623,7 +636,7 @@ function updateWeatherForecast(data) {
             <div class="text-center bg-success bg-opacity-25 p-2 m-2 rounded shadow-sm">
                 <img src="http://openweathermap.org/img/wn/${hour.icon}@2x.png" alt="Weather icon" class="img-fluid">
                 <div>${hour.time}</div>
-                <div>${hour.temp.toFixed()}°C</div>
+                <div>${numeral(hour.temp).format('0')}°C</div>
             </div>
         `;
         forecastScrollRow.append(forecastCard);
@@ -636,7 +649,7 @@ function updateWeatherForecast(data) {
             <p class="mb-0">
                 ${detail.time} - 
                 <img src="http://openweathermap.org/img/wn/${detail.icon}@2x.png" alt="Small weather icon" class="img-fluid" width="30"> 
-                ${detail.temp.toFixed()}°C
+                ${numeral(detail.temp).format('0')}°C 
             </p>
         `).join('');
 
@@ -646,7 +659,7 @@ function updateWeatherForecast(data) {
                     <div class="col-5 text-center">
                         <h6 class="fw-bold m-0">${date}</h6>
                         <img src="http://openweathermap.org/img/wn/${forecast.details[0].icon}@2x.png" alt="Daily weather icon" class="daily-forecast-icon img-fluid mb-2">
-                        <div class="fw-bold">${forecast.tempMax.toFixed()}° /  ${forecast.tempMin.toFixed()}°</div>
+                        <div class="fw-bold">${numeral(forecast.tempMax).format('0')}° /  ${numeral(forecast.tempMin).format('0')}°</div>
                     </div>
                     <div class="col-7 text-start p-2">
                         <div>
@@ -684,6 +697,7 @@ function fetchNews(category = '') {
                     </div>`);
             } else {
                 articles.forEach(article => {
+                    const publishedDate = moment(article.publishedAt).format('DD MMM YYYY, HH:mm');
                     const articleItem = `
                         <a href="${article.url}" target="_blank" class="text-decoration-none text-dark">
                             <div class="card mb-3 shadow-sm">
@@ -707,7 +721,7 @@ function fetchNews(category = '') {
                                     </div>
                                 </div>
                                 <div class="card-footer d-flex justify-content-between">
-                                    <small class="text-muted">${new Date(article.publishedAt).toLocaleString()}</small>
+                                    <small class="text-muted">${publishedDate}</small>
                                     <small class="text-muted fw-bold tw text-uppercase">${article.source.name}</small>
                                 </div>
                             </div>
