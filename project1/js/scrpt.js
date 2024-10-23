@@ -108,8 +108,6 @@ var wikiBtn = L.easyButton('<img src="images/button/wikipedia.png" width="20" he
 $(document).ready(function () {
     $('#preloader').show();
 
-    // loading all borders
-    // loadAllCountryBorders(); 
     // download the list of countries
     loadCountryList();
 
@@ -152,16 +150,16 @@ $(document).ready(function () {
 
     $('#countrySelect').on('change', function() {
         const isoCode = $(this).val();
+        getCountrySpecificBorders(isoCode)
+            .then(() => {
+                loadAirportsForCountry(isoCode);
+                loadCitiesForCountry(isoCode);
+            })
+            .catch((error) => {
+                // console.error('Error after fetching borders:', error);
+                showAlert('Error after fetching borders:', 'danger');
+            });
         setCountryInform(isoCode);
-            getCountrySpecificBorders(isoCode)
-                .then(() => {
-                    loadAirportsForCountry(isoCode);
-                    loadCitiesForCountry(isoCode);
-                })
-                .catch((error) => {
-                    // console.error('Error after fetching borders:', error);
-                    showAlert('Error after fetching borders:', 'danger');
-                });
     });
 
     $('#searchPlaceButton').on('click', function() {
@@ -189,19 +187,7 @@ function handleUserLocation(lat, lon) {
         dataType: 'json',
         success: function(data) {
             const isoCode = data.countryISO;
-            $('#countrySelect').val(isoCode);  // Set selected country in the dropdown
-            setCountryInform(isoCode);
-            getCountrySpecificBorders(isoCode)
-                .then(() => {
-                    loadAirportsForCountry(isoCode);
-                    loadCitiesForCountry(isoCode);
-                    $('#preloader').hide();
-                })
-                .catch((error) => {
-                    // console.error('Error after fetching borders:', error);
-                    showAlert('Error after fetching borders:', 'danger');
-                    $('#preloader').hide();
-                });
+            $('#countrySelect').val(isoCode).change();
         },
         error: function() {
             showAlert('Error fetching location', 'danger');
@@ -286,7 +272,6 @@ function getCountrySpecificBorders(isoCode) {
                 },
                 error: function(error) {
                     // console.error('Error fetching country borders:', error);
-                    showAlert('Sorry, there was an error fetching country borders. Please try again later.', 'danger');
                     reject(error);
                 }
             });

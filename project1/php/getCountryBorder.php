@@ -1,4 +1,5 @@
 <?php
+// getCountryBorder.php
 
 // Connect autoload Composer to load libraries
 require __DIR__ . '/../vendor/autoload.php';
@@ -29,7 +30,7 @@ if ($environment === 'development') {
     error_reporting(0);  // No error reporting in production
 }
 
-$filePath = '../data/countries.geojson';
+$filePath = '../data/countryBorders.geo.json';
 
 header('Content-Type: application/json');
 
@@ -57,7 +58,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 $filteredCountry = array_filter($geojsonData['features'], function($feature) use ($isoCode) {
-    return $feature['properties']['ISO_A2'] === $isoCode;
+    return strtoupper($feature['properties']['iso_a2']) === strtoupper($isoCode);
 });
 
 if (empty($filteredCountry)) {

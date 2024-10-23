@@ -9,7 +9,7 @@ try {
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
     $dotenv->load();
 } catch (Exception $e) {
-  // Log an error if there is no .env file
+    // Log an error if there is no .env file
     error_log('Failed to load .env file: ' . $e->getMessage());
     http_response_code(500);
     header('Content-Type: application/json');
@@ -36,15 +36,16 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
     $lat = $_GET['lat'];
     $lon = $_GET['lon'];
 
-    $url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon";
+    $geonamesUsername = $_ENV['USERNAME_GEONAMES_API_KEY'];
 
-    $userEmail = $_ENV['USER_EMAIL'];
+    // GeoNames CountryCodeJSON API URL
+    $url = "http://api.geonames.org/countryCodeJSON?lat=$lat&lng=$lon&username=$geonamesUsername";
+
+
+    // $userEmail = $_ENV['USER_EMAIL'];
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "User-Agent: Gazetteer/1.0 ($userEmail)"
-    ]);;
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);    
     
     $response = curl_exec($ch);
     
@@ -53,14 +54,14 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
         echo json_encode(['error' => 'cURL Error: ' . curl_error($ch)]);
     } else {
         $countryData = json_decode($response, true);
-        if (isset($countryData['address'])) {
+        if (isset($countryData['countryCode'])) {
             $output = [
-                'countryName' => $countryData['address']['country'],
-                'countryISO' => strtoupper($countryData['address']['country_code']),
+                'countryISO' => strtoupper($countryData['countryCode']),
+                'countryName' => $countryData['countryName']
             ];
             echo json_encode($output);
         } else {
-            echo json_encode(['error' => 'Invalid data from Weather API']);
+            echo json_encode(['error' => 'Invalid data from GeoNames API']);
         }
     }
     curl_close($ch);
