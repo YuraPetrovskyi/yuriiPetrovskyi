@@ -52,12 +52,6 @@ var locationBtn = L.easyButton('<img src="images/button/home.png" width="20" hei
     map.locate({setView: false}); // find the location and do not move the map to it
 });
 
-// place serch
-var searchBtn = L.easyButton('<img src="images/button/search.png" width="20" height="20">', function() {
-    const placeModal = new bootstrap.Modal($('#placeSearchModal')[0]);
-    placeModal.show();
-});
-
 // info modal  
 var infoBtn = L.easyButton('<img src="images/button/info.png" width="20" height="20">', function() {
     const countryModal = new bootstrap.Modal($('#countryModal')[0]);
@@ -77,6 +71,7 @@ var currencyBtn = L.easyButton('<img src="images/button/exchange.png" width="20"
     currencyModal.show();
 });
 
+// weather modal
 var weatherModalBtn = L.easyButton('<img src="images/button/weather.png" width="20" height="20">', function() {
     // We update the modal window with weather based on the active coordinates
     if (activeCoordinates.lat && activeCoordinates.lon) {
@@ -88,12 +83,14 @@ var weatherModalBtn = L.easyButton('<img src="images/button/weather.png" width="
     weatherModal.show();
 });
 
+// news modal
 var newsBtn = L.easyButton('<img src="images/button/news.png" width="20" height="20">', function () {
     fetchNews();
     const newsModal = new bootstrap.Modal($('#newsModal')[0]);
     newsModal.show();
 });
 
+// news modal
 var wikiBtn = L.easyButton('<img src="images/button/wikipedia.png" width="20" height="20">', function() {
     showWikiModal();
 });
@@ -121,7 +118,6 @@ $(document).ready(function () {
 
     // Add buttons to the map
     locationBtn.addTo(map);
-    searchBtn.addTo(map);
     infoBtn.addTo(map);
     currencyBtn.addTo(map);
     weatherModalBtn.addTo(map);
@@ -159,12 +155,6 @@ $(document).ready(function () {
                 showAlert('Error after fetching borders:', 'danger');
             });
         setCountryInform(isoCode);
-    });
-
-    $('#searchPlaceButton').on('click', function() {
-        const placeName = $('#placeSearchInput').val().trim();
-        if (placeName === '') return; // checking whether the field is empty
-        searchPlaceByName(placeName);
     });
 
     $('#newsCategory').on('change', function() {
@@ -440,84 +430,6 @@ function loadCitiesForCountry(isoCode) {
         },
         error: function(error) {
             showAlert('Error fetching cities', 'danger');
-        }
-    });
-}
-
-// function for searching for places in a search modal
-function searchPlaceByName(placeName) {
-    $.ajax({
-        url: `php/searchPlaceByName.php?cityName=${encodeURIComponent(placeName)}`,
-        method: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            const $placeResultsList = $('#placeResultsList');
-            $placeResultsList.empty(); // clean the previous results
-
-            if (data.length === 0) {
-                $placeResultsList.append('<li class="list-group-item">No results found.</li>');
-                return;
-            }
-
-            data.forEach(place => {
-                const $placeItem = $('<li>')
-                    .addClass('list-group-item list-group-item-action')
-                    .text(`${place.name}, ${place.countryName}`);
-                    
-                $placeItem.on('click', function() {
-                    activeCoordinates.lat = place.lat;
-                    activeCoordinates.lon = place.lng;
-                    const selectedCountryCode = $('#countrySelect').val();
-
-                    if (place.countryCode === selectedCountryCode){
-                        if (placeMarker) {
-                            map.removeLayer(placeMarker);
-                        }
-
-                        placeMarker = L.marker([place.lat, place.lng])
-                            .addTo(map)
-                            .bindPopup(`
-                                <div class="fw-bold fs-5">${place.name}</div>
-                                <div class="fw-bold"><i class="fas fa-flag"></i> ${(place.countryName)}</div>
-                            `)
-                            .openPopup();
-
-                        map.setView([place.lat, place.lng], 10); // move the map to the selected place
-                        
-                    } else {
-                        if (placeMarker) {
-                            map.removeLayer(placeMarker);
-                        }
-                        setCountryInform(place.countryCode);
-                        getCountrySpecificBorders(place.countryCode)
-                            .then(() => {
-                                loadAirportsForCountry(place.countryCode);
-                                loadCitiesForCountry(place.countryCode);
-                            })
-                            .catch((error) => {
-                                console.error('Error after fetching borders:', error);
-                            });
-
-                        placeMarker = L.marker([place.lat, place.lng])
-                        .addTo(map)
-                        .bindPopup(`
-                            <div class="fw-bold fs-5">${place.name}</div>
-                            <div class="fw-bold"><i class="fas fa-flag"></i> ${(place.countryName)}</div>
-                        `)
-                        .openPopup();
-
-                        map.setView([place.lat, place.lng], 10); // move the map to the selected city
-                        
-                    }
-                    const placeModal = bootstrap.Modal.getInstance($('#placeSearchModal')[0]);
-                    placeModal.hide(); // close the modal window after selection
-                });
-
-                $placeResultsList.append($placeItem);
-            });
-        },
-        error: function() {
-            showAlert('Sorry for the inconvenience,something happened while searching for a place. Please try again later.', 'danger');
         }
     });
 }
