@@ -9,10 +9,24 @@ var map, layerControl;
 
 var bordersLayerGroup = L.layerGroup();
 var airportClusterGroup = L.markerClusterGroup({
-    maxClusterRadius: 25
+    maxClusterRadius: 50,
+    polygonOptions: {
+        fillColor: "#FFFF00",
+        color: "#000",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.5
+    }
 });
 var cityMarkersCluster = L.markerClusterGroup({
-    maxClusterRadius: 50
+    maxClusterRadius: 50,
+    polygonOptions: {
+        fillColor: "#FF0000",
+        color: "#000",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.5
+    }
 });
 var adminCityClusterGroup = L.markerClusterGroup({
     maxClusterRadius: 25
