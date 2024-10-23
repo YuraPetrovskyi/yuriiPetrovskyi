@@ -42,14 +42,13 @@ var overlayMaps = {
     "Cities": cityMarkersCluster,
 };
 
-var myLocationMarcker = { current: null };
 var countryBorderLayerRef = { specificCountry: null}; 
 var activeCoordinates = { lat: null, lon: null };
 
 // buttons
 
 // user location
-var locationBtn = L.easyButton('<img src="images/button/my_location.png" width="20" height="20">', function(btn, map) {
+var locationBtn = L.easyButton('<img src="images/button/home.png" width="20" height="20">', function(btn, map) {
     map.locate({setView: false}); // find the location and do not move the map to it
 });
 
@@ -194,23 +193,6 @@ function handleUserLocation(lat, lon) {
             $('#preloader').hide();
         }
     });
-
-    // Check if marker already exists, remove it
-    if (myLocationMarcker.current) {
-        map.removeLayer(myLocationMarcker.current);
-        myLocationMarcker.current = null;
-    }
-
-    const myLocation = L.icon({
-        iconUrl: 'images/button/my_location.png',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -30]
-    });
-
-    // Add a marker to the map for the user's current location
-    myLocationMarcker.current = L.marker({ lat, lon }, { icon: myLocation }).addTo(map)
-        .bindPopup("You are here");
 }
 
 // function to download the list of countries
