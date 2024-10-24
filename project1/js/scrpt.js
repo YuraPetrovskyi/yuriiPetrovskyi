@@ -292,7 +292,6 @@ function setCountryInform(isoCode) {
             $('#coatOfArms').html(`<img src="${data.coatOfArms}" width="100" alt="Coat of Arms">`);
 
             // Updating the modal window for currency
-            $('#currencyModalLabel').text(`${data.currency.name} (${data.currency.currencyCode}) -- ${data.currency.symbol} -- ${data.name}`);
             $('#currentCurrencyName').text(`${data.currency.name} - ${data.currency.currencyCode}`);
             $('#curenCurrencySymbol').text(data.currency.symbol);
             $('#curenCurrencyCodeConverter').text(data.currency.currencyCode);
