@@ -175,6 +175,13 @@ $(document).ready(function () {
         enableHighAccuracy: true
     });
 
+    $(window).on('load', function() {
+        // Hide preloader once the page is fully loaded
+        $('#preloader').fadeOut('slow', function() {
+            $(this).remove(); // видаляємо прелоадер з DOM
+        });
+    });
+
     // Load country borders and airports on location found
     map.on('locationfound', function (e) {
         handleUserLocation(e.latlng.lat, e.latlng.lng);
@@ -184,7 +191,8 @@ $(document).ready(function () {
 
     map.on('locationerror', function (e) {
         showAlert(e.message, 'warning');
-        $('#preloader').hide();
+        // $('#preloader').hide();
+        $('#preloader').fadeOut('slow');
     });
 
     $('#countrySelect').on('change', function() {
@@ -221,10 +229,13 @@ function handleUserLocation(lat, lon) {
         success: function(data) {
             const isoCode = data.countryISO;
             $('#countrySelect').val(isoCode).change();
+            // $('#preloader').hide();
+            $('#preloader').fadeOut('slow');
         },
         error: function() {
             showAlert('Error fetching location', 'danger');
-            $('#preloader').hide();
+            // $('#preloader').hide();
+            $('#preloader').fadeOut('slow');
         }
     });
 }
