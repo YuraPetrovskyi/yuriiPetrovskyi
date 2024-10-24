@@ -93,6 +93,7 @@ var weatherModalBtn = L.easyButton('<img src="images/button/weather.png" width="
     } else {
         showAlert('Sorry, the location is not defined.', 'danger');
     }
+
     const weatherModal = new bootstrap.Modal($('#weatherModal')[0]);
     weatherModal.show();
 });
@@ -548,6 +549,7 @@ function getWeatherForecast(lat, lon) {
         data: { lat: lat, lon: lon },
         dataType: 'json',
         success: function(data) {
+            // console.log(data)
             updateWeatherForecast(data);
         },
         error: function() {
@@ -560,7 +562,7 @@ function getWeatherForecast(lat, lon) {
 function updateWeatherModal(weatherData, locationName) {
     $('#weather-point-name').text(locationName.toUpperCase() || weatherData.name.toUpperCase());
 
-    const formattedDate = moment().format('DD MMMM YYYY, hh:mm A');
+    const formattedDate = moment().format('ddd Do');
     $('#current-date-time').text(formattedDate);
 
     $('#weather-icon').attr('src', `http://openweathermap.org/img/wn/${weatherData.icon}@2x.png`);
@@ -572,6 +574,9 @@ function updateWeatherModal(weatherData, locationName) {
     $('#wind-speed').text(`${numeral(weatherData.windSpeed).format('0.0')} m/s`);
     $('#pressure').text(`${numeral(weatherData.pressure).format('0')} hPa`);
     $('#visibility').text(`${numeral(weatherData.visibility / 1000).format('0.0')} km`);
+
+    const formattedLastUpdated = moment.unix(weatherData.lastUpdated).format('ddd Do, HH:mm');
+    $('#last-updated').text(`${formattedLastUpdated}`); 
 
     const formattedSunrise = moment.unix(weatherData.sunrise).format('hh:mm A');
     const formattedSunset = moment.unix(weatherData.sunset).format('hh:mm A');
@@ -595,7 +600,7 @@ function updateWeatherForecast(data) {
     // Parsing of 3-hour and daily forecast
     data.list.forEach(item => {
         const dateTime = moment(item.dt_txt); 
-        const date = dateTime.format('DD MMMM YYYY');
+        const date = dateTime.format('ddd Do');
         const time = dateTime.format('HH:mm'); 
 
         // 3-hour forecast for 15 hours ahead

@@ -64,7 +64,8 @@ if (isset($_GET['lat']) && isset($_GET['lon'])) {
                 'name' => $weatherData['name'],
                 "sunrise" => $weatherData['sys']['sunrise'],
                 "sunset" => $weatherData['sys']['sunset'],
-                "country" => $weatherData['sys']['country']
+                "country" => $weatherData['sys']['country'],
+                "lastUpdated" => $weatherData['dt']
             ];
 
             echo json_encode($output);

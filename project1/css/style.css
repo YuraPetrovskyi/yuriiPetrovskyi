@@ -61,3 +61,11 @@ html, body {
     transform: rotate(360deg);
   }
 }
+/*--------------------------------------------------------------
+# Preloader Weather
+--------------------------------------------------------------*/
+/* #pre-load-weather {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */

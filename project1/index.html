@@ -239,8 +239,8 @@
           </div>
           
           <div class="modal-body p-1">
-            <div class="weather-main-info m-0 p-0">
 
+            <div class="weather-main-info m-0 p-0">
               <div class="d-flex justify-content-center text-center pb-1 fw-bold">
                 <div class="col-6">
                   <p class="mb-0 ">Sunrise: <span id="sunrise"></span></p>
@@ -260,20 +260,25 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="col-7 col-sm-6 mb-2">
                   <div class="card h-100 text-center shadow bg-success bg-opacity-25">
                     <div class="card-body p-2">
                       <p class="mt-2 fw-bold">Humidity: <span id="humidity"></span></p>
                       <p class="fw-bold">Pressure: <span id="pressure"></span></p>
-                      <p class="fw-bold text-nowrap">Wind Speed: <span id="wind-speed"></span></p>
+                      <p class="fw-bold">Wind spd: <span id="wind-speed"></span></p>
                       <p class="mt-0 fw-bold">Visibility: <span id="visibility"></span></p>
                     </div>
                   </div>
                 </div>
-              </div>
-              
+              </div>              
             </div>
-    
+
+            <p class="text-center m-0 p-0">
+              Updated <span id="last-updated" class="fw-bold"></span> Powered by 
+              <a href="https://openweathermap.org/api" target="_blank" title="Free OpenWeather API" class="fw-bold text-decoration-none text-primary">OpenWeather</a>
+            </p>
+
             <div class="weather-forecast-scroll mb-0">
               <div id="forecast-scroll-row" class="d-flex justify-content-center overflow-auto p-2"></div>
             </div>
@@ -284,6 +289,10 @@
               <div id="daily-forecast-scroll-row" class="d-flex overflow-auto p-2 align-items-center"></div>
             </div>
     
+          </div>
+
+          <div class="modal-footer bg-success bg-opacity-25">
+            <button type="button" class="btn btn-outline-dark fw-bold" data-bs-dismiss="modal">Close</button>
           </div>
 
         </div>
