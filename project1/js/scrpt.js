@@ -110,6 +110,35 @@ var wikiBtn = L.easyButton('<img src="images/button/wikipedia.png" width="20" he
     showWikiModal();
 });
 
+// icons
+var airportMarker = L.ExtraMarkers.icon({
+    icon: 'fa-plane',
+    markerColor: 'yellow',
+    shape: 'square',
+    prefix: 'fa'
+});
+
+var capitalIcon = L.ExtraMarkers.icon({
+    icon: 'fa-star',
+    markerColor: 'red',
+    shape: 'circle',
+    prefix: 'fa'
+});
+
+var adminCityIcon = L.ExtraMarkers.icon({
+    icon: 'fa-city',
+    markerColor: 'blue',
+    shape: 'circle',
+    prefix: 'fa'
+});
+
+var simpleCityIcon = L.ExtraMarkers.icon({
+    icon: 'fa-building',
+    markerColor: 'green',
+    shape: 'circle',
+    prefix: 'fa'
+});
+
 // ---------------------------------------------------------
 // EVENT HANDLERS
 // ---------------------------------------------------------
@@ -312,13 +341,6 @@ function loadAirportsForCountry(isoCode) {
     
     airportClusterGroup.clearLayers();
     
-    const airportMarker = L.ExtraMarkers.icon({
-        icon: 'fa-plane',
-        markerColor: 'yellow',
-        shape: 'square',
-        prefix: 'fa'
-    });
-
     $.ajax({
         url: 'php/getAirports.php',
         method: 'GET',
@@ -374,13 +396,6 @@ function loadCitiesForCountry(isoCode) {
 
             // Metropolitan cities (PPLC)
             cityData.pplc.forEach(function(city) {
-                const capitalIcon = L.ExtraMarkers.icon({
-                    icon: 'fa-star',
-                    markerColor: 'red',
-                    shape: 'circle',
-                    prefix: 'fa'
-                });
-
                 const marker = L.marker([city.lat, city.lng], { icon: capitalIcon })
                     .bindPopup(`
                         <div class="fw-bold fs-5">${city.name}</div>
@@ -397,13 +412,6 @@ function loadCitiesForCountry(isoCode) {
 
             // Administrative cities (PPLA)
             cityData.ppla.forEach(function(city) {
-                const adminCityIcon = L.ExtraMarkers.icon({
-                    icon: 'fa-city',
-                    markerColor: 'blue',
-                    shape: 'circle',
-                    prefix: 'fa'
-                });
-
                 const marker = L.marker([city.lat, city.lng], { icon: adminCityIcon })
                     .bindPopup(`
                         <div class="fw-bold fs-5">${city.name}</div>
@@ -420,13 +428,6 @@ function loadCitiesForCountry(isoCode) {
 
             // Other cities (PPLA2)
             cityData.ppla2.forEach(function(city) {
-                const simpleCityIcon = L.ExtraMarkers.icon({
-                    icon: 'fa-building',
-                    markerColor: 'green',
-                    shape: 'circle',
-                    prefix: 'fa'
-                });
-
                 const marker = L.marker([city.lat, city.lng], { icon: simpleCityIcon })
                     .bindPopup(`
                         <div class="fw-bold fs-5">${city.name}</div>
