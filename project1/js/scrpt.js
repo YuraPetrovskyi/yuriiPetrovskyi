@@ -697,8 +697,14 @@ function fetchNews(category = '') {
         dataType: 'json',
         success: function (articles) {
             // console.log('articles', articles);
+
             const newsList = $('#news-list');
             newsList.empty(); 
+            // $('#preloader2').fadeOut('slow');
+            $('#preloader2').fadeOut('slow', function() {
+                $(this).remove(); // видаляємо прелоадер з DOM
+            });
+
             if (articles.error) {
                 newsList.append(`
                     <div class="card-header p-2 text-center bg-warning bg-opacity-25">
@@ -747,6 +753,9 @@ function fetchNews(category = '') {
             }            
         },
         error: function (error) {
+            $('#preloader2').fadeOut('slow', function() {
+                $(this).remove(); // видаляємо прелоадер з DOM
+            });
             // console.error('Error fetching news:', error);
             showAlert('Sorry, something went wrong with the News service.', 'danger');
         }

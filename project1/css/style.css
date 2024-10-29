@@ -52,3 +52,15 @@ html, body {
 /*--------------------------------------------------------------
 # Preloader Weather
 --------------------------------------------------------------*/
+#preloader2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(203, 205, 109, 0.9); /* Напівпрозорий фон */
+  z-index: 1050; /* Пріоритетний рівень для перекриття контенту */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
