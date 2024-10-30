@@ -58,8 +58,7 @@ $("#locationsBtn").click(function () {
 $("#editPersonnelModal").on("show.bs.modal", function (e) {
   
   $.ajax({
-    url:
-      "https://coding.itcareerswitch.co.uk/companydirectory/libs/php/getPersonnelByID.php",
+    url: "php/getPersonnelByID.php",
     type: "POST",
     dataType: "json",
     data: {
@@ -69,7 +68,8 @@ $("#editPersonnelModal").on("show.bs.modal", function (e) {
       id: $(e.relatedTarget).attr("data-id") 
     },
     success: function (result) {
-      var resultCode = result.status.code;
+      console.log('editPersonnelModal result:', result)
+      const resultCode = result.status.code;
 
       if (resultCode == 200) {
         
@@ -113,17 +113,43 @@ $("#editPersonnelModal").on("show.bs.modal", function (e) {
 // Executes when the form button with type="submit" is clicked
 
 $("#editPersonnelForm").on("submit", function (e) {
-  
-  // Executes when the form button with type="submit" is clicked
-  // stop the default browser behviour
-
   e.preventDefault();
+  // Preparing data for sending
+  const updatedData = {
+    id: $("#editPersonnelEmployeeID").val(),
+    firstName: $("#editPersonnelFirstName").val(),
+    lastName: $("#editPersonnelLastName").val(),
+    jobTitle: $("#editPersonnelJobTitle").val(),
+    email: $("#editPersonnelEmailAddress").val(),
+    departmentID: $("#editPersonnelDepartment").val()
+  };
 
   // AJAX call to save form data
-  
+  $.ajax({
+    url: "php/updatePersonnel.php",
+    type: "POST",
+    dataType: "json",
+    data: updatedData,
+    success: function (result) {
+      const resultCode = result.status.code;
+
+      if (resultCode == 200) {
+        // Close the modal window after a successful update
+        $("#editPersonnelModal").modal("hide");
+
+        // Update the employee table after making changes
+        loadPersonnel();
+      } else {
+        console.error("Error updating personnel data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });  
 });
 
-
+/* ****************************************** */
 
 // Loading data when the page is first loaded
 document.addEventListener("DOMContentLoaded", function () {
@@ -138,7 +164,8 @@ function loadPersonnel() {
     dataType: "json",
     success: function (result) {
       console.log('result', result)
-      if (result.status.code === '200') {
+      const resultCode = result.status.code;
+      if (resultCode == 200) {
           updatePersonnelTable(result.data);
       } else {
           console.error("Error loading personnel data:", result.status.message);
@@ -183,7 +210,8 @@ function loadDepartments() {
     dataType: "json",
     success: function (result) {
       console.log("departments", result);
-      if (result.status.code === '200') {
+      const resultCode = result.status.code;
+      if (resultCode == 200) {
         updateDepartmentTable(result.data);
       } else {
         console.error("Error loading departments data:", result.status.message);
@@ -226,7 +254,8 @@ function loadLocations() {
     dataType: "json",
     success: function (result) {
       console.log("locations", result);
-      if (result.status.code === '200') {
+      const resultCode = result.status.code;
+      if (resultCode == 200) {
         updateLocationTable(result.data);
       } else {
         console.error("Error loading location data:", result.status.message);
