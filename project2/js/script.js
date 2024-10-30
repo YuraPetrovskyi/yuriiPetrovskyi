@@ -26,7 +26,7 @@ $("#refreshBtn").click(function () {
     if ($("#departmentsBtn").hasClass("active")) {
       loadDepartments(); // Refresh department table
     } else {
-      // Refresh location table
+      loadLocations(); // Refresh location table
     }
   }
 });
@@ -52,9 +52,7 @@ $("#departmentsBtn").click(function () {
 });
 
 $("#locationsBtn").click(function () {
-  
-  // Call function to refresh location table
-  
+  loadLocations(); // Call function to refresh location table
 });
 
 $("#editPersonnelModal").on("show.bs.modal", function (e) {
@@ -125,7 +123,8 @@ $("#editPersonnelForm").on("submit", function (e) {
   
 });
 
-// ******************************************************************************************* //
+
+
 // Loading data when the page is first loaded
 document.addEventListener("DOMContentLoaded", function () {
   loadPersonnel();
@@ -211,6 +210,48 @@ function updateDepartmentTable(data) {
             <i class="fa-solid fa-pencil fa-fw"></i>
           </button>
           <button type="button" class="btn btn-primary btn-sm deleteDepartmentBtn" data-id="${department.id}">
+            <i class="fa-solid fa-trash fa-fw"></i>
+          </button>
+        </td>
+      </tr>
+    `);
+  });
+}
+
+// Loading data for the location table
+function loadLocations() {
+  $.ajax({
+    url: "php/getAllLocations.php",
+    type: "GET",
+    dataType: "json",
+    success: function (result) {
+      console.log("locations", result);
+      if (result.status.code === '200') {
+        updateLocationTable(result.data);
+      } else {
+        console.error("Error loading location data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
+}
+
+// Updating the table of locations with the received data
+function updateLocationTable(data) {
+  const locationTableBody = $("#locationTableBody");
+  locationTableBody.empty(); // Clearing the table before updating
+
+  data.forEach(location => {
+    locationTableBody.append(`
+      <tr>
+        <td class="align-middle text-nowrap">${location.name}</td>
+        <td class="align-middle text-end text-nowrap">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editLocationModal" data-id="${location.id}">
+            <i class="fa-solid fa-pencil fa-fw"></i>
+          </button>
+          <button type="button" class="btn btn-primary btn-sm deleteLocationBtn" data-id="${location.id}">
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
         </td>
