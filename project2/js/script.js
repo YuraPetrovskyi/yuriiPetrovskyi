@@ -1,12 +1,27 @@
 $("#searchInp").on("keyup", function () {
-  
-  // your code
-  
+  const query = $(this).val();
+  $.ajax({
+    url: "php/SearchAll.php",
+    type: "POST",
+    dataType: "json",
+    data: { txt: query },
+    success: function (result) {
+      console.log("search", result);
+      if (result.status.code === '200') {
+        updatePersonnelTable(result.data.found);
+      } else {
+        console.error("Error loading personnel data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
 });
 
 $("#refreshBtn").click(function () {
   
-  if ($("#personnelBtn").hasClass("active")) {  // уточнити  active
+  if ($("#personnelBtn").hasClass("active")) {
     loadPersonnel(); // Refresh personnel table 
   } else {
     
@@ -150,6 +165,7 @@ function loadPersonnel() {
 
 // Updating the Personnel table with the received data
 function updatePersonnelTable(data) {
+  console.log('updated data', data)
   const personnelTableBody = $("#personnelTableBody");
   personnelTableBody.empty();  // clear the table before adding new records
   data.forEach(person => {
@@ -157,7 +173,7 @@ function updatePersonnelTable(data) {
       <tr>
         <td>${person.firstName} ${person.lastName}</td>
         <td class="align-middle text-nowrap d-none d-md-table-cell">${person.jobTitle}</td>
-        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.location}</td>
+        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.locationName}</td>
         <td class="align-middle text-nowrap d-none d-md-table-cell">${person.email}</td>
         <td class="text-end text-nowrap">
           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${person.id}">
