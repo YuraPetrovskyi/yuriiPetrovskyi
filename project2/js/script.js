@@ -20,23 +20,15 @@ $("#searchInp").on("keyup", function () {
 });
 
 $("#refreshBtn").click(function () {
-  
   if ($("#personnelBtn").hasClass("active")) {
     loadPersonnel(); // Refresh personnel table 
   } else {
-    
     if ($("#departmentsBtn").hasClass("active")) {
-      
-      // Refresh department table
-      
+      loadDepartments(); // Refresh department table
     } else {
-      
       // Refresh location table
-      
     }
-    
   }
-  
 });
 
 $("#filterBtn").click(function () {
@@ -52,15 +44,11 @@ $("#addBtn").click(function () {
 });
 
 $("#personnelBtn").click(function () {
-  
-  // Call function to refresh personnel table
-  
+  loadPersonnel(); // Call function to refresh personnel table
 });
 
 $("#departmentsBtn").click(function () {
-  
-  // Call function to refresh department table
-  
+  loadDepartments(); // Call function to refresh department table
 });
 
 $("#locationsBtn").click(function () {
@@ -137,7 +125,7 @@ $("#editPersonnelForm").on("submit", function (e) {
   
 });
 
-
+// ******************************************************************************************* //
 // Loading data when the page is first loaded
 document.addEventListener("DOMContentLoaded", function () {
   loadPersonnel();
@@ -180,6 +168,49 @@ function updatePersonnelTable(data) {
             <i class="fa-solid fa-pencil fa-fw"></i>
           </button> 
           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#deletePersonnelModal" data-id="${person.id}">
+            <i class="fa-solid fa-trash fa-fw"></i>
+          </button>
+        </td>
+      </tr>
+    `);
+  });
+}
+
+// Loading data for the departments table
+function loadDepartments() {
+  $.ajax({
+    url: "php/getAllDepartments.php",
+    type: "GET",
+    dataType: "json",
+    success: function (result) {
+      console.log("departments", result);
+      if (result.status.code === '200') {
+        updateDepartmentTable(result.data);
+      } else {
+        console.error("Error loading departments data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
+}
+
+// Updating the table of departments with the received data
+function updateDepartmentTable(data) {
+  const departmentTableBody = $("#departmentTableBody");
+  departmentTableBody.empty(); // Clearing the table before updating
+
+  data.forEach(department => {
+    departmentTableBody.append(`
+      <tr>
+        <td class="align-middle text-nowrap">${department.departmentName}</td>
+        <td class="align-middle text-nowrap d-none d-md-table-cell">${department.locationName}</td>
+        <td class="align-middle text-end text-nowrap">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editDepartmentModal" data-id="${department.id}">
+            <i class="fa-solid fa-pencil fa-fw"></i>
+          </button>
+          <button type="button" class="btn btn-primary btn-sm deleteDepartmentBtn" data-id="${department.id}">
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
         </td>
