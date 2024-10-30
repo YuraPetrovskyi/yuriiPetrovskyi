@@ -38,9 +38,84 @@ $("#filterBtn").click(function () {
 });
 
 $("#addBtn").click(function () {
-  
   // Replicate the logic of the refresh button click to open the add modal for the table that is currently on display
-  
+  if ($("#personnelBtn").hasClass("active")) {
+    $("#addPersonnelModal").modal("show");
+  } else if ($("#departmentsBtn").hasClass("active")) {
+    $("#addDepartmentModal").modal("show");
+  } else if ($("#locationsBtn").hasClass("active")) {
+    $("#addLocationModal").modal("show");
+  }
+});
+
+// Loading departments before opening a modal window to add an employee
+$("#addPersonnelModal").on("show.bs.modal", function () {
+  loadDepartmentOptions();
+});
+
+// downloading the list of departments
+function loadDepartmentOptions() {
+  $.ajax({
+    url: "php/getAllDepartments.php",
+    type: "GET",
+    dataType: "json",
+    success: function (result) {
+      console.log('loadDepartmentOptions', result)
+      if (result.status.code === '200') {
+        const departmentSelect = $("#addPersonnelDepartment");
+        departmentSelect.empty(); // clear the existing options before loading
+
+        $.each(result.data, function () {
+          departmentSelect.append(
+            $("<option>", {
+              value: this.id,
+              text: this.departmentName
+            })
+          );
+        });
+      } else {
+        console.error("Error retrieving department data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
+}
+// Processing the "submit" event of the employee addition form
+$("#addPersonnelForm").on("submit", function (e) {
+  e.preventDefault();
+
+  const newPersonnelData = {
+    firstName: $("#addPersonnelFirstName").val(),
+    lastName: $("#addPersonnelLastName").val(),
+    jobTitle: $("#addPersonnelJobTitle").val(),
+    email: $("#addPersonnelEmail").val(),
+    departmentID: $("#addPersonnelDepartment").val()
+  };
+
+  $.ajax({
+    url: "php/addPersonnel.php",
+    type: "POST",
+    dataType: "json",
+    data: newPersonnelData,
+    success: function (result) {
+      const resultCode = result.status.code;
+      if (resultCode === '200') {
+        $("#addPersonnelModal").modal("hide"); // close the modal window after successful addition
+        loadPersonnel(); // update the table of employees
+      } else {
+        $("#addPersonnelModal .modal-title").replaceWith(
+          "<span class='text-danger'>Error adding personnel</span>"
+        );
+      }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      $("#addPersonnelModal .modal-title").replaceWith(
+        "<span class='text-danger'>Error retrieving data</span>"
+      );
+    }
+  });
 });
 
 $("#personnelBtn").click(function () {
