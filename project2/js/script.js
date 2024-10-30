@@ -6,10 +6,8 @@ $("#searchInp").on("keyup", function () {
 
 $("#refreshBtn").click(function () {
   
-  if ($("#personnelBtn").hasClass("active")) {
-    
-    // Refresh personnel table
-    
+  if ($("#personnelBtn").hasClass("active")) {  // уточнити  active
+    loadPersonnel(); // Refresh personnel table 
   } else {
     
     if ($("#departmentsBtn").hasClass("active")) {
@@ -123,3 +121,53 @@ $("#editPersonnelForm").on("submit", function (e) {
   // AJAX call to save form data
   
 });
+
+
+// Loading data when the page is first loaded
+document.addEventListener("DOMContentLoaded", function () {
+  loadPersonnel();
+});
+
+// Function to download all Personnel records
+function loadPersonnel() {
+  $.ajax({
+    url: "php/getAll.php",
+    type: "GET",
+    dataType: "json",
+    success: function (result) {
+      console.log('result', result)
+      if (result.status.code === '200') {
+          updatePersonnelTable(result.data);
+      } else {
+          console.error("Error loading personnel data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
+}
+
+// Updating the Personnel table with the received data
+function updatePersonnelTable(data) {
+  const personnelTableBody = $("#personnelTableBody");
+  personnelTableBody.empty();  // clear the table before adding new records
+  data.forEach(person => {
+    personnelTableBody.append(`
+      <tr>
+        <td>${person.firstName} ${person.lastName}</td>
+        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.jobTitle}</td>
+        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.location}</td>
+        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.email}</td>
+        <td class="text-end text-nowrap">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${person.id}">
+            <i class="fa-solid fa-pencil fa-fw"></i>
+          </button> 
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#deletePersonnelModal" data-id="${person.id}">
+            <i class="fa-solid fa-trash fa-fw"></i>
+          </button>
+        </td>
+      </tr>
+    `);
+  });
+}
