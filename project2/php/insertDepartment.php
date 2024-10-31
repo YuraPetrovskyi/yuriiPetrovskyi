@@ -43,7 +43,7 @@
 
 	$query->execute();
 	
-	if (false === $query) {
+	if (false === $query) { //not necessarily guarantee that the operation was successful at the request execution level, only that the request was "prepared" without errors.
 
 		$output['status']['code'] = "400";
 		$output['status']['name'] = "executed";

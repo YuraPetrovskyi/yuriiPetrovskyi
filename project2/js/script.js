@@ -183,6 +183,36 @@ $("#addDepartmentForm").on("submit", function (e) {
   });
 });
 
+// Handle the "submit" event for the add location form
+$("#addLocationForm").on("submit", function (e) {
+  e.preventDefault();
+
+  const newLocationData = {
+    name: $("#addLocationName").val()
+  };
+
+  $.ajax({
+    url: "php/insertLocation.php",
+    type: "POST",
+    dataType: "json",
+    data: newLocationData,
+    success: function (result) {
+      if (result.status.code === '200') {
+        $("#addLocationModal").modal("hide");
+        $("#addLocationError").addClass("d-none").text("");
+        loadLocations();
+      } else {
+        $("#addLocationError").removeClass("d-none").text("Error adding location: " + result.status.message);
+      }
+    },
+    error: function (error) {
+      $("#addLocationError").removeClass("d-none").text("AJAX error: Unable to add location.");
+      console.error("AJAX error:", error);
+    }
+  });
+});
+
+
 $("#personnelBtn").click(function () {
   loadPersonnel(); // Call function to refresh personnel table
 });
