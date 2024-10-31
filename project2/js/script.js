@@ -363,3 +363,74 @@ function updateLocationTable(data) {
     `);
   });
 }
+
+// Event to open a modal edit department window
+$("#editDepartmentModal").on("show.bs.modal", function (e) {
+  const departmentId = $(e.relatedTarget).data("id");
+  console.log('departmentId', departmentId);
+
+  // Obtaining department data by ID
+  $.ajax({
+    url: "php/getDepartmentByID.php",
+    type: "POST",
+    dataType: "json",
+    data: { id: departmentId },
+    success: function (result) {
+      console.log('editDepartmentModal getDepartmentByID', result);
+      const resultCode = result.status.code;
+      if (resultCode === "200") {
+        $("#editDepartmentID").val(result.data.department[0].id);
+        $("#editDepartmentName").val(result.data.department[0].departmentName);
+        $("#editDepartmentLocation").empty();
+
+        // Adding locations to selection
+        $.each(result.data.locations, function () {
+          $("#editDepartmentLocation").append(
+            $("<option>", {
+              value: this.id,
+              text: this.name
+            })
+          );
+        });
+
+        // Setting a value for a location
+        $("#editDepartmentLocation").val(result.data.department[0].locationID);
+      } else {
+        console.error("Error loading department data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
+});
+
+// Processing of the department editing form when pressing "SAVE"
+$("#editDepartmentForm").on("submit", function (e) {
+  e.preventDefault();
+
+  const updatedDepartmentData = {
+    id: $("#editDepartmentID").val(),
+    departmentName: $("#editDepartmentName").val(),
+    locationID: $("#editDepartmentLocation").val()
+  };
+
+  $.ajax({
+    url: "php/updateDepartment.php",
+    type: "POST",
+    dataType: "json",
+    data: updatedDepartmentData,
+    success: function (result) {
+      const resultCode = result.status.code;
+      if (resultCode === "200") {
+        $("#editDepartmentModal").modal("hide");
+        loadDepartments();
+      } else {
+        console.error("Error updating department data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
+});

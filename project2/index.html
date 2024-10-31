@@ -157,7 +157,7 @@
     </div>
 
     <!-- Add Personnel Modal -->
-    <div id="addPersonnelModal" class="modal fade" tabindex="-1" aria-labelledby="addPersonnelModalLabel" aria-hidden="true">
+    <div id="addPersonnelModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="addPersonnelModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header bg-primary bg-gradient text-white">
@@ -197,8 +197,40 @@
         </div>
       </div>
     </div>
-    
-    
+
+    <!-- Edit Department Modal -->
+    <div id="editDepartmentModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="editDepartmentModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary bg-gradient text-white">
+            <h5 class="modal-title" id="editDepartmentModalLabel">Edit Department</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editDepartmentForm">
+              <input type="hidden" id="editDepartmentID">
+
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="editDepartmentName" placeholder="Department Name" required>
+                <label for="editDepartmentName">Department Name</label>
+              </div>
+
+              <div class="form-floating">
+                <select class="form-select" id="editDepartmentLocation" placeholder="Location" required>
+                  <!-- Options will be dynamically loaded -->
+                </select>
+                <label for="editDepartmentLocation">Location</label>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" form="editDepartmentForm" class="btn btn-outline-primary btn-sm">SAVE</button>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-dismiss="modal">CANCEL</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <footer class="border-top text-center fw-bold">
       <p class="fw-light my-3">Company Directory version 1.0</p>
     </footer>
