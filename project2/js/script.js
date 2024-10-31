@@ -262,7 +262,7 @@ function updatePersonnelTable(data) {
     personnelTableBody.append(`
       <tr>
         <td>${person.firstName} ${person.lastName}</td>
-        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.jobTitle}</td>
+        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.departmentName}</td>
         <td class="align-middle text-nowrap d-none d-md-table-cell">${person.locationName}</td>
         <td class="align-middle text-nowrap d-none d-md-table-cell">${person.email}</td>
         <td class="text-end text-nowrap">
