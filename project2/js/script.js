@@ -269,7 +269,7 @@ function updatePersonnelTable(data) {
           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${person.id}">
             <i class="fa-solid fa-pencil fa-fw"></i>
           </button> 
-          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#deletePersonnelModal" data-id="${person.id}">
+          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${person.id}" data-name="${person.firstName} ${person.lastName}">
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
         </td>
@@ -313,7 +313,7 @@ function updateDepartmentTable(data) {
           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editDepartmentModal" data-id="${department.id}">
             <i class="fa-solid fa-pencil fa-fw"></i>
           </button>
-          <button type="button" class="btn btn-primary btn-sm deleteDepartmentBtn" data-id="${department.id}">
+          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${department.id}" data-name="${department.departmentName}">
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
         </td>
@@ -427,7 +427,7 @@ function updateLocationTable(data) {
           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editLocationModal" data-id="${location.id}" data-name="${location.name}">
             <i class="fa-solid fa-pencil fa-fw"></i>
           </button>
-          <button type="button" class="btn btn-primary btn-sm deleteLocationBtn" data-id="${location.id}">
+          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${location.id}" data-name="${location.name}">
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
         </td>
@@ -476,3 +476,59 @@ $("#editLocationForm").on("submit", function (e) {
   });
 });
 
+
+// Show a modal window to confirm the deletion
+$(document).on("click", ".deleteBtn", function () {
+  const idToDelete = $(this).data("id");
+  const nameToDelete = $(this).data("name");
+
+  $("#deleteName").text(nameToDelete);
+  $("#confirmDeleteBtn").data("id", idToDelete);
+
+  $("#deleteModal").modal("show");
+  
+  console.log('idToDelete', idToDelete)
+  console.log('nameToDelete', nameToDelete)
+
+});
+
+// Handling the "Delete" button click in a modal window
+$("#confirmDeleteBtn").click(function () {
+  const idToDelete = $(this).data("id");
+  console.log('id to delete: ', idToDelete);
+  
+  let server;
+  if ($("#personnelBtn").hasClass("active")) {
+    server = "php/deletePersonnelByID.php";
+  } else if ($("#departmentsBtn").hasClass("active")) {
+    server = "php/deleteDepartmentByID.php";
+  } else if ($("#locationsBtn").hasClass("active")) {
+    server = "php/deleteLocationByID.php";
+  }
+
+  if (idToDelete) {
+    $.ajax({
+      url: server,
+      type: "POST",
+      dataType: "json",
+      data: { id: idToDelete },
+      success: function (result) {
+        if (result.status.code === "200") {
+          $("#deleteModal").modal("hide");
+          if ($("#personnelBtn").hasClass("active")) {
+              loadPersonnel();
+          } else if ($("#departmentsBtn").hasClass("active")) {
+              loadDepartments();
+          } else if ($("#locationsBtn").hasClass("active")) {
+              loadLocations();
+          }
+        } else {
+          console.error("Error deleting personnel:", result.status.message);
+        }
+      },
+      error: function (error) {
+          console.error("AJAX error:", error);
+      }
+    });
+  }
+});
