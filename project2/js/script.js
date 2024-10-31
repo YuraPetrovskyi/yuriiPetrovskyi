@@ -95,7 +95,7 @@ $("#addPersonnelForm").on("submit", function (e) {
   };
 
   $.ajax({
-    url: "php/addPersonnel.php",
+    url: "php/insertPersonnel.php",
     type: "POST",
     dataType: "json",
     data: newPersonnelData,
