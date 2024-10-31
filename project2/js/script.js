@@ -484,6 +484,8 @@ $(document).on("click", ".deleteBtn", function () {
 
   $("#deleteName").text(nameToDelete);
   $("#confirmDeleteBtn").data("id", idToDelete);
+  // Hide the previous error message, if there is one
+  $("#deleteError").addClass("d-none").text("");
 
   $("#deleteModal").modal("show");
   
@@ -506,7 +508,7 @@ $("#confirmDeleteBtn").click(function () {
     server = "php/deleteLocationByID.php";
   }
 
-  if (idToDelete) {
+  if (idToDelete && server) {
     $.ajax({
       url: server,
       type: "POST",
@@ -514,7 +516,8 @@ $("#confirmDeleteBtn").click(function () {
       data: { id: idToDelete },
       success: function (result) {
         if (result.status.code === "200") {
-          $("#deleteModal").modal("hide");
+          $("#deleteModal").modal("hide"); // Close the modal window after successful removal
+          $("#deleteError").addClass("d-none").text(""); // Reset the error
           if ($("#personnelBtn").hasClass("active")) {
               loadPersonnel();
           } else if ($("#departmentsBtn").hasClass("active")) {
@@ -524,10 +527,12 @@ $("#confirmDeleteBtn").click(function () {
           }
         } else {
           console.error("Error deleting personnel:", result.status.message);
+          $("#deleteError").removeClass("d-none").text("Error deleting item: " + result.status.message);
         }
       },
       error: function (error) {
-          console.error("AJAX error:", error);
+        $("#deleteError").removeClass("d-none").text("AJAX error: Unable to delete the item.");
+        console.error("AJAX error:", error);
       }
     });
   }
