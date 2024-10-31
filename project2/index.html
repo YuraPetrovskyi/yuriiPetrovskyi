@@ -198,6 +198,39 @@
       </div>
     </div>
 
+    <!-- Add Department Modal -->
+    <div id="addDepartmentModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="addDepartmentModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary bg-gradient text-white">
+              <h5 class="modal-title" id="addDepartmentModalLabel">Add Department</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="addDepartmentForm">
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="addDepartmentName" placeholder="Department Name" required>
+                <label for="addDepartmentName">Department Name</label>
+              </div>
+              <div class="form-floating">
+                <select class="form-select" id="addDepartmentLocation" placeholder="Location" required>
+                  <!-- Options for locations will be dynamically loaded -->
+                </select>
+                <label for="addDepartmentLocation">Location</label>
+              </div>
+              <!-- Error message display -->
+              <div id="addDepartmentError" class="alert alert-danger d-none mt-3"></div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" form="addDepartmentForm" class="btn btn-outline-primary btn-sm myBtn">ADD</button>
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- Edit Department Modal -->
     <div id="editDepartmentModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="editDepartmentModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">

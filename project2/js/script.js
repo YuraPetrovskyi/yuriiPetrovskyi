@@ -53,6 +53,11 @@ $("#addPersonnelModal").on("show.bs.modal", function () {
   loadDepartmentOptions();
 });
 
+// Filling the list of locations before opening a modal window for adding a department
+$("#addDepartmentModal").on("show.bs.modal", function () {
+  loadLocationOptions();
+});
+
 // downloading the list of departments
 function loadDepartmentOptions() {
   $.ajax({
@@ -82,6 +87,36 @@ function loadDepartmentOptions() {
     }
   });
 }
+
+// Loading the list of locations
+function loadLocationOptions() {
+  $.ajax({
+      url: "php/getAllLocations.php",
+      type: "GET",
+      dataType: "json",
+      success: function (result) {
+          console.log('loadLocationOptions', result);
+          if (result.status.code === '200') {
+              const locationSelect = $("#addDepartmentLocation");
+              locationSelect.empty(); 
+              $.each(result.data, function () {
+                  locationSelect.append(
+                      $("<option>", {
+                          value: this.id,
+                          text: this.name
+                      })
+                  );
+              });
+          } else {
+              console.error("Error retrieving location data:", result.status.message);
+          }
+      },
+      error: function (error) {
+          console.error("AJAX error:", error);
+      }
+  });
+}
+
 // Processing the "submit" event of the employee addition form
 $("#addPersonnelForm").on("submit", function (e) {
   e.preventDefault();
@@ -115,6 +150,36 @@ $("#addPersonnelForm").on("submit", function (e) {
         "<span class='text-danger'>Error retrieving data</span>"
       );
     }
+  });
+});
+
+// Handle the "submit" event for the add department form
+$("#addDepartmentForm").on("submit", function (e) {
+  e.preventDefault();
+
+  const newDepartmentData = {
+      name: $("#addDepartmentName").val(),
+      locationID: $("#addDepartmentLocation").val()
+  };
+
+  $.ajax({
+      url: "php/insertDepartment.php",
+      type: "POST",
+      dataType: "json",
+      data: newDepartmentData,
+      success: function (result) {
+          if (result.status.code === '200') {
+              $("#addDepartmentModal").modal("hide"); // Close the modal window
+              $("#addDepartmentError").addClass("d-none").text(""); // Reset errors
+              loadDepartments();
+          } else {
+              $("#addDepartmentError").removeClass("d-none").text("Error adding department: " + result.status.message);
+          }
+      },
+      error: function (error) {
+          $("#addDepartmentError").removeClass("d-none").text("AJAX error: Unable to add department.");
+          console.error("AJAX error:", error);
+      }
   });
 });
 
