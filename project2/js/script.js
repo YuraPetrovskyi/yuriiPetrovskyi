@@ -130,6 +130,11 @@ $("#locationsBtn").click(function () {
   loadLocations(); // Call function to refresh location table
 });
 
+// Loading data when the page is first loaded
+document.addEventListener("DOMContentLoaded", function () {
+  loadPersonnel();
+});
+
 $("#editPersonnelModal").on("show.bs.modal", function (e) {
   
   $.ajax({
@@ -224,12 +229,8 @@ $("#editPersonnelForm").on("submit", function (e) {
   });  
 });
 
-/* ****************************************** */
 
-// Loading data when the page is first loaded
-document.addEventListener("DOMContentLoaded", function () {
-  loadPersonnel();
-});
+
 
 // Function to download all Personnel records
 function loadPersonnel() {
@@ -321,49 +322,6 @@ function updateDepartmentTable(data) {
   });
 }
 
-// Loading data for the location table
-function loadLocations() {
-  $.ajax({
-    url: "php/getAllLocations.php",
-    type: "GET",
-    dataType: "json",
-    success: function (result) {
-      console.log("locations", result);
-      const resultCode = result.status.code;
-      if (resultCode == 200) {
-        updateLocationTable(result.data);
-      } else {
-        console.error("Error loading location data:", result.status.message);
-      }
-    },
-    error: function (error) {
-      console.error("AJAX error:", error);
-    }
-  });
-}
-
-// Updating the table of locations with the received data
-function updateLocationTable(data) {
-  const locationTableBody = $("#locationTableBody");
-  locationTableBody.empty(); // Clearing the table before updating
-
-  data.forEach(location => {
-    locationTableBody.append(`
-      <tr>
-        <td class="align-middle text-nowrap">${location.name}</td>
-        <td class="align-middle text-end text-nowrap">
-          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editLocationModal" data-id="${location.id}">
-            <i class="fa-solid fa-pencil fa-fw"></i>
-          </button>
-          <button type="button" class="btn btn-primary btn-sm deleteLocationBtn" data-id="${location.id}">
-            <i class="fa-solid fa-trash fa-fw"></i>
-          </button>
-        </td>
-      </tr>
-    `);
-  });
-}
-
 // Event to open a modal edit department window
 $("#editDepartmentModal").on("show.bs.modal", function (e) {
   const departmentId = $(e.relatedTarget).data("id");
@@ -434,3 +392,87 @@ $("#editDepartmentForm").on("submit", function (e) {
     }
   });
 });
+
+// Loading data for the location table
+function loadLocations() {
+  $.ajax({
+    url: "php/getAllLocations.php",
+    type: "GET",
+    dataType: "json",
+    success: function (result) {
+      console.log("locations", result);
+      const resultCode = result.status.code;
+      if (resultCode == 200) {
+        updateLocationTable(result.data);
+      } else {
+        console.error("Error loading location data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
+}
+
+// Updating the table of locations with the received data
+function updateLocationTable(data) {
+  const locationTableBody = $("#locationTableBody");
+  locationTableBody.empty(); // Clearing the table before updating
+
+  data.forEach(location => {
+    locationTableBody.append(`
+      <tr>
+        <td class="align-middle text-nowrap">${location.name}</td>
+        <td class="align-middle text-end text-nowrap">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editLocationModal" data-id="${location.id}" data-name="${location.name}">
+            <i class="fa-solid fa-pencil fa-fw"></i>
+          </button>
+          <button type="button" class="btn btn-primary btn-sm deleteLocationBtn" data-id="${location.id}">
+            <i class="fa-solid fa-trash fa-fw"></i>
+          </button>
+        </td>
+      </tr>
+    `);
+  });
+}
+
+// Modal window for editing the location
+$("#editLocationModal").on("show.bs.modal", function (e) {
+  const locationID = $(e.relatedTarget).data("id");
+  const locationName = $(e.relatedTarget).data("name");
+
+  // Fill in the fields of the modal window
+  $("#editLocationID").val(locationID);
+  $("#editLocationName").val(locationName);
+});
+
+// Processing of saving changes in the edit location form
+$("#editLocationForm").on("submit", function (e) {
+  e.preventDefault();
+
+  const updatedLocationData = {
+    id: $("#editLocationID").val(),
+    name: $("#editLocationName").val()
+  };
+
+  $.ajax({
+    url: "php/updateLocation.php",
+    type: "POST",
+    dataType: "json",
+    data: updatedLocationData,
+    success: function (result) {
+      console.log('updateLocation.php result', result);
+      const resultCode = result.status.code;
+      if (resultCode === "200") {
+        $("#editLocationModal").modal("hide");
+        loadLocations();
+      } else {
+        console.error("Error updating location:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
+});
+

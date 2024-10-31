@@ -231,6 +231,32 @@
       </div>
     </div>
 
+    <!-- Edit Location Modal -->
+  <div id="editLocationModal" class="modal fade" tabindex="-1"  data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="editLocationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary bg-gradient text-white">
+                <h5 class="modal-title" id="editLocationModalLabel">Edit Location</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editLocationForm">
+                    <input type="hidden" id="editLocationID">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="editLocationName" placeholder="Location Name" required>
+                        <label for="editLocationName">Location Name</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="editLocationForm" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
+                <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
+
     <footer class="border-top text-center fw-bold">
       <p class="fw-light my-3">Company Directory version 1.0</p>
     </footer>
