@@ -91,29 +91,29 @@ function loadDepartmentOptions() {
 // Loading the list of locations
 function loadLocationOptions() {
   $.ajax({
-      url: "php/getAllLocations.php",
-      type: "GET",
-      dataType: "json",
-      success: function (result) {
-          console.log('loadLocationOptions', result);
-          if (result.status.code === '200') {
-              const locationSelect = $("#addDepartmentLocation");
-              locationSelect.empty(); 
-              $.each(result.data, function () {
-                  locationSelect.append(
-                      $("<option>", {
-                          value: this.id,
-                          text: this.name
-                      })
-                  );
-              });
-          } else {
-              console.error("Error retrieving location data:", result.status.message);
-          }
-      },
-      error: function (error) {
-          console.error("AJAX error:", error);
+    url: "php/getAllLocations.php",
+    type: "GET",
+    dataType: "json",
+    success: function (result) {
+      console.log('loadLocationOptions', result);
+      if (result.status.code === '200') {
+        const locationSelect = $("#addDepartmentLocation");
+        locationSelect.empty(); 
+        $.each(result.data, function () {
+          locationSelect.append(
+            $("<option>", {
+              value: this.id,
+              text: this.name
+            })
+          );
+        });
+      } else {
+        console.error("Error retrieving location data:", result.status.message);
       }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
   });
 }
 
