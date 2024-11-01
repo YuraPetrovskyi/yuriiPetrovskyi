@@ -32,9 +32,113 @@ $("#refreshBtn").click(function () {
 });
 
 $("#filterBtn").click(function () {
-  
-  // Open a modal of your own design that allows the user to apply a filter to the personnel table on either department or location
-  
+  // First, we hide all the filter options
+  $(".filter-options").addClass("d-none");
+
+  // Select the active tab
+  if ($("#personnelBtn").hasClass("active")) {
+    $("#locationFilterOptions").removeClass("d-none");
+    $("#departmentFilterOptions").removeClass("d-none");
+    $("#sortFilterOptions").removeClass("d-none");
+    loadFilterOptions("personnel");
+  } else if ($("#departmentsBtn").hasClass("active")) {
+    $("#locationFilterOptions").removeClass("d-none");
+    $("#departmentFilterOptions").addClass("d-none");
+    $("#sortFilterOptions").addClass("d-none");
+    loadFilterOptions("department");
+  } else if ($("#locationsBtn").hasClass("active")) {
+    $("#locationFilterOptions").addClass("d-none");
+    $("#departmentFilterOptions").addClass("d-none");
+    $("#sortFilterOptions").removeClass("d-none");
+    loadFilterOptions("location");
+  }
+
+  $("#filterModal").modal("show");
+});
+
+// Loading checkboxes for locations and departments
+function loadFilterOptions(tab) {
+  $.ajax({
+    url: "php/getFilterOptions.php",
+    type: "GET",
+    dataType: "json",
+    success: function (result) {
+      if (result.status.code === "200") {
+        // Clear and fill in the checkboxes for locations
+        const locationCheckboxGroup = $("#locationCheckboxGroup");
+        locationCheckboxGroup.empty();
+        result.data.locations.forEach(location => {
+          locationCheckboxGroup.append(`
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="${location.id}" id="location${location.id}">
+              <label class="form-check-label" for="location${location.id}">${location.name}</label>
+            </div>
+          `);
+        });
+
+        // If the personnel tab is selected, we add departments
+        if (tab === "personnel") {
+          const departmentCheckboxGroup = $("#departmentCheckboxGroup");
+          departmentCheckboxGroup.empty();
+          result.data.departments.forEach(department => {
+            departmentCheckboxGroup.append(`
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="${department.id}" id="department${department.id}">
+                <label class="form-check-label" for="department${department.id}">${department.name}</label>
+              </div>
+            `);
+          });
+        }
+      }
+    },
+    error: function (error) {
+      console.error("Error loading filter options:", error);
+    }
+  });
+}
+
+// Filter application
+$("#applyFilterBtn").click(function () {
+  // Collect the selected values ​​for the filter
+  const selectedLocations = $("#locationCheckboxGroup input:checked")
+    .map(function() { return this.value; })
+    .get();
+  const selectedDepartments = $("#departmentCheckboxGroup input:checked")
+    .map(function() { return this.value; })
+    .get();
+  const sortOrder = $("#sortOrder").val();
+
+  const activeTab = $(".nav-link.active").attr("id");
+
+  // Preparing the filter data for sending to the server
+  const filterData = {
+    locations: selectedLocations,
+    departments: selectedDepartments,
+    order: sortOrder
+  };
+  console.log('filterData', filterData);
+  let serverUrl;
+  if (activeTab === "personnelBtn") serverUrl = "php/filterPersonnel.php";
+  if (activeTab === "departmentsBtn") serverUrl = "php/filterDepartments.php";
+  if (activeTab === "locationsBtn") serverUrl = "php/filterLocations.php";
+
+  // Execute an AJAX request to apply the filter
+  $.ajax({
+    url: serverUrl,
+    type: "POST",
+    dataType: "json",
+    data: filterData,
+    success: function (result) {
+      $("#filterModal").modal("hide");
+
+      if (activeTab === "personnelBtn") updatePersonnelTable(result.data);
+      if (activeTab === "departmentsBtn") updateDepartmentTable(result.data);
+      if (activeTab === "locationsBtn") updateLocationTable(result.data);
+    },
+    error: function (error) {
+      console.error("Error applying filter:", error);
+    }
+  });
 });
 
 $("#addBtn").click(function () {
@@ -324,9 +428,6 @@ $("#editPersonnelForm").on("submit", function (e) {
   });  
 });
 
-
-
-
 // Function to download all Personnel records
 function loadPersonnel() {
   $.ajax({
@@ -345,31 +446,6 @@ function loadPersonnel() {
     error: function (error) {
       console.error("AJAX error:", error);
     }
-  });
-}
-
-// Updating the Personnel table with the received data
-function updatePersonnelTable(data) {
-  console.log('updated data', data)
-  const personnelTableBody = $("#personnelTableBody");
-  personnelTableBody.empty();  // clear the table before adding new records
-  data.forEach(person => {
-    personnelTableBody.append(`
-      <tr>
-        <td>${person.firstName} ${person.lastName}</td>
-        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.departmentName}</td>
-        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.locationName}</td>
-        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.email}</td>
-        <td class="text-end text-nowrap">
-          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${person.id}">
-            <i class="fa-solid fa-pencil fa-fw"></i>
-          </button> 
-          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${person.id}" data-name="${person.firstName} ${person.lastName}">
-            <i class="fa-solid fa-trash fa-fw"></i>
-          </button>
-        </td>
-      </tr>
-    `);
   });
 }
 
@@ -394,10 +470,74 @@ function loadDepartments() {
   });
 }
 
+// Loading data for the location table
+function loadLocations() {
+  $.ajax({
+    url: "php/getAllLocations.php",
+    type: "GET",
+    dataType: "json",
+    success: function (result) {
+      console.log("locations", result);
+      const resultCode = result.status.code;
+      if (resultCode == 200) {
+        updateLocationTable(result.data);
+      } else {
+        console.error("Error loading location data:", result.status.message);
+      }
+    },
+    error: function (error) {
+      console.error("AJAX error:", error);
+    }
+  });
+}
+
+// Updating the Personnel table with the received data
+function updatePersonnelTable(data) {
+  console.log('updated data', data)
+  const personnelTableBody = $("#personnelTableBody");
+  personnelTableBody.empty();  // clear the table before adding new records
+  
+  if (data.length === 0) { // If the filtered data is empty, show a message
+    personnelTableBody.append(`
+      <tr>
+        <td colspan="5" class="text-center text-muted">No personnel found with the selected filters.</td>
+      </tr>
+    `);
+    return; // Exit the function early if no data
+  }
+  data.forEach(person => {
+    personnelTableBody.append(`
+      <tr>
+        <td>${person.firstName} ${person.lastName}</td>
+        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.departmentName}</td>
+        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.locationName}</td>
+        <td class="align-middle text-nowrap d-none d-md-table-cell">${person.email}</td>
+        <td class="text-end text-nowrap">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${person.id}">
+            <i class="fa-solid fa-pencil fa-fw"></i>
+          </button> 
+          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${person.id}" data-name="${person.firstName} ${person.lastName}">
+            <i class="fa-solid fa-trash fa-fw"></i>
+          </button>
+        </td>
+      </tr>
+    `);
+  });
+}
+
 // Updating the table of departments with the received data
 function updateDepartmentTable(data) {
   const departmentTableBody = $("#departmentTableBody");
   departmentTableBody.empty(); // Clearing the table before updating
+
+  if (data.length === 0) {
+    departmentTableBody.append(`
+      <tr>
+        <td colspan="3" class="text-center text-muted">No departments found with the selected filters.</td>
+      </tr>
+    `);
+    return;
+  }
 
   data.forEach(department => {
     departmentTableBody.append(`
@@ -409,6 +549,37 @@ function updateDepartmentTable(data) {
             <i class="fa-solid fa-pencil fa-fw"></i>
           </button>
           <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${department.id}" data-name="${department.departmentName}">
+            <i class="fa-solid fa-trash fa-fw"></i>
+          </button>
+        </td>
+      </tr>
+    `);
+  });
+}
+
+// Updating the table of locations with the received data
+function updateLocationTable(data) {
+  const locationTableBody = $("#locationTableBody");
+  locationTableBody.empty(); // Clearing the table before updating
+
+  if (data.length === 0) {
+    locationTableBody.append(`
+      <tr>
+        <td colspan="2" class="text-center text-muted">No locations found with the selected filters.</td>
+      </tr>
+    `);
+    return;
+  }
+
+  data.forEach(location => {
+    locationTableBody.append(`
+      <tr>
+        <td class="align-middle text-nowrap">${location.name}</td>
+        <td class="align-middle text-end text-nowrap">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editLocationModal" data-id="${location.id}" data-name="${location.name}">
+            <i class="fa-solid fa-pencil fa-fw"></i>
+          </button>
+          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${location.id}" data-name="${location.name}">
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
         </td>
@@ -487,49 +658,6 @@ $("#editDepartmentForm").on("submit", function (e) {
     }
   });
 });
-
-// Loading data for the location table
-function loadLocations() {
-  $.ajax({
-    url: "php/getAllLocations.php",
-    type: "GET",
-    dataType: "json",
-    success: function (result) {
-      console.log("locations", result);
-      const resultCode = result.status.code;
-      if (resultCode == 200) {
-        updateLocationTable(result.data);
-      } else {
-        console.error("Error loading location data:", result.status.message);
-      }
-    },
-    error: function (error) {
-      console.error("AJAX error:", error);
-    }
-  });
-}
-
-// Updating the table of locations with the received data
-function updateLocationTable(data) {
-  const locationTableBody = $("#locationTableBody");
-  locationTableBody.empty(); // Clearing the table before updating
-
-  data.forEach(location => {
-    locationTableBody.append(`
-      <tr>
-        <td class="align-middle text-nowrap">${location.name}</td>
-        <td class="align-middle text-end text-nowrap">
-          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editLocationModal" data-id="${location.id}" data-name="${location.name}">
-            <i class="fa-solid fa-pencil fa-fw"></i>
-          </button>
-          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${location.id}" data-name="${location.name}">
-            <i class="fa-solid fa-trash fa-fw"></i>
-          </button>
-        </td>
-      </tr>
-    `);
-  });
-}
 
 // Modal window for editing the location
 $("#editLocationModal").on("show.bs.modal", function (e) {

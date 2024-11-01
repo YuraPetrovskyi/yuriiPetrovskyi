@@ -334,6 +334,49 @@
       </div>
     </div>
 
+    <!-- Filter Modal -->
+    <div id="filterModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="filterModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="filterModalLabel">Filter Options</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="filterForm">
+              <!-- Checkbox filters for Location -->
+              <div class="filter-options" id="locationFilterOptions">
+                <label class="form-label">Location</label>
+                <div id="locationCheckboxGroup">
+                  <!-- Checkboxes for locations will be dynamically added here -->
+                </div>
+              </div>
+              <!-- Checkbox filters for Department -->
+              <div class="filter-options" id="departmentFilterOptions">
+                <label class="form-label">Department</label>
+                <div id="departmentCheckboxGroup">
+                  <!-- Checkboxes for departments will be dynamically added here -->
+                </div>
+              </div>
+              <!-- Sorting Options (only for Personnel) -->
+              <div class="filter-options" id="sortFilterOptions">
+                <label for="sortOrder" class="form-label">Sort by Name</label>
+                <select id="sortOrder" class="form-select">
+                  <option value="">No Sorting</option>
+                  <option value="asc">A-Z</option>
+                  <option value="desc">Z-A</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="applyFilterBtn" class="btn btn-outline-primary btn-sm myBtn">Apply</button>
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <footer class="border-top text-center fw-bold">
       <p class="fw-light my-3">Company Directory version 1.0</p>
     </footer>
