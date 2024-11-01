@@ -1,0 +1,22 @@
+{
+  "name": "Company Directory",
+  "version": "1.0.0",
+  "description": "A web-based company directory for managing personnel, departments, and locations, with real-time search and filtering.",
+  "keywords": [
+    "company directory",
+    "personnel management",
+    "department management",
+    "location management",
+    "employee directory",
+    "search and filter",
+    "web application",
+    "admin panel"
+  ],
+  "author": "Yurii Petrovskyi",
+  "license": "ISC",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.6.0",
+    "bootstrap": "^5.3.3",
+    "jquery": "^3.7.1"
+  }
+}
