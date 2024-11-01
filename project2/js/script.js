@@ -705,16 +705,48 @@ $(document).on("click", ".deleteBtn", function () {
   const idToDelete = $(this).data("id");
   const nameToDelete = $(this).data("name");
 
-  $("#deleteName").text(nameToDelete);
-  $("#confirmDeleteBtn").data("id", idToDelete);
-  // Hide the previous error message, if there is one
-  $("#deleteError").addClass("d-none").text("");
+  const activeTab = $(".nav-link.active").attr("id");
 
-  $("#deleteModal").modal("show");
-  
+  $("#deleteError").addClass("d-none").text("");
+  $("#confirmDeleteBtn").removeClass('d-none');
+  $("#deleteName").text(nameToDelete);
+
+  let tableType;
+  if (activeTab === "personnelBtn") {
+    tableType = "personnel";
+  } else if (activeTab === "departmentsBtn") {
+    tableType = "department";
+  } else if (activeTab === "locationsBtn") {
+    tableType = "location";
+  }
+
   console.log('idToDelete', idToDelete)
   console.log('nameToDelete', nameToDelete)
 
+  // Check dependencies
+  $.ajax({
+    url: "php/checkDependencies.php",
+    type: "POST",
+    dataType: "json",
+    data: { id: idToDelete, tableType: tableType },
+    success: function (result) {
+      if (result.data.hasDependencies) {
+        $("#confirmDeleteBtn").addClass('d-none');
+        $("#deleteError").removeClass("d-none").text("Deletion is not allowed as this item is referenced by other records.");
+      } else {
+        // Show a modal window to confirm the deletion
+        $("#confirmDeleteBtn").data("id", idToDelete);
+        // Hide the previous error message, if there is one
+        $("#deleteError").addClass("d-none").text("");
+        $("#deleteModal").modal("show");
+      }
+    },
+    error: function (error) {
+      console.error("Error checking dependencies:", error);
+      $("#confirmDeleteBtn").addClass('d-none');
+      $("#deleteError").removeClass("d-none").text("AJAX error: Unable to delete the item.");
+    }
+  });
 });
 
 // Handling the "Delete" button click in a modal window
