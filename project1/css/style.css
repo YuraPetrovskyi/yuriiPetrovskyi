@@ -58,8 +58,8 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(203, 205, 109, 0.9); /* Напівпрозорий фон */
-  z-index: 1050; /* Пріоритетний рівень для перекриття контенту */
+  background-color: rgba(219, 220, 214, 0.9); 
+  z-index: 1050; 
   display: flex;
   justify-content: center;
   align-items: center;

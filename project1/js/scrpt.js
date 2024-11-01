@@ -187,12 +187,17 @@ $(document).ready(function () {
         handleUserLocation(e.latlng.lat, e.latlng.lng);
         activeCoordinates.lat = e.latlng.lat;
         activeCoordinates.lon = e.latlng.lng;
+        $('#preloader').fadeOut('slow', function() {
+            $(this).remove(); // видаляємо прелоадер з DOM
+        });
     });
 
     map.on('locationerror', function (e) {
         showAlert(e.message, 'warning');
         // $('#preloader').hide();
-        $('#preloader').fadeOut('slow');
+        $('#preloader').fadeOut('slow', function() {
+            $(this).remove(); // видаляємо прелоадер з DOM
+        });
     });
 
     $('#countrySelect').on('change', function() {
