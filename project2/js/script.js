@@ -1,3 +1,23 @@
+// Loading data when the page is first loaded
+$(document).ready(function () {
+  loadPersonnel();
+  toggleSearchField();
+});
+
+
+// A function to update the state of the search field depending on the active tab
+function toggleSearchField() {
+  const activeTab = $(".nav-link.active").attr("id");
+  if (activeTab === "personnelBtn") {
+    $("#searchInp").prop("disabled", false);
+  } else {
+    $("#searchInp").prop("disabled", true).val(''); // Turn off and clear the search field
+  }
+}
+
+// Add an event to the tabs to activate/deactivate the search field
+$("#personnelBtn, #departmentsBtn, #locationsBtn").on("click", toggleSearchField);
+
 $("#searchInp").on("keyup", function () {
   const query = $(this).val();
   $.ajax({
@@ -329,11 +349,6 @@ $("#locationsBtn").click(function () {
   loadLocations(); // Call function to refresh location table
 });
 
-// Loading data when the page is first loaded
-document.addEventListener("DOMContentLoaded", function () {
-  loadPersonnel();
-});
-
 $("#editPersonnelModal").on("show.bs.modal", function (e) {
   
   $.ajax({
@@ -500,7 +515,7 @@ function updatePersonnelTable(data) {
   if (data.length === 0) { // If the filtered data is empty, show a message
     personnelTableBody.append(`
       <tr>
-        <td colspan="5" class="text-center text-muted">No personnel found with the selected filters.</td>
+        <td colspan="5" class="text-center text-muted">No personnel found.</td>
       </tr>
     `);
     return; // Exit the function early if no data
@@ -533,7 +548,7 @@ function updateDepartmentTable(data) {
   if (data.length === 0) {
     departmentTableBody.append(`
       <tr>
-        <td colspan="3" class="text-center text-muted">No departments found with the selected filters.</td>
+        <td colspan="3" class="text-center text-muted">No departments found.</td>
       </tr>
     `);
     return;
@@ -565,7 +580,7 @@ function updateLocationTable(data) {
   if (data.length === 0) {
     locationTableBody.append(`
       <tr>
-        <td colspan="2" class="text-center text-muted">No locations found with the selected filters.</td>
+        <td colspan="2" class="text-center text-muted">No locations found.</td>
       </tr>
     `);
     return;
