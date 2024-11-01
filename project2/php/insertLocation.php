@@ -1,10 +1,16 @@
 <?php
-  ini_set('display_errors', 'On');
-  error_reporting(E_ALL);
-
-  $executionStartTime = microtime(true);
 
   include("config.php");
+
+  if ($environment === 'development') {
+    ini_set('display_errors', 'On');
+    error_reporting(E_ALL);
+  } else {
+    ini_set('display_errors', 'Off');
+    error_reporting(0);
+  }
+
+  $executionStartTime = microtime(true);
 
   header('Content-Type: application/json; charset=UTF-8');
 

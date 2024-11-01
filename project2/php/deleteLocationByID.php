@@ -1,13 +1,16 @@
 <?php
 
-  // remove next two lines for production
+  include("config.php");
 
-  ini_set('display_errors', 'On');
-  error_reporting(E_ALL);
+  if ($environment === 'development') {
+    ini_set('display_errors', 'On');
+    error_reporting(E_ALL);
+  } else {
+    ini_set('display_errors', 'Off');
+    error_reporting(0);
+  }
 
   $executionStartTime = microtime(true);
-
-  include("config.php");
 
   header('Content-Type: application/json; charset=UTF-8');
 

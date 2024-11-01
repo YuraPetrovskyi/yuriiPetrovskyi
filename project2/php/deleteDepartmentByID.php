@@ -4,14 +4,17 @@
 	// use insertDepartment.php first to create new dummy record and then specify it's id in the command below
 	// http://localhost/companydirectory/libs/php/deleteDepartmentByID.php?id=<id>
 
-	// remove next two lines for production
-	
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
+	include("config.php");
+
+  if ($environment === 'development') {
+		ini_set('display_errors', 'On');
+		error_reporting(E_ALL);
+  } else {
+		ini_set('display_errors', 'Off');
+		error_reporting(0);
+  }
 
 	$executionStartTime = microtime(true);
-
-	include("config.php");
 
 	header('Content-Type: application/json; charset=UTF-8');
 
