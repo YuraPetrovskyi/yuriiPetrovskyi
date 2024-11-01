@@ -14,6 +14,6 @@
 	$cd_password = "";
 
 	// environment definition: 'development' or 'production'
-  $environment = 'development';
+  $environment = 'production';
 
 ?>

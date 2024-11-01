@@ -15,7 +15,7 @@ $(document).ready(function () {
       dataType: "json",
       data: { txt: query },
       success: function (result) {
-        console.log("search", result);
+        // console.log("search", result);
         if (result.status.code === '200') {
           updatePersonnelTable(result.data.found);
         } else {
@@ -84,7 +84,7 @@ $(document).ready(function () {
       departments: selectedDepartments,
       order: sortOrder
     };
-    console.log('filterData', filterData);
+    // console.log('filterData', filterData);
     let serverUrl;
     if (activeTab === "personnelBtn") serverUrl = "php/filterPersonnel.php";
     if (activeTab === "departmentsBtn") serverUrl = "php/filterDepartments.php";
@@ -251,7 +251,7 @@ $(document).ready(function () {
         id: $(e.relatedTarget).attr("data-id") 
       },
       success: function (result) {
-        console.log('editPersonnelModal result:', result)
+        // console.log('editPersonnelModal result:', result)
         const resultCode = result.status.code;
 
         if (resultCode == 200) {
@@ -344,7 +344,7 @@ $(document).ready(function () {
       dataType: "json",
       data: { id: departmentId },
       success: function (result) {
-        console.log('editDepartmentModal getDepartmentByID', result);
+        // console.log('editDepartmentModal getDepartmentByID', result);
         const resultCode = result.status.code;
         if (resultCode === "200") {
           $("#editDepartmentID").val(result.data.department[0].id);
@@ -428,7 +428,7 @@ $(document).ready(function () {
       dataType: "json",
       data: updatedLocationData,
       success: function (result) {
-        console.log('updateLocation.php result', result);
+        // console.log('updateLocation.php result', result);
         const resultCode = result.status.code;
         if (resultCode === "200") {
           $("#editLocationModal").modal("hide");
@@ -463,8 +463,8 @@ $(document).ready(function () {
       tableType = "location";
     }
 
-    console.log('idToDelete', idToDelete)
-    console.log('nameToDelete', nameToDelete)
+    // console.log('idToDelete', idToDelete)
+    // console.log('nameToDelete', nameToDelete)
 
     // Check dependencies
     $.ajax({
@@ -495,7 +495,7 @@ $(document).ready(function () {
   // Handling the "Delete" button click in a modal window
   $("#confirmDeleteBtn").click(function () {
     const idToDelete = $(this).data("id");
-    console.log('id to delete: ', idToDelete);
+    // console.log('id to delete: ', idToDelete);
     
     let server;
     if ($("#personnelBtn").hasClass("active")) {
@@ -597,7 +597,7 @@ function loadDepartmentOptions() {
     type: "GET",
     dataType: "json",
     success: function (result) {
-      console.log('loadDepartmentOptions', result)
+      // console.log('loadDepartmentOptions', result)
       if (result.status.code === '200') {
         const departmentSelect = $("#addPersonnelDepartment");
         departmentSelect.empty(); // clear the existing options before loading
@@ -627,7 +627,7 @@ function loadLocationOptions() {
     type: "GET",
     dataType: "json",
     success: function (result) {
-      console.log('loadLocationOptions', result);
+      // console.log('loadLocationOptions', result);
       if (result.status.code === '200') {
         const locationSelect = $("#addDepartmentLocation");
         locationSelect.empty(); 
@@ -656,7 +656,7 @@ function loadPersonnel() {
     type: "GET",
     dataType: "json",
     success: function (result) {
-      console.log('result', result)
+      // console.log('result', result)
       const resultCode = result.status.code;
       if (resultCode == 200) {
           updatePersonnelTable(result.data);
@@ -677,7 +677,7 @@ function loadDepartments() {
     type: "GET",
     dataType: "json",
     success: function (result) {
-      console.log("departments", result);
+      // console.log("departments", result);
       const resultCode = result.status.code;
       if (resultCode == 200) {
         updateDepartmentTable(result.data);
@@ -698,7 +698,7 @@ function loadLocations() {
     type: "GET",
     dataType: "json",
     success: function (result) {
-      console.log("locations", result);
+      // console.log("locations", result);
       const resultCode = result.status.code;
       if (resultCode == 200) {
         updateLocationTable(result.data);
@@ -714,7 +714,7 @@ function loadLocations() {
 
 // Updating the Personnel table with the received data
 function updatePersonnelTable(data) {
-  console.log('updated data', data)
+  // console.log('updated data', data)
   const personnelTableBody = $("#personnelTableBody");
   personnelTableBody.empty();  // clear the table before adding new records
   
