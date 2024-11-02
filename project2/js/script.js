@@ -154,6 +154,7 @@ $(document).ready(function () {
         if (resultCode === '200') {
           $("#searchInp").val(""); // Clear search input
           $("#addPersonnelModal").modal("hide"); // close the modal window after successful addition
+          $("#addPersonnelForm").trigger("reset"); // Reset the add personnel form
           loadPersonnel(); // update the table of employees
         } else {
           $("#addPersonnelModal .modal-title").replaceWith(
