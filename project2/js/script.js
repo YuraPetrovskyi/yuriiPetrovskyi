@@ -29,6 +29,7 @@ $(document).ready(function () {
   });
 
   $("#refreshBtn").click(function () {
+    $("#searchInp").val(""); // Clear search input
     if ($("#personnelBtn").hasClass("active")) {
       loadPersonnel(); // Refresh personnel table 
     } else {
@@ -67,6 +68,7 @@ $(document).ready(function () {
 
   // Filter application
   $("#applyFilterBtn").click(function () {
+    $("#searchInp").val(""); // Clear search input
     // Collect the selected values ​​for the filter
     const selectedLocations = $("#locationCheckboxGroup input:checked")
       .map(function() { return this.value; })
@@ -98,7 +100,7 @@ $(document).ready(function () {
       data: filterData,
       success: function (result) {
         $("#filterModal").modal("hide");
-        console.log(result)
+        // console.log(filter result);
         if (activeTab === "personnelBtn") updatePersonnelTable(result.data);
         if (activeTab === "departmentsBtn") updateDepartmentTable(result.data);
         if (activeTab === "locationsBtn") updateLocationTable(result.data);
@@ -150,6 +152,7 @@ $(document).ready(function () {
       success: function (result) {
         const resultCode = result.status.code;
         if (resultCode === '200') {
+          $("#searchInp").val(""); // Clear search input
           $("#addPersonnelModal").modal("hide"); // close the modal window after successful addition
           loadPersonnel(); // update the table of employees
         } else {
@@ -317,6 +320,7 @@ $(document).ready(function () {
         const resultCode = result.status.code;
 
         if (resultCode == 200) {
+          $("#searchInp").val(""); // Clear search input
           // Close the modal window after a successful update
           $("#editPersonnelModal").modal("hide");
 
@@ -335,7 +339,7 @@ $(document).ready(function () {
   // Event to open a modal edit department window
   $("#editDepartmentModal").on("show.bs.modal", function (e) {
     const departmentId = $(e.relatedTarget).data("id");
-    console.log('departmentId', departmentId);
+    // console.log('departmentId', departmentId);
 
     // Obtaining department data by ID
     $.ajax({
@@ -514,6 +518,7 @@ $(document).ready(function () {
         data: { id: idToDelete },
         success: function (result) {
           if (result.status.code === "200") {
+            $("#searchInp").val(""); // Clear search input
             $("#deleteModal").modal("hide"); // Close the modal window after successful removal
             $("#deleteError").addClass("d-none").text(""); // Reset the error
             if ($("#personnelBtn").hasClass("active")) {
