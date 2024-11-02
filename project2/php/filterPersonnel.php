@@ -62,9 +62,14 @@
     $query .= ' WHERE ' . implode(' AND ', $conditions);
   }
 
-  // Sort by name
-  if (!empty($_POST['order']) && in_array($_POST['order'], ['asc', 'desc'])) {
+  // Check for custom sorting order; if none is provided, use the default sorting from getAll.php 
+  if (!empty($_POST['order']) && $_POST['order'] === 'asc' || $_POST['order'] === 'desc') {
     $query .= ' ORDER BY p.firstName ' . strtoupper($_POST['order']) . ', p.lastName ' . strtoupper($_POST['order']);
+  } elseif (!empty($_POST['order']) && $_POST['order'] === 'lastname') {
+    $query .= ' ORDER BY p.lastName DESC, p.firstName DESC, d.name, l.name';
+  } else {
+    // Default sorting as in getAll.php
+    $query .= ' ORDER BY p.lastName, p.firstName, d.name, l.name';
   }
 
   // Preparation and execution of the request

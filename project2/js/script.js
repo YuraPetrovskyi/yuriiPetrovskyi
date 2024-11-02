@@ -98,7 +98,7 @@ $(document).ready(function () {
       data: filterData,
       success: function (result) {
         $("#filterModal").modal("hide");
-
+        console.log(result)
         if (activeTab === "personnelBtn") updatePersonnelTable(result.data);
         if (activeTab === "departmentsBtn") updateDepartmentTable(result.data);
         if (activeTab === "locationsBtn") updateLocationTable(result.data);
@@ -729,7 +729,7 @@ function updatePersonnelTable(data) {
   data.forEach(person => {
     personnelTableBody.append(`
       <tr>
-        <td>${person.firstName} ${person.lastName}</td>
+        <td>${person.lastName}, ${person.firstName}</td>
         <td class="align-middle text-nowrap d-none d-md-table-cell">${person.departmentName}</td>
         <td class="align-middle text-nowrap d-none d-md-table-cell">${person.locationName}</td>
         <td class="align-middle text-nowrap d-none d-md-table-cell">${person.email}</td>
