@@ -1,3 +1,6 @@
+var selectedDepartment = 0;
+var selectedLocation = 0;
+
 // Loading data when the page is first loaded
 $(document).ready(function () {
   loadPersonnel();
@@ -9,11 +12,19 @@ $(document).ready(function () {
   // Search event
   $("#searchInp").on("keyup", function () {
     const query = $(this).val();
+    // Get the selected filter values
+    const departmentID = selectedDepartment;
+    const locationID = selectedLocation;
+
     $.ajax({
       url: "php/SearchAll.php",
       type: "POST",
       dataType: "json",
-      data: { txt: query },
+      data: {
+        txt: query,
+        departmentID: departmentID,
+        locationID: locationID
+      },
       success: function (result) {
         // console.log("search", result);
         if (result.status.code === '200') {
@@ -33,6 +44,8 @@ $(document).ready(function () {
   });
 
   $("#refreshBtn").click(function () {
+    selectedDepartment = 0;
+    selectedLocation = 0;
     $("#searchInp").val(""); // Clear search input
     if ($("#personnelBtn").hasClass("active")) {
       loadPersonnel(); // Refresh personnel table 
@@ -46,74 +59,71 @@ $(document).ready(function () {
   });
 
   $("#filterBtn").click(function () {
-    // First, we hide all the filter options
-    $(".filter-options").addClass("d-none");
-
-    // Select the active tab
-    if ($("#personnelBtn").hasClass("active")) {
-      $("#locationFilterOptions").removeClass("d-none");
-      $("#departmentFilterOptions").removeClass("d-none");
-      $("#sortFilterOptions").removeClass("d-none");
-      loadFilterOptions("personnel");
-    } else if ($("#departmentsBtn").hasClass("active")) {
-      $("#locationFilterOptions").removeClass("d-none");
-      $("#departmentFilterOptions").addClass("d-none");
-      $("#sortFilterOptions").addClass("d-none");
-      loadFilterOptions("department");
-    } else if ($("#locationsBtn").hasClass("active")) {
-      $("#locationFilterOptions").addClass("d-none");
-      $("#departmentFilterOptions").addClass("d-none");
-      $("#sortFilterOptions").removeClass("d-none");
-      loadFilterOptions("location");
-    }
-
-    // $("#filterModal").modal("show");
+    $("#filterPersonnelModal").modal("show");
   });
-
-  // Filter application
-  $("#applyFilterBtn").click(function () {
-    $("#searchInp").val(""); // Clear search input
-    // Collect the selected values ​​for the filter
-    const selectedLocations = $("#locationCheckboxGroup input:checked")
-      .map(function() { return this.value; })
-      .get();
-    const selectedDepartments = $("#departmentCheckboxGroup input:checked")
-      .map(function() { return this.value; })
-      .get();
-    const sortOrder = $("#sortOrder").val();
-
-    const activeTab = $(".nav-link.active").attr("id");
-
-    // Preparing the filter data for sending to the server
-    const filterData = {
-      locations: selectedLocations,
-      departments: selectedDepartments,
-      order: sortOrder
-    };
-    // console.log('filterData', filterData);
-    let serverUrl;
-    if (activeTab === "personnelBtn") serverUrl = "php/filterPersonnel.php";
-    if (activeTab === "departmentsBtn") serverUrl = "php/filterDepartments.php";
-    if (activeTab === "locationsBtn") serverUrl = "php/filterLocations.php";
-
-    // Execute an AJAX request to apply the filter
+  // Showing the modal filter
+  $("#filterPersonnelModal").on("show.bs.modal", function () {
     $.ajax({
-      url: serverUrl,
-      type: "POST",
+      url: "php/getFilterOptions.php",
+      type: "GET",
       dataType: "json",
-      data: filterData,
       success: function (result) {
-        $("#filterModal").modal("hide");
-        // console.log(filter result);
-        if (activeTab === "personnelBtn") updatePersonnelTable(result.data);
-        if (activeTab === "departmentsBtn") updateDepartmentTable(result.data);
-        if (activeTab === "locationsBtn") updateLocationTable(result.data);
+        if (result.status.code === "200") {
+          const departmentSelect = $("#filterPersonnelByDepartment");
+          const locationSelect = $("#filterPersonnelByLocation");
+
+          departmentSelect.empty().append('<option value="0">All</option>');
+          locationSelect.empty().append('<option value="0">All</option>');
+
+          result.data.departments.forEach(dept => {
+            departmentSelect.append(`<option value="${dept.id}">${dept.name}</option>`);
+          });
+
+          result.data.locations.forEach(loc => {
+            locationSelect.append(`<option value="${loc.id}">${loc.name}</option>`);
+          });
+
+          // Setting the values ​​of selectedDepartment and selectedLocation
+          departmentSelect.val(selectedDepartment);
+          locationSelect.val(selectedLocation);
+          // $("#filterPersonnelModal").modal("show");
+          
+        }
       },
       error: function (error) {
-        $("#filterModal").modal("hide");
-        showNotification("Error applying filter! Try filter later.", "Error");
+        showNotification("Unable to load filter options!", "Error");
       }
     });
+    console.log("show.bs.modal");
+    console.log('selectedDepartment', selectedDepartment);
+    console.log('selectedLocation', selectedLocation);
+  });
+
+  // Resetting the filter when the modal window is closed
+  $("#filterPersonnelModal").on("hidden.bs.modal", function () {
+    console.log("hidden.bs.modal");
+    $("#filterPersonnelForm")[0].reset();  // form reset
+    console.log('selectedDepartment', selectedDepartment);
+    console.log('selectedLocation', selectedLocation);
+  });
+
+  // Filtering logic: filter by only one criterion
+  $("#filterPersonnelByDepartment").change(function () {
+    selectedDepartment = $(this).val();
+    if (selectedDepartment > 0) {
+      selectedLocation = 0;
+      $("#filterPersonnelByLocation").val(0);
+    }  
+    applyFilter();
+  });
+
+  $("#filterPersonnelByLocation").change(function () {
+    selectedLocation = $(this).val(); 
+    if (selectedLocation > 0) {
+      selectedDepartment = 0;
+      $("#filterPersonnelByDepartment").val(0);
+    } 
+    applyFilter();
   });
 
   $("#addBtn").click(function () {
@@ -236,14 +246,17 @@ $(document).ready(function () {
 
 
   $("#personnelBtn").click(function () {
+    $("#filterBtn").attr("disabled", false);
     loadPersonnel(); // Call function to refresh personnel table
   });
 
   $("#departmentsBtn").click(function () {
+    $("#filterBtn").attr("disabled", true);
     loadDepartments(); // Call function to refresh department table
   });
 
   $("#locationsBtn").click(function () {
+    $("#filterBtn").attr("disabled", true);
     loadLocations(); // Call function to refresh location table
   });
 
@@ -580,45 +593,26 @@ function toggleSearchField() {
   }
 }
 
-// Loading checkboxes for locations and departments
-function loadFilterOptions(tab) {
-  $.ajax({
-    url: "php/getFilterOptions.php",
-    type: "GET",
-    dataType: "json",
-    success: function (result) {
-      if (result.status.code === "200") {
-        // Clear and fill in the checkboxes for locations
-        const locationCheckboxGroup = $("#locationCheckboxGroup");
-        locationCheckboxGroup.empty();
-        result.data.locations.forEach(location => {
-          locationCheckboxGroup.append(`
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="${location.id}" id="location${location.id}">
-              <label class="form-check-label" for="location${location.id}">${location.name}</label>
-            </div>
-          `);
-        });
+//Function for applying a filter
+function applyFilter() {
+  const departmentID = selectedDepartment;
+  const locationID = selectedLocation;
 
-        // If the personnel tab is selected, we add departments
-        if (tab === "personnel") {
-          const departmentCheckboxGroup = $("#departmentCheckboxGroup");
-          departmentCheckboxGroup.empty();
-          result.data.departments.forEach(department => {
-            departmentCheckboxGroup.append(`
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="${department.id}" id="department${department.id}">
-                <label class="form-check-label" for="department${department.id}">${department.name}</label>
-              </div>
-            `);
-          });
-        }
+  $.ajax({
+    url: "php/filterPersonnel.php",
+    type: "POST",
+    dataType: "json",
+    data: { departmentID, locationID },
+    success: function (result) {
+      console.log('filter: ' , result);
+      if (result.status.code === "200") {
+        updatePersonnelTable(result.data); // Update the table according to the filter
+      } else {
+        showNotification("Error applying filter. Try again later.", "Error");
       }
-      $("#filterModal").modal("show");
     },
     error: function (error) {
-      // console.error("Error loading filter options:", error);
-      showNotification("Oops, something went wrong with the server! Unable to load options for filter.", "Error");
+      showNotification("Server error while applying filter. Try again later.", "Error");
     }
   });
 }
@@ -690,37 +684,41 @@ function loadLocationOptions() {
 
 // Function to download all Personnel records
 function loadPersonnel() {
-  $.ajax({
-    url: "php/getAll.php",
-    type: "GET",
-    dataType: "json",
-    success: function (result) {
-      // console.log('result', result)
-      const resultCode = result.status.code;
-      if (resultCode == 200) {
-          updatePersonnelTable(result.data);
-      } else {
-        // console.error("Error loading personnel data:", result.status.message);
+  if (selectedDepartment > 0 || selectedLocation > 0) {
+    applyFilter(); // Loading filtered data
+  } else {
+    $.ajax({
+      url: "php/getAll.php",
+      type: "GET",
+      dataType: "json",
+      success: function (result) {
+        console.log('loadPersonnel result', result)
+        const resultCode = result.status.code;
+        if (resultCode == 200) {
+            updatePersonnelTable(result.data);
+        } else {
+          // console.error("Error loading personnel data:", result.status.message);
+          const personnelTableBody = $("#personnelTableBody");
+          personnelTableBody.empty();  // clear the table before adding new records
+          personnelTableBody.append(`
+            <tr>
+              <td colspan="5" class="text-center text-muted">Oops, something went wrong! Error loading personnel data.</td>
+            </tr>
+          `);
+        }
+      },
+      error: function (error) {
+        // console.error("AJAX error:", error);
         const personnelTableBody = $("#personnelTableBody");
         personnelTableBody.empty();  // clear the table before adding new records
         personnelTableBody.append(`
           <tr>
-            <td colspan="5" class="text-center text-muted">Oops, something went wrong! Error loading personnel data.</td>
+            <td colspan="5" class="text-center text-muted">Oops, something went wrong with the server! Unable to load personnel data.</td>
           </tr>
         `);
       }
-    },
-    error: function (error) {
-      // console.error("AJAX error:", error);
-      const personnelTableBody = $("#personnelTableBody");
-      personnelTableBody.empty();  // clear the table before adding new records
-      personnelTableBody.append(`
-        <tr>
-          <td colspan="5" class="text-center text-muted">Oops, something went wrong with the server! Unable to load personnel data.</td>
-        </tr>
-      `);
-    }
-  });
+    });
+  }  
 }
 
 // Loading data for the departments table
@@ -795,7 +793,7 @@ function loadLocations() {
 
 // Updating the Personnel table with the received data
 function updatePersonnelTable(data) {
-  // console.log('updated data', data)
+  console.log('updatePersonnelTable data', data)
   const personnelTableBody = $("#personnelTableBody");
   personnelTableBody.empty();  // clear the table before adding new records
   

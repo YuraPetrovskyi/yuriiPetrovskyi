@@ -35,14 +35,43 @@
 
 	}	
 
-	// first query - SQL statement accepts parameters and so is prepared to avoid SQL injection.
-	// $_REQUEST used for development / debugging. Remember to change to $_POST for production
-
-	$query = $conn->prepare('SELECT `p`.`id`, `p`.`firstName`, `p`.`lastName`, `p`.`email`, `p`.`jobTitle`, `d`.`id` as `departmentID`, `d`.`name` AS `departmentName`, `l`.`id` as `locationID`, `l`.`name` AS `locationName` FROM `personnel` `p` LEFT JOIN `department` `d` ON (`d`.`id` = `p`.`departmentID`) LEFT JOIN `location` `l` ON (`l`.`id` = `d`.`locationID`) WHERE `p`.`firstName` LIKE ? OR `p`.`lastName` LIKE ? OR `p`.`email` LIKE ? OR `p`.`jobTitle` LIKE ? OR `d`.`name` LIKE ? OR `l`.`name` LIKE ? ORDER BY `p`.`lastName`, `p`.`firstName`, `d`.`name`, `l`.`name`');
-
   $likeText = "%" . $_POST['txt'] . "%";
+	$departmentID = isset($_POST['departmentID']) ? $_POST['departmentID'] : 0;
+	$locationID = isset($_POST['locationID']) ? $_POST['locationID'] : 0;
+	
+	// Base SQL query
+	$sql = 'SELECT `p`.`id`, `p`.`firstName`, `p`.`lastName`, `p`.`email`, `p`.`jobTitle`, 
+					`d`.`id` as `departmentID`, `d`.`name` AS `departmentName`, 
+					`l`.`id` as `locationID`, `l`.`name` AS `locationName`
+					FROM `personnel` `p`
+					LEFT JOIN `department` `d` ON (`d`.`id` = `p`.`departmentID`)
+					LEFT JOIN `location` `l` ON (`l`.`id` = `d`.`locationID`)
+					WHERE (`p`.`firstName` LIKE ? OR `p`.`lastName` LIKE ? OR `p`.`email` LIKE ? OR `p`.`jobTitle` LIKE ? OR `d`.`name` LIKE ? OR `l`.`name` LIKE ?)';
+	
+	// Adding filter conditions
+	$params = [$likeText, $likeText, $likeText, $likeText, $likeText, $likeText];
+	
+	if ($departmentID > 0) {
+		$sql .= ' AND `d`.`id` = ?';
+		$params[] = $departmentID;
+	}
 
-  $query->bind_param("ssssss", $likeText, $likeText, $likeText, $likeText, $likeText, $likeText);
+	if ($locationID > 0) {
+		$sql .= ' AND `l`.`id` = ?';
+		$params[] = $locationID;
+	}
+
+	// Ordering
+	$sql .= ' ORDER BY `p`.`lastName`, `p`.`firstName`, `d`.`name`, `l`.`name`';
+
+	$query = $conn->prepare($sql);
+	if ($departmentID > 0 && $locationID > 0) {
+		$query->bind_param("ssssssii", ...$params);
+	} elseif ($departmentID > 0 || $locationID > 0) {
+		$query->bind_param("ssssssi", ...$params);
+	} else {
+		$query->bind_param("ssssss", ...$params);
+	}
 
 	$query->execute();
 	

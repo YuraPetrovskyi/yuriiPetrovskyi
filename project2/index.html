@@ -110,7 +110,7 @@
         <div class="modal-content shadow"> 
           
           <div class="modal-header bg-primary bg-gradient text-white">
-            <h5 class="modal-title" id="editPersonnelModalLabel">Edit Personnel</h5>
+            <h5 class="modal-title" id="editPersonnelModalLabel">Edit employee</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
     
@@ -154,7 +154,7 @@
           </div>
     
           <div class="modal-footer">
-            <button id="editPersSaveButton" type="submit" form="editPersonnelForm" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
+            <button type="submit" id="editPersSaveButton" form="editPersonnelForm" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
             <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
           </div>
     
@@ -165,9 +165,9 @@
     <!-- Add Personnel Modal -->
     <div id="addPersonnelModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="addPersonnelModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
+        <div class="modal-content shadow">
           <div class="modal-header bg-primary bg-gradient text-white">
-            <h5 class="modal-title" id="addPersonnelModalLabel">Add Personnel</h5>
+            <h5 class="modal-title" id="addPersonnelModalLabel">Add employee</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -211,7 +211,7 @@
     <!-- Add Department Modal -->
     <div id="addDepartmentModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="addDepartmentModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
+        <div class="modal-content shadow">
           <div class="modal-header bg-primary bg-gradient text-white">
               <h5 class="modal-title" id="addDepartmentModalLabel">Add Department</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -245,7 +245,7 @@
     <!-- Add Location Modal -->
     <div id="addLocationModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="addLocationModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
+        <div class="modal-content shadow">
           <div class="modal-header bg-primary bg-gradient text-white">
             <h5 class="modal-title" id="addLocationModalLabel">Add Location</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -269,7 +269,7 @@
     <!-- Edit Department Modal -->
     <div id="editDepartmentModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="editDepartmentModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
+        <div class="modal-content shadow">
           <div class="modal-header bg-primary bg-gradient text-white">
             <h5 class="modal-title" id="editDepartmentModalLabel">Edit Department</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -307,7 +307,7 @@
     <!-- Edit Location Modal -->
     <div id="editLocationModal" class="modal fade" tabindex="-1"  data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="editLocationModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
-          <div class="modal-content">
+          <div class="modal-content shadow">
               <div class="modal-header bg-primary bg-gradient text-white">
                   <h5 class="modal-title" id="editLocationModalLabel">Edit Location</h5>
                   <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -332,7 +332,7 @@
     <!-- Confirm Delete Modal -->
     <div id="deleteModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="deleteModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered">
-          <div class="modal-content">
+          <div class="modal-content shadow">
               <div class="modal-header bg-primary bg-gradient text-white">
                   <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
                   <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -342,61 +342,52 @@
                   <div id="deleteError" class="alert alert-danger d-none"></div>
               </div>
               <div class="modal-footer">
-                  <button type="button" id="confirmDeleteBtn" data-id="" class="btn btn-outline-primary btn-sm myBtn">Delete</button>
-                  <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">Cancel</button>
+                  <button type="button" id="confirmDeleteBtn" data-id="" class="btn btn-outline-primary btn-sm myBtn">YES</button>
+                  <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">NO</button>
                 </div>
           </div>
       </div>
     </div>
 
     <!-- Filter Modal -->
-    <div id="filterModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div id="filterPersonnelModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" aria-labelledby="filterPersonnelModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title" id="filterModalLabel">Filter Options</h5>
+        <div class="modal-content shadow">
+          <div class="modal-header bg-primary bg-gradient text-white">
+            <h5 class="modal-title" id="filterPersonnelModalLabel">Filter employees</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form id="filterForm">
-              <!-- Checkbox filters for Location -->
-              <div class="filter-options" id="locationFilterOptions">
-                <label class="form-label">Location</label>
-                <div id="locationCheckboxGroup">
-                  <!-- Checkboxes for locations will be dynamically added here -->
-                </div>
-              </div>
-              <!-- Checkbox filters for Department -->
-              <div class="filter-options" id="departmentFilterOptions">
-                <label class="form-label">Department</label>
-                <div id="departmentCheckboxGroup">
-                  <!-- Checkboxes for departments will be dynamically added here -->
-                </div>
-              </div>
-              <!-- Sorting Options (only for Personnel) -->
-              <div class="filter-options" id="sortFilterOptions">
-                <label for="sortOrder" class="form-label">Sort by Name</label>
-                <select id="sortOrder" class="form-select">
-                  <option value="">No Sorting</option>
-                  <option value="asc">A-Z</option>
-                  <option value="desc">Z-A</option>
-                  <option value="lastname">Z-A(Last Name)</option>
+            <form id="filterPersonnelForm">
+              <!-- Dropdown for Department -->
+              <div class="form-floating mb-3">
+                <select class="form-select" id="filterPersonnelByDepartment" placeholder="Department">
+                  <option value="0">All</option>
+                  <!-- Dynamic Department Options Here -->
                 </select>
+                <label for="filterPersonnelByDepartment">Department</label>
+              </div>
+              <!-- Dropdown for Location -->
+              <div class="form-floating">
+                <select class="form-select" id="filterPersonnelByLocation" placeholder="Location">
+                  <option value="0">All</option>
+                  <!-- Dynamic Location Options Here -->
+                </select>
+                <label for="filterPersonnelByLocation">Location</label>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" id="applyFilterBtn" class="btn btn-outline-primary btn-sm myBtn">Apply</button>
-            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CLOSE</button>
           </div>
         </div>
       </div>
     </div>
-
+    
     <!-- Notification Modal -->
     <div id="notificationModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="notificationModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
+        <div class="modal-content shadow">
           <div class="modal-header bg-primary text-white">
             <h5 class="modal-title" id="notificationModalLabel">Notification</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
