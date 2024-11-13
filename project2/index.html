@@ -329,24 +329,117 @@
       </div>
     </div>
 
-    <!-- Confirm Delete Modal -->
-    <div id="deleteModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="deleteModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-sm modal-dialog-centered">
-          <div class="modal-content shadow">
-              <div class="modal-header bg-primary bg-gradient text-white">
-                  <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                  <p>Are you sure you want to delete <strong id="deleteName"></strong>?</p>
-                  <div id="deleteError" class="alert alert-danger d-none"></div>
-              </div>
-              <div class="modal-footer">
-                  <button type="button" id="confirmDeleteBtn" data-id="" class="btn btn-outline-primary btn-sm myBtn">YES</button>
-                  <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">NO</button>
-                </div>
+    <!-- Staff deletion confirmation modal window -->
+    <div id="areYouSurePersonnelModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="modalPersonnelRemovelLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered  modal-dialog-scrollable">
+        <div class="modal-content shadow">
+          <div class="modal-header bg-primary bg-gradient text-white">
+            <h5 class="modal-title" id="modalPersonnelRemovelLabel">Remove employee entry?</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
+          <div class="modal-body">
+            <form id="areYouSurePersonnelForm">
+              <input id="areYouSurePersonnelID" type="hidden">
+              <p>Are you sure that you want to remove the entry for <span id="areYouSurePersonnelName" class="fw-bold"></span>?</p>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" form="areYouSurePersonnelForm" class="btn btn-outline-primary btn-sm myBtn">YES</button>
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">NO</button>
+          </div>
+        </div>
       </div>
+    </div>
+
+
+    <!-- Modal window for the impossibility of deleting due to dependencies -->
+    <div id="cantDeleteDepartmentModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="cannotRemoveDepLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow">
+          <div class="modal-header bg-primary bg-gradient text-white">
+            <h5 class="modal-title" id="cannotRemoveDepLabel">Cannot remove department ...</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>You cannot remove the entry for <span id="cantDeleteDeptName" class="fw-bold"></span> because it has <span id="personnelCount" class="fw-bold"></span> employees assigned to it.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Department deletion confirmation modal window -->
+    <div id="areYouSureDeleteDepartmentModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="removeDepartmentLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow">
+    
+          <div class="modal-header bg-primary bg-gradient text-white">
+            <h5 class="modal-title" id="removeDepartmentLabel">Remove department?</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+    
+          <div class="modal-body">
+    
+            <form id="deleteDepartmentForm">
+              <input type="hidden" id="deleteDepartmentID">
+              <p>Are you sure that you want to remove the entry for <span id="areYouSureDeptName" class="fw-bold"></span>?</p>
+            </form>
+    
+          </div>
+    
+          <div class="modal-footer">
+            <button type="submit" form="deleteDepartmentForm" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">YES</button>
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">NO</button>
+          </div>
+    
+        </div>    
+      </div>    
+    </div>
+
+    <!-- Modal window for the impossibility of deleting due to dependencies -->
+    <div id="cantDeleteLocationModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="cannotRemoveLocLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow">
+          <div class="modal-header bg-primary bg-gradient text-white">
+            <h5 class="modal-title" id="cannotRemoveLocLabel"></h5>>Cannot remove location ...</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>You cannot remove the entry for <span id="cantDeleteLocName" class="fw-bold"></span> because it has <span id="departmentCount" class="fw-bold"></span> departments assigned to it.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location deletion confirmation modal window -->
+    <div id="areYouSureDeleteLocationModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="removeLocLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow">
+
+          <div class="modal-header bg-primary bg-gradient text-white">
+            <h5 class="modal-title" id="removeLocLabel">Remove location?</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="deleteLocationForm">
+              <input type="hidden" id="deleteLocationID">
+              <p>Are you sure that you want to remove the entry for <span id="areYouSureLocName" class="fw-bold"></span>?</p>
+            </form>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" form="deleteLocationForm" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">YES</button>
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">NO</button>
+          </div>
+
+        </div>    
+      </div>    
     </div>
 
     <!-- Filter Modal -->
@@ -386,7 +479,7 @@
     
     <!-- Notification Modal -->
     <div id="notificationModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="notificationModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
           <div class="modal-header bg-primary text-white">
             <h5 class="modal-title" id="notificationModalLabel">Notification</h5>
@@ -396,7 +489,7 @@
             <!-- Dynamic message will appear here -->
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">OK</button>
           </div>
         </div>
       </div>

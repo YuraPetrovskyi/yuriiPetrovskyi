@@ -483,102 +483,167 @@ $(document).ready(function () {
       }
     });
   });
+  
+  // Open confirmation modal for personnel deletion and fetch data
+  $("#areYouSurePersonnelModal").on("show.bs.modal", function (e) {
+    const personnelId = $(e.relatedTarget).data("id");
 
-  // Show a modal window to confirm the deletion
-  $(document).on("click", ".deleteBtn", function () {
-    const idToDelete = $(this).data("id");
-    const nameToDelete = $(this).data("name");
-
-    const activeTab = $(".nav-link.active").attr("id");
-
-    $("#deleteError").addClass("d-none").text("");
-    $("#confirmDeleteBtn").removeClass('d-none');
-    $("#deleteName").text(nameToDelete);
-
-    let tableType;
-    if (activeTab === "personnelBtn") {
-      tableType = "personnel";
-    } else if (activeTab === "departmentsBtn") {
-      tableType = "department";
-    } else if (activeTab === "locationsBtn") {
-      tableType = "location";
-    }
-
-    // console.log('idToDelete', idToDelete)
-    // console.log('nameToDelete', nameToDelete)
-
-    // Check dependencies
     $.ajax({
-      url: "php/checkDependencies.php",
+      url: "php/getPersonnelByID.php",
       type: "POST",
       dataType: "json",
-      data: { id: idToDelete, tableType: tableType },
+      data: { id: personnelId },
       success: function (result) {
-        if (result.data.hasDependencies) {
-          $("#confirmDeleteBtn").addClass('d-none');
-          $("#deleteError").removeClass("d-none").text("Deletion is not allowed as this item is referenced by other records.");
+        if (result.status.code === "200") {
+          $('#areYouSurePersonnelID').val(personnelId);
+          $("#areYouSurePersonnelName").text(result.data.personnel[0].firstName + " " + result.data.personnel[0].lastName);
         } else {
-          // Show a modal window to confirm the deletion
-          $("#confirmDeleteBtn").data("id", idToDelete);
-          // Hide the previous error message, if there is one
-          $("#deleteError").addClass("d-none").text("");
-          $("#deleteModal").modal("show");
+          showNotification("Error retrieving personnel data", "Error");
         }
       },
-      error: function (error) {
-        // console.error("Error checking dependencies:", error);
-        $("#confirmDeleteBtn").addClass('d-none');
-        $("#deleteError").removeClass("d-none").text("AJAX error: Unable to delete the item.");
+      error: function () {
+        showNotification("Server error retrieving personnel data", "Error");
       }
     });
   });
 
-  // Handling the "Delete" button click in a modal window
-  $("#confirmDeleteBtn").click(function () {
-    const idToDelete = $(this).data("id");
-    // console.log('id to delete: ', idToDelete);
-    
-    let server;
-    if ($("#personnelBtn").hasClass("active")) {
-      server = "php/deletePersonnelByID.php";
-    } else if ($("#departmentsBtn").hasClass("active")) {
-      server = "php/deleteDepartmentByID.php";
-    } else if ($("#locationsBtn").hasClass("active")) {
-      server = "php/deleteLocationByID.php";
-    }
+  // Handle personnel deletion confirmation form submission
+  $("#areYouSurePersonnelForm").on("submit", function (e) {
+    e.preventDefault();
+    const personnelId = $("#areYouSurePersonnelID").val();
 
-    if (idToDelete && server) {
-      $.ajax({
-        url: server,
-        type: "POST",
-        dataType: "json",
-        data: { id: idToDelete },
-        success: function (result) {
-          if (result.status.code === "200") {
-            $("#searchInp").val(""); // Clear search input
-            $("#deleteModal").modal("hide"); // Close the modal window after successful removal
-            $("#deleteError").addClass("d-none").text(""); // Reset the error
-            if ($("#personnelBtn").hasClass("active")) {
-                loadPersonnel();
-            } else if ($("#departmentsBtn").hasClass("active")) {
-                loadDepartments();
-            } else if ($("#locationsBtn").hasClass("active")) {
-                loadLocations();
-            }
-          } else {
-            // console.error("Error deleting personnel:", result.status.message);
-            $("#confirmDeleteBtn").addClass('d-none');
-            $("#deleteError").removeClass("d-none").text("Error deleting item! Try to delete the item later.");
-          }
-        },
-        error: function (error) {
-          $("#confirmDeleteBtn").addClass('d-none');
-          $("#deleteError").removeClass("d-none").text("Oops, something went wrong with the server! Try to delete the item later.");
-          // console.error("AJAX error:", error);
+    $.ajax({
+      url: "php/deletePersonnelByID.php",
+      type: "POST",
+      dataType: "json",
+      data: { id: personnelId },
+      success: function (result) {
+        if (result.status.code === "200") {
+          $("#areYouSurePersonnelModal").modal("hide");
+          loadPersonnel(); // Refresh personnel list
+        } else {
+          showNotification("Error deleting personnel.", "Error");
         }
-      });
-    }
+      },
+      error: function () {
+        showNotification("Server error during personnel deletion", "Error");
+      }
+    });
   });
+
+
+  // Deletion of the department with a dependency check
+  $(document).on("click", ".deleteDepartmentBtn", function () {
+    const departmentId = $(this).data("id");
+
+    $.ajax({
+      url: "php/checkDepartmentUse.php",
+      type: "POST",
+      dataType: "json",
+      data: { id: departmentId },
+      success: function (result) {
+        console.log('delete resole', result)
+        if (result.status.code === "200") {
+          if (result.data[0].personnelCount === 0) {
+            $("#deleteDepartmentID").val(departmentId);
+            $("#areYouSureDeptName").text(result.data[0].departmentName);
+            $("#areYouSureDeleteDepartmentModal").modal("show");
+          } else {
+            $("#cantDeleteDeptName").text(result.data[0].departmentName);
+            $("#personnelCount").text(result.data[0].personnelCount);
+            $("#cantDeleteDepartmentModal").modal("show");
+          }
+        } else {
+          showNotification("Error checking department dependencies.", "Error retrieving data ...");
+        }
+      },
+      error: function () {
+        showNotification("Server error while checking dependencies.", "Error retrieving data ...");
+      }
+    });
+  });
+
+  // Confirm the removal of the department
+  $("#deleteDepartmentForm").on("submit", function (e) {
+    e.preventDefault();
+    const departmentId = $("#deleteDepartmentID").val();
+
+    $.ajax({
+      url: "php/deleteDepartmentByID.php",
+      type: "POST",
+      dataType: "json",
+      data: { id: departmentId },
+      success: function (result) {
+        if (result.status.code === "200") {
+          $("#areYouSureDeleteDepartmentModal").modal("hide");
+          loadDepartments(); // Update the departments table
+        } else {
+          alert("Error deleting department.");
+          showNotification("Error deleting department.", "Error ...");
+        }
+      },
+      error: function () {
+        // alert("Server error while deleting department.");
+        showNotification("Server error while deleting department.", "Error ...");
+      }
+    });
+  });
+
+
+  // Deletion of the location with a dependency check
+  $(document).on("click", ".deleteLocationBtn", function () {
+    const locationId = $(this).data("id");
+
+    $.ajax({
+      url: "php/checkLocationUse.php",
+      type: "POST",
+      dataType: "json",
+      data: { id: locationId },
+      success: function (result) {
+        if (result.status.code === "200") {
+          if (result.data[0].departmentCount === 0) {
+            $("#deleteLocationID").val(locationId);
+            $("#areYouSureLocName").text(result.data[0].locationName);
+            $("#areYouSureDeleteLocationModal").modal("show");
+          } else {
+            $("#cantDeleteLocName").text(result.data[0].locationName);
+            $("#departmentCount").text(result.data[0].departmentCount);
+            $("#cantDeleteLocationModal").modal("show");
+          }
+        } else {
+          showNotification("Error checking location dependencies.", "Error retrieving data ...");
+        }
+      },
+      error: function () {
+        showNotification("Server error while checking dependencies.", "Error retrieving data ...");
+      }
+    });
+  });
+
+  // Confirm the removal of the location
+  $("#deleteLocationForm").on("submit", function (e) {
+    e.preventDefault();
+    const locationId = $("#deleteLocationID").val();
+
+    $.ajax({
+      url: "php/deleteLocationByID.php",
+      type: "POST",
+      dataType: "json",
+      data: { id: locationId },
+      success: function (result) {
+        if (result.status.code === "200") {
+          $("#areYouSureDeleteLocationModal").modal("hide");
+          loadLocations(); // Update the locations table
+        } else {
+          showNotification("Error deleting location.", "Error ...");
+        }
+      },
+      error: function () {
+        showNotification("Server error while deleting location.", "Error ...");
+      }
+    });
+  });
+
 });
 
 // ALL FUNCTIONS
@@ -816,7 +881,7 @@ function updatePersonnelTable(data) {
           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${person.id}">
             <i class="fa-solid fa-pencil fa-fw"></i>
           </button> 
-          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${person.id}" data-name="${person.firstName} ${person.lastName}">
+          <button type="button" class="btn btn-primary btn-sm deletePersonnelBtn" data-bs-toggle="modal" data-bs-target="#areYouSurePersonnelModal" data-id="${person.id}">
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
         </td>
@@ -848,7 +913,7 @@ function updateDepartmentTable(data) {
           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editDepartmentModal" data-id="${department.id}">
             <i class="fa-solid fa-pencil fa-fw"></i>
           </button>
-          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${department.id}" data-name="${department.departmentName}">
+          <button type="button" class="btn btn-primary btn-sm deleteDepartmentBtn" data-id="${department.id}">
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
         </td>
@@ -879,7 +944,7 @@ function updateLocationTable(data) {
           <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editLocationModal" data-id="${location.id}" data-name="${location.name}">
             <i class="fa-solid fa-pencil fa-fw"></i>
           </button>
-          <button type="button" class="btn btn-primary btn-sm deleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="${location.id}" data-name="${location.name}">
+          <button type="button" class="btn btn-primary btn-sm deleteLocationBtn" data-id="${location.id}">
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
         </td>
