@@ -1,5 +1,7 @@
+// Global variables for search query and selected filtersі
 var selectedDepartment = 0;
 var selectedLocation = 0;
+let currentSearchQuery = "";
 
 // Loading data when the page is first loaded
 $(document).ready(function () {
@@ -9,41 +11,20 @@ $(document).ready(function () {
   // Add an event to the tabs to activate/deactivate the search field
   $("#personnelBtn, #departmentsBtn, #locationsBtn").on("click", toggleSearchField);
 
+    // Обробник події для поля пошуку
+  $("#searchInp").on("keyup", function () {
+    const query = $(this).val();
+    performSearch(query);
+  });
+
   // Search event
   $("#searchInp").on("keyup", function () {
     const query = $(this).val();
-    // Get the selected filter values
-    const departmentID = selectedDepartment;
-    const locationID = selectedLocation;
-
-    $.ajax({
-      url: "php/SearchAll.php",
-      type: "POST",
-      dataType: "json",
-      data: {
-        txt: query,
-        departmentID: departmentID,
-        locationID: locationID
-      },
-      success: function (result) {
-        // console.log("search", result);
-        if (result.status.code === '200') {
-          updatePersonnelTable(result.data.found);
-        } else {
-          $("#searchInp").val(""); // Clear search input
-          // console.error("Error loading personnel data:", result.status.message);
-          showNotification("Error searching! Try to search later.", "Error");
-        }
-      },
-      error: function (error) {
-        $("#searchInp").val(""); // Clear search input
-        // console.error("AJAX error:", error);
-        showNotification("Oops, something went wrong with the server! Try to search later.", "Error");
-      }
-    });
+    performSearch(query);
   });
 
   $("#refreshBtn").click(function () {
+    currentSearchQuery = "";
     selectedDepartment = 0;
     selectedLocation = 0;
     $("#searchInp").val(""); // Clear search input
@@ -105,17 +86,11 @@ $(document).ready(function () {
         showNotification("Unable to load filter options!", "Error");
       }
     });
-    console.log("show.bs.modal");
-    console.log('selectedDepartment', selectedDepartment);
-    console.log('selectedLocation', selectedLocation);
   });
 
   // Resetting the filter when the modal window is closed
   $("#filterPersonnelModal").on("hidden.bs.modal", function () {
-    console.log("hidden.bs.modal");
     $("#filterPersonnelForm")[0].reset();  // form reset
-    console.log('selectedDepartment', selectedDepartment);
-    console.log('selectedLocation', selectedLocation);
   });
 
   // Filtering logic: filter by only one criterion
@@ -125,7 +100,7 @@ $(document).ready(function () {
       selectedLocation = 0;
       $("#filterPersonnelByLocation").val(0);
     }  
-    applyFilter();
+    refreshAfterUpdate();
   });
 
   $("#filterPersonnelByLocation").change(function () {
@@ -134,7 +109,7 @@ $(document).ready(function () {
       selectedDepartment = 0;
       $("#filterPersonnelByDepartment").val(0);
     } 
-    applyFilter();
+    refreshAfterUpdate();
   });
 
   $("#addBtn").click(function () {
@@ -178,9 +153,10 @@ $(document).ready(function () {
       success: function (result) {
         const resultCode = result.status.code;
         if (resultCode === '200') {
-          $("#searchInp").val(""); // Clear search input
+          // $("#searchInp").val(""); // Clear search input
           $("#addPersonnelModal").modal("hide"); // close the modal window after successful addition
-          loadPersonnel(); // update the table of employees
+          // loadPersonnel(); // update the table of employees
+          refreshAfterUpdate(); // Updates based on search and filter status
         } else {
           $("#addPersonnelModal").modal("hide");
           showNotification("Error adding personnel! Try to add personnel later.", "Error");
@@ -364,12 +340,13 @@ $(document).ready(function () {
         const resultCode = result.status.code;
 
         if (resultCode == 200) {
-          $("#searchInp").val(""); // Clear search input
+          // $("#searchInp").val(""); // Clear search input
           // Close the modal window after a successful update
           $("#editPersonnelModal").modal("hide");
 
           // Update the employee table after making changes
-          loadPersonnel();
+          // loadPersonnel();
+          refreshAfterUpdate(); // Updates based on search and filter status
         } else {
           // console.error("Error updating personnel data:", result.status.message);
           $("#editPersonnelModal").modal("hide");
@@ -564,7 +541,8 @@ $(document).ready(function () {
       success: function (result) {
         if (result.status.code === "200") {
           $("#areYouSurePersonnelModal").modal("hide");
-          loadPersonnel(); // Refresh personnel list
+          // loadPersonnel(); // Refresh personnel list
+          refreshAfterUpdate(); // Updates based on search and filter status
         } else {
           showNotification("Error deleting personnel.", "Error");
         }
@@ -586,7 +564,7 @@ $(document).ready(function () {
       dataType: "json",
       data: { id: departmentId },
       success: function (result) {
-        console.log('delete resole', result)
+        // console.log('delete resole', result)
         if (result.status.code === "200") {
           if (result.data[0].personnelCount === 0) {
             $("#deleteDepartmentID").val(departmentId);
@@ -702,6 +680,48 @@ function toggleSearchField() {
   }
 }
 
+// Function for searching based on current filters
+function performSearch(query) {
+  currentSearchQuery = query; // Зберігаємо запит
+
+  const departmentID = selectedDepartment;
+  const locationID = selectedLocation;
+
+  $.ajax({
+    url: "php/SearchAll.php",
+    type: "POST",
+    dataType: "json",
+    data: {
+      txt: query,
+      departmentID: departmentID,
+      locationID: locationID
+    },
+    success: function (result) {
+      if (result.status.code === '200') {
+        updatePersonnelTable(result.data.found);
+      } else {
+        $("#searchInp").val("");
+        showNotification("Error searching! Try to search later.", "Error");
+      }
+    },
+    error: function () {
+      $("#searchInp").val("");
+      showNotification("Oops, something went wrong with the server! Try to search later.", "Error");
+    }
+  });
+}
+
+// Updating the list taking into account the current search and filters after changes (adding, editing, deleting)
+function refreshAfterUpdate() {
+  if (currentSearchQuery) {
+    performSearch(currentSearchQuery); // Perform a search with the current request
+  } else if (selectedDepartment > 0 || selectedLocation > 0) {
+    applyFilter(); // If there is an active filter
+  } else {
+    loadPersonnel(); // Otherwise, load all the data
+  }
+}
+
 //Function for applying a filter
 function applyFilter() {
   const departmentID = selectedDepartment;
@@ -713,7 +733,6 @@ function applyFilter() {
     dataType: "json",
     data: { departmentID, locationID },
     success: function (result) {
-      console.log('filter: ' , result);
       if (result.status.code === "200") {
         updatePersonnelTable(result.data); // Update the table according to the filter
       } else {
@@ -801,7 +820,6 @@ function loadPersonnel() {
       type: "GET",
       dataType: "json",
       success: function (result) {
-        console.log('loadPersonnel result', result)
         const resultCode = result.status.code;
         if (resultCode == 200) {
             updatePersonnelTable(result.data);
@@ -902,7 +920,6 @@ function loadLocations() {
 
 // Updating the Personnel table with the received data
 function updatePersonnelTable(data) {
-  console.log('updatePersonnelTable data', data);
   const personnelTableBody = document.getElementById("personnelTableBody");
   personnelTableBody.innerHTML = ""; // Clear the table before adding new records
 
@@ -1115,6 +1132,7 @@ function showNotification(message, title = "Notification") {
   $("#notificationModal").modal("show");
 }
 
+// Button creation function
 function createButton(className, dataAttributes, iconClass) {
   const button = document.createElement("button");
   button.className = className;
