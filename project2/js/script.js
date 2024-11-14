@@ -180,7 +180,6 @@ $(document).ready(function () {
         if (resultCode === '200') {
           $("#searchInp").val(""); // Clear search input
           $("#addPersonnelModal").modal("hide"); // close the modal window after successful addition
-          $("#addPersonnelForm").trigger("reset"); // Reset the add personnel form
           loadPersonnel(); // update the table of employees
         } else {
           $("#addPersonnelModal").modal("hide");
@@ -192,6 +191,21 @@ $(document).ready(function () {
         showNotification("Oops, something went wrong with the server! Try to add personnel later.", "Error");
       }
     });
+  });
+
+  // Resetting the add personnel form when the modal is completely hidden
+  $("#addPersonnelModal").on("hidden.bs.modal", function () {
+    $("#addPersonnelForm").trigger("reset");
+  });
+
+  // Resetting the add department form when the modal is completely hidden
+  $("#addDepartmentModal").on("hidden.bs.modal", function () {
+    $("#addDepartmentForm").trigger("reset");
+  });
+
+  // Resetting the add location form when the modal is completely hidden
+  $("#addLocationModal").on("hidden.bs.modal", function () {
+    $("#addLocationForm").trigger("reset");
   });
 
   // Handle the "submit" event for the add department form
