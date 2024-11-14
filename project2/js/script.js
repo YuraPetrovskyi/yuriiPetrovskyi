@@ -910,6 +910,7 @@ function updatePersonnelTable(data) {
 
     // Name cell
     const nameCell = document.createElement("td");
+    nameCell.className = "align-middle text-nowrap";
     nameCell.textContent = `${person.lastName}, ${person.firstName}`;
     row.appendChild(nameCell);
 

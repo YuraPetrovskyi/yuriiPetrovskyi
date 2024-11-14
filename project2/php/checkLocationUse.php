@@ -25,12 +25,10 @@ if (mysqli_connect_errno()) {
     exit;
 }
 
-$query = $conn->prepare("
-    SELECT l.name AS locationName, COUNT(d.id) as departmentCount
-    FROM location l
-    LEFT JOIN department d ON d.locationID = l.id
-    WHERE l.id = ?
-");
+$query = $conn->prepare('SELECT l.name AS locationName, COUNT(d.id) as departmentCount
+                        FROM location l
+                        LEFT JOIN department d ON d.locationID = l.id
+                        WHERE l.id = ?');
 
 // Checking the ID parameter and binding to the request
 $query->bind_param("i", $_POST['id']);

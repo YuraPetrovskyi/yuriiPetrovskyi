@@ -38,11 +38,10 @@
 	// SQL does not accept parameters and so is not prepared
 
 	// $query = 'SELECT id, name, locationID FROM department';
-	$query = '
-		SELECT d.id, d.name AS departmentName, l.name AS locationName
-		FROM department d
-		LEFT JOIN location l ON d.locationID = l.id
-	';
+	$query = 'SELECT d.id, d.name AS departmentName, l.name AS locationName
+					FROM department d
+					LEFT JOIN location l ON d.locationID = l.id 
+					ORDER BY d.name, l.name';
 	
 	$result = $conn->query($query);
 	
@@ -64,9 +63,7 @@
   $data = [];
 
 	while ($row = mysqli_fetch_assoc($result)) {
-
 		array_push($data, $row);
-
 	}
 
 	$output['status']['code'] = "200";
