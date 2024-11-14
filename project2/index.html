@@ -115,11 +115,6 @@
           </div>
     
           <div class="modal-body">
-            <!-- Error messages -->
-            <div id="editPersonnelError" class="alert alert-danger d-none" role="alert">
-              <!-- Here will be the text of the error message -->
-            </div>
-              
             <form id="editPersonnelForm">    
               <input type="hidden" id="editPersonnelEmployeeID">
     
@@ -195,13 +190,9 @@
                 <label for="addPersonnelDepartment">Department</label>
               </div>              
             </form>
-            <!-- Error messages -->
-            <div id="addPersonnelError" class="alert alert-danger d-none mt-3" role="alert">
-              <!-- Here will be the text of the error message -->
-            </div>
           </div>
           <div class="modal-footer">
-            <button type="submit" form="addPersonnelForm" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
+            <button type="submit" id="addPersonalSaveBtn" form="addPersonnelForm" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
             <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
           </div>
         </div>
@@ -230,12 +221,8 @@
               </div>
             </form>
           </div>
-          <!-- Error messages -->
-          <div id="addDepartmentsError" class="alert alert-danger d-none mt-3" role="alert">
-            <!-- Here will be the text of the error message -->
-          </div>
           <div class="modal-footer">
-            <button type="submit" form="addDepartmentForm" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
+            <button type="submit" id="addDepartSaveBtn" form="addDepartmentForm" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
             <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
           </div>
         </div>
@@ -275,11 +262,6 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <!-- Error messages -->
-            <div id="editDepartmentlError" class="alert alert-danger d-none" role="alert">
-              <!-- Here will be the text of the error message -->
-            </div>
-
             <form id="editDepartmentForm">
               <input type="hidden" id="editDepartmentID">
 
@@ -489,7 +471,7 @@
             <!-- Dynamic message will appear here -->
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">OK</button>
+            <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CLOSE</button>
           </div>
         </div>
       </div>

@@ -80,10 +80,18 @@ $(document).ready(function () {
           // Setting the values ​​of selectedDepartment and selectedLocation
           departmentSelect.val(selectedDepartment);
           locationSelect.val(selectedLocation);
+        } else {
+          $("#filterPersonnelModal").on("shown.bs.modal", function () {
+            $(this).modal("hide"); 
+            showNotification("Unable to load filter options!", "Error retrieving data ...");
+          });
         }
       },
       error: function (error) {
-        showNotification("Unable to load filter options!", "Error");
+        $("#filterPersonnelModal").on("shown.bs.modal", function () {
+          $(this).modal("hide");
+          showNotification("Unable to load filter options!", "Error retrieving data ...");
+        });
       }
     });
   });
@@ -159,12 +167,12 @@ $(document).ready(function () {
           refreshAfterUpdate(); // Updates based on search and filter status
         } else {
           $("#addPersonnelModal").modal("hide");
-          showNotification("Error adding personnel! Try to add personnel later.", "Error");
+          showNotification("Error adding personnel! Try to add personnel later.", "Error ...");
         }
       },
       error: function (jqXHR, textStatus, errorThrown) {
         $("#addPersonnelModal").modal("hide");
-        showNotification("Oops, something went wrong with the server! Try to add personnel later.", "Error");
+        showNotification("Oops, something went wrong with the server! Try to add personnel later.", "Error ...");
       }
     });
   });
@@ -204,12 +212,12 @@ $(document).ready(function () {
                 loadDepartments();
             } else {
                 $("#addDepartmentModal").modal("hide");
-                showNotification("Error adding department! Try to add department later.", "Error");
+                showNotification("Error adding department! Try to add department later.", "Error ...");
             }
         },
         error: function (error) {
           $("#addDepartmentModal").modal("hide");
-          showNotification("Oops, something went wrong with the server! Try to add personnel later.", "Error");
+          showNotification("Oops, something went wrong with the server! Try to add personnel later.", "Error ...");
           // console.error("AJAX error:", error);
         }
     });
@@ -234,13 +242,12 @@ $(document).ready(function () {
           loadLocations();
         } else {
           $("#addLocationModal").modal("hide");
-          showNotification("Error adding location! Try to add location later.", "Error");
+          showNotification("Error adding location! Try to add location later.", "Error ...");
         }
       },
       error: function (error) {
         $("#addLocationModal").modal("hide");
-        showNotification("Oops, something went wrong with the server! Try to add location later.", "Error");
-        // console.error("AJAX error:", error);
+        showNotification("Oops, something went wrong with the server! Try to add location later.", "Error ...");
       }
     });
   });
@@ -262,8 +269,8 @@ $(document).ready(function () {
   });
 
   $("#editPersonnelModal").on("show.bs.modal", function (e) {
-    $("#editPersonnelError").addClass("d-none").text(""); // hide error messages
     $("#editPersSaveButton").removeClass("d-none");
+    $("#editPersonnelModal .modal-title").text("Edit employee");
     
     $.ajax({
       url: "php/getPersonnelByID.php",
@@ -305,14 +312,14 @@ $(document).ready(function () {
           $("#editPersonnelDepartment").val(result.data.personnel[0].departmentID);
           
         } else {
-          $("#editPersonnelError").removeClass("d-none").text("Error retrieving data! Try editing personnel later.");
           $("#editPersSaveButton").addClass("d-none");
+          $("#editPersonnelModal .modal-title").text("Error retrieving data ...");
         }
       },
       error: function (jqXHR, textStatus, errorThrown) {
         // $("#editPersonnelModal .modal-title").replaceWith("Error retrieving data");
-        $("#editPersonnelError").removeClass("d-none").text("Oops, something went wrong with the server! Try editing personnel later.");
         $("#editPersSaveButton").addClass("d-none");
+        $("#editPersonnelModal .modal-title").text("Error retrieving data ...");
       }
     });
   });
@@ -350,13 +357,13 @@ $(document).ready(function () {
         } else {
           // console.error("Error updating personnel data:", result.status.message);
           $("#editPersonnelModal").modal("hide");
-          showNotification("Error editing personnel! Try to eddit personnel later.", "Error");
+          showNotification("Error editing personnel! Try to eddit personnel later.", "Error ...");
         }
       },
       error: function (error) {
         // console.error("AJAX error:", error);
         $("#editPersonnelModal").modal("hide");
-        showNotification("Oops, something went wrong with the server! Try to eddit personnel later.", "Error");
+        showNotification("Oops, something went wrong with the server! Try to eddit personnel later.", "Error ...");
       }
     });  
   });
@@ -365,8 +372,8 @@ $(document).ready(function () {
   $("#editDepartmentModal").on("show.bs.modal", function (e) {
     const departmentId = $(e.relatedTarget).data("id");
     // console.log('departmentId', departmentId);
-    $("#editDepartmentlError").addClass("d-none").text(""); // hide error messages
     $("#editDepSaveButton").removeClass("d-none");
+    $("#editDepartmentModal .modal-title").text("Edit department");
 
     // Obtaining department data by ID
     $.ajax({
@@ -396,14 +403,14 @@ $(document).ready(function () {
           $("#editDepartmentLocation").val(result.data.department[0].locationID);
         } else {
           // console.error("Error loading department data:", result.status.message);
-          $("#editDepartmentlError").removeClass("d-none").text("Error retrieving data! Try editing department later."); // hide error messages
           $("#editDepSaveButton").addClass("d-none");
+          $("#editDepartmentModal .modal-title").text("Error retrieving data ...");
         }
       },
       error: function (error) {
         // console.error("AJAX error:", error);
-        $("#editDepartmentlError").removeClass("d-none").text("Oops, something went wrong with the server! Try editing department later."); // hide error messages
         $("#editDepSaveButton").addClass("d-none"); 
+        $("#editDepartmentModal .modal-title").text("Error retrieving data ...");
       }
     });
   });
@@ -431,13 +438,13 @@ $(document).ready(function () {
         } else {
           // console.error("Error updating department data:", result.status.message);
           $("#editDepartmentModal").modal("hide");
-          showNotification("Error editing personnel! Try to eddit department later.", "Error");
+          showNotification("Error editing personnel! Try to eddit department later.", "Error ...");
         }
       },
       error: function (error) {
         // console.error("AJAX error:", error);
         $("#editDepartmentModal").modal("hide");
-        showNotification("Oops, something went wrong with the server! Try to eddit department later.", "Error");
+        showNotification("Oops, something went wrong with the server! Try to eddit department later.", "Error ...");
       }
     });
   });
@@ -452,7 +459,7 @@ $(document).ready(function () {
 
     // AJAX request to retrieve the location name by ID
     $.ajax({
-      url: "php/getLocationByID.php",  // API endpoint to get location details by ID
+      url: "php/getLocationByID.php",
       type: "POST",
       dataType: "json",
       data: { id: locationID },
@@ -462,11 +469,17 @@ $(document).ready(function () {
           $("#editLocationID").val(locationID);
           $("#editLocationName").val(result.data.locationName);
         } else {
-          showNotification("Error retrieving location data. Try again later.", "Error");
+          $("#editLocationModal").on("shown.bs.modal", function () {
+            $(this).modal("hide"); 
+            showNotification("Unable to load location data!", "Error retrieving data ...");
+          });
         }
       },
       error: function () {
-        showNotification("Server error while retrieving location data.", "Error");
+        $("#editLocationModal").on("shown.bs.modal", function () {
+          $(this).modal("hide"); 
+          showNotification("Server error while retrieving location data!", "Error retrieving data ...");
+        });
       }
     });
   });
@@ -494,13 +507,13 @@ $(document).ready(function () {
         } else {
           // console.error("Error updating location:", result.status.message);
           $("#editLocationModal").modal("hide");
-          showNotification("Error editing personnel! Try to eddit location later.", "Error");
+          showNotification("Error editing personnel! Try to eddit location later.", "Error ...");
         }
       },
       error: function (error) {
         // console.error("AJAX error:", error);
         $("#editLocationModal").modal("hide");
-        showNotification("Oops, something went wrong with the server! Try to eddit location later.", "Error");
+        showNotification("Oops, something went wrong with the server! Try to eddit location later.", "Error ...");
       }
     });
   });
@@ -519,11 +532,18 @@ $(document).ready(function () {
           $('#areYouSurePersonnelID').val(personnelId);
           $("#areYouSurePersonnelName").text(result.data.personnel[0].firstName + " " + result.data.personnel[0].lastName);
         } else {
-          showNotification("Error retrieving personnel data", "Error");
+          // showNotification("Error retrieving personnel data", "Error");
+          $("#areYouSurePersonnelModal").on("shown.bs.modal", function () {
+            $(this).modal("hide"); 
+            showNotification("Error retrieving personnel data!", "Error retrieving data ...");
+          });
         }
       },
       error: function () {
-        showNotification("Server error retrieving personnel data", "Error");
+        $("#areYouSurePersonnelModal").on("shown.bs.modal", function () {
+          $(this).modal("hide"); 
+          showNotification("Server error retrieving personnel data!", "Error retrieving data ...");
+        });
       }
     });
   });
@@ -544,11 +564,13 @@ $(document).ready(function () {
           // loadPersonnel(); // Refresh personnel list
           refreshAfterUpdate(); // Updates based on search and filter status
         } else {
-          showNotification("Error deleting personnel.", "Error");
+          $("#areYouSurePersonnelModal").modal("hide");
+          showNotification("Error deleting personnel.", "Error ...");
         }
       },
       error: function () {
-        showNotification("Server error during personnel deletion", "Error");
+        $("#areYouSurePersonnelModal").modal("hide");
+        showNotification("Server error during personnel deletion", "Error ...");
       }
     });
   });
@@ -600,7 +622,7 @@ $(document).ready(function () {
           $("#areYouSureDeleteDepartmentModal").modal("hide");
           loadDepartments(); // Update the departments table
         } else {
-          alert("Error deleting department.");
+          // alert("Error deleting department.");
           showNotification("Error deleting department.", "Error ...");
         }
       },
@@ -682,7 +704,7 @@ function toggleSearchField() {
 
 // Function for searching based on current filters
 function performSearch(query) {
-  currentSearchQuery = query; // Зберігаємо запит
+  currentSearchQuery = query;
 
   const departmentID = selectedDepartment;
   const locationID = selectedLocation;
@@ -701,12 +723,12 @@ function performSearch(query) {
         updatePersonnelTable(result.data.found);
       } else {
         $("#searchInp").val("");
-        showNotification("Error searching! Try to search later.", "Error");
+        showNotification("Error searching! Try to search later.", "Error ...");
       }
     },
     error: function () {
       $("#searchInp").val("");
-      showNotification("Oops, something went wrong with the server! Try to search later.", "Error");
+      showNotification("Oops, something went wrong with the server! Try to search later.", "Error ...");
     }
   });
 }
@@ -736,18 +758,20 @@ function applyFilter() {
       if (result.status.code === "200") {
         updatePersonnelTable(result.data); // Update the table according to the filter
       } else {
-        showNotification("Error applying filter. Try again later.", "Error");
+        showNotification("Error applying filter. Try again later.", "Error ...");
       }
     },
     error: function (error) {
-      showNotification("Server error while applying filter. Try again later.", "Error");
+      showNotification("Server error while applying filter. Try again later.", "Error ...");
     }
   });
 }
 
 // downloading the list of departments
 function loadDepartmentOptions() {
-  $("#addPersonnelError").addClass("d-none");
+  $("#addPersonalSaveBtn").removeClass("d-none");
+  $("#addPersonnelModal .modal-title").text("Add employee");
+
   $.ajax({
     url: "php/getAllDepartments.php",
     type: "GET",
@@ -767,20 +791,21 @@ function loadDepartmentOptions() {
           );
         });
       } else {
-        // console.error("Error retrieving department data:", result.status.message);
-        $("#addPersonnelError").removeClass("d-none").text("Error retrieving departments data! Try to add personnel later.");
+        $("#addPersonalSaveBtn").addClass("d-none");
+        $("#addPersonnelModal .modal-title").text("Error retrieving data ...");
       }
     },
     error: function (error) {
-      // console.error("AJAX error:", error);
-      $("#addPersonnelError").removeClass("d-none").text("Unable to load departments data! Try to add personnel later.");
+      $("#addPersonalSaveBtn").addClass("d-none");
+      $("#addPersonnelModal .modal-title").text("Error retrieving data ...");
     }
   });
 }
 
 // Loading the list of locations
 function loadLocationOptions() {
-  $("#addDepartmentsError").addClass("d-none");
+  $("#addDepartSaveBtn").removeClass("d-none");
+  $("#addDepartmentModal .modal-title").text("Add department");
   $.ajax({
     url: "php/getAllLocations.php",
     type: "GET",
@@ -799,13 +824,13 @@ function loadLocationOptions() {
           );
         });
       } else {
-        // console.error("Error retrieving location data:", result.status.message);
-        $("#addDepartmentsError").removeClass("d-none").text("Error retrieving locations data! Try to add department later.");
+        $("#addDepartSaveBtn").addClass("d-none");
+        $("#addDepartmentModal .modal-title").text("Error retrieving data ...");
       }
     },
     error: function (error) {
-      // console.error("AJAX error:", error);
-      $("#addDepartmentsError").removeClass("d-none").text("Server Error! Unable to load locations data! Try to add department later.");
+      $("#addDepartSaveBtn").addClass("d-none");
+      $("#addDepartmentModal .modal-title").text("Error retrieving data ...");
     }
   });
 }
